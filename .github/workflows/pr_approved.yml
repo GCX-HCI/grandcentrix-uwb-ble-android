@@ -24,7 +24,7 @@ jobs:
 
       # Start build process by checking out code, installing necessary tools, and finally building the QA release
       - name: Checkout code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v4.1.2
         with:
           fetch-depth: 0
       - name: Set up JDK 11
