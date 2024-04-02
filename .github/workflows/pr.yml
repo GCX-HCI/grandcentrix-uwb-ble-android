@@ -175,7 +175,7 @@ jobs:
         with:
           report-path: app/build/reports/lint-results-debug.xml
       - name: Upload test and lint reports
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: reports
           path: "**/build/reports/*"
