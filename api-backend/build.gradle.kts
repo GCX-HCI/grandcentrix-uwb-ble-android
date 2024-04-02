@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 plugins {
     id("java-library")
     id("kotlin")
-    id("org.openapi.generator") version "5.3.0"
+    id("org.openapi.generator") version "7.4.0"
 }
 
 openApiGenerate {
