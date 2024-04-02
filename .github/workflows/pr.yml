@@ -1,0 +1,181 @@
+# This workflow checks if the project can be built correctly and runs its unit tests and linter
+# After the tests have run it prints a report in the logs and uploads a report as workflow artifact
+# This workflow only runs if a Pull Request is (re-)opened and it is not a draft 
+# or after a push to develop or the default branch
+# For more information about best practices, see:
+# https://grandcentrix.atlassian.net/wiki/spaces/TENG/pages/31180230199/GitHub+Actions+Best+Practices
+
+name: Pull Request
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    types: [ opened, reopened, ready_for_review, synchronize ]
+
+jobs:
+  cancelPreviousRuns:
+    name: Cancel previous runs
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: Build all variants
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project files
+        uses: actions/checkout@v3.1.0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+      - name: Cache gradle wrapper and packages
+        uses: actions/cache@v3.0.11
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+      - name: Build all variants
+        run: ./gradlew assemble
+        env:
+          GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
+        timeout-minutes: 10
+
+  change_package:
+    name: Build all variants after Package Change
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project files
+        uses: actions/checkout@v3.1.0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+      - name: Cache gradle wrapper and packages
+        uses: actions/cache@v3.0.11
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+      - name: Change Package Name, keep rename script
+        run: ./changePackagename.sh -s de.test
+      - name: Check Main Package Folder exists
+        run: |
+          if [ ! -d "${GITHUB_WORKSPACE}/app/src/main/kotlin/de/test/app" ]; then
+            exit 1
+          fi
+      - name: Check Test Package Folder exists
+        run: |
+          if [ ! -d "${GITHUB_WORKSPACE}/app/src/test/kotlin/de/test/app" ]; then
+            exit 1
+          fi
+      - name: Check AndroidTest Package Folder exists
+        run: |
+          if [ ! -d "${GITHUB_WORKSPACE}/app/src/androidTest/kotlin/de/test/app" ]; then
+            exit 1
+          fi
+      - name: Check Application Class File exists
+        run: |
+          if [ ! -f "${GITHUB_WORKSPACE}/app/src/main/kotlin/de/test/app/App.kt" ]; then
+            exit 1
+          fi
+      - name: Check Application Class File Package
+        run: |
+          declaration=$(cat "${GITHUB_WORKSPACE}/app/src/main/kotlin/de/test/app/App.kt" | grep package)
+          if [ "package de.test.app" != "$declaration" ]; then
+            exit 1
+          fi
+      - name: Build all variants
+        run: ./gradlew assemble
+        env:
+          GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
+        timeout-minutes: 10
+
+  ktlint:
+    name: Check Code Style
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project files
+        uses: actions/checkout@v3.1.0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+      - name: Cache gradle wrapper and packages
+        uses: actions/cache@v3.0.11
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+      - name: Check with KtLint
+        run: ./gradlew ktlintCheck
+        timeout-minutes: 10
+
+  test:
+    name: Run Unit Tests & Lint
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project files
+        uses: actions/checkout@v3.1.0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+      - name: Cache gradle wrapper and packages
+        uses: actions/cache@v3.0.11
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+      - name: Compile tests
+        run: ./gradlew compileDebugUnitTests
+        env:
+          GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
+      - name: Run tests
+        run: ./gradlew testDebugUnitTest --continue
+        continue-on-error: true
+        timeout-minutes: 10
+      - name: Run lint
+        run: ./gradlew lintDebug
+        continue-on-error: true
+        timeout-minutes: 5
+      - name: Annotate PR with JUnit Report
+        uses: mikepenz/action-junit-report@v3.7.8
+        with:
+          report_paths: '**/build/test-results/**/TEST-*.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Annotate PR with Lint Report
+        uses: yutailang0119/action-android-lint@v3
+        with:
+          report-path: app/build/reports/lint-results-debug.xml
+      - name: Upload test and lint reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: reports
+          path: "**/build/reports/*"

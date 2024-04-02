@@ -1,0 +1,6 @@
+name: Create new pet
+request:
+  url: /api/v1/pets
+  method: POST
+response:
+  status: 201

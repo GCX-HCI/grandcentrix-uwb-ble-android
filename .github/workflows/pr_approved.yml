@@ -1,0 +1,67 @@
+name: PR Approved
+
+on:
+  # Run on submitted PR reviews | "A pull request review is submitted into a non-pending state."
+  # see https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request_review
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  build_n_distribute_beta_release:
+    # Run only if PR was approved and if PR has label "NEEDS QA"
+    if: github.event.review.state == 'approved' && contains(github.event.pull_request.labels.*.name, 'NEEDS QA')
+    name: Build & Distribute Beta Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Comment that something is happening so that developers don't also start a build
+      - uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **PR has been approved!** :sparkles:
+            Now creating a QA build …
+
+      # Start build process by checking out code, installing necessary tools, and finally building the QA release
+      - name: Checkout code
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+
+      # Create a changelog for this PR and then upload the build we create before to Firebase
+      - name: Upload build to firebase
+        run: |
+          # Run app distribution gradle script and check if it returned successfully
+          if ./gradlew tasks --stacktrace; then
+            echo "Task succeeded" >&2
+
+            VERSIONNAME=TEST
+
+            # Set variable via GitHub Action's state API so that we can read it later
+            echo "::set-output name=FILE_VERSION::$VERSIONNAME"
+          else
+            echo "Upload task failed" >&2
+            echo "::set-output name=FILE_VERSION::"
+          fi
+        id: firebase-file-version
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
+        timeout-minutes: 10
+
+      # Run only if the FILE_VERSION variable of the previous step isn't empty
+      # Add a comment with the build number and Firebase link for ease of use and as a step to notify developers
+      - name: Comment with Firebase build
+        if: steps.firebase-file-version.outputs.FILE_VERSION != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **Build has been uploaded to Firebase!** :rocket:
+            You can find it on [https://console.firebase.google.com/project/leica-camera-app/appdistribution/app/android:com.leicacamera.oneleicaapp.qa/releases](Firebase) as
+            `${{ steps.firebase-file-version.outputs.FILE_VERSION }}`

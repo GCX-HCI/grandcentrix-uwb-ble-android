@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "195301226207",
+    "project_id": "gcx-app-scaffold",
+    "storage_bucket": "gcx-app-scaffold.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195301226207:android:8b2340e0b21b4acc4c9b6a",
+        "android_client_info": {
+          "package_name": "net.grandcentrix.scaffold.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "195301226207-k27f938gp7q10l24e5fo4e5c84fogud6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAz7XTQPqLNSfXDlgrYtKhJzPWE4_E_cIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "195301226207-k27f938gp7q10l24e5fo4e5c84fogud6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

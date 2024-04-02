@@ -1,0 +1,12 @@
+name: Get pet by id
+request:
+  url: /api/v1/pets/128901231129
+  method: GET
+response:
+  status: 200
+  headers:
+    Content-Type: application/json
+  body:
+    id: 128901231129
+    name: "Tony"
+    tag: "dog"

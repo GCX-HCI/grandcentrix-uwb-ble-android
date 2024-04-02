@@ -1,0 +1,26 @@
+name: Get a list of five pets
+request:
+  url: /api/v1/pets
+  method: GET
+  queryParameters:
+    limit: 5
+response:
+  status: 200
+  headers:
+    Content-Type: application/json
+  body:
+    - id: 128901231129
+      name: "Tony"
+      tag: "dog"
+    - id: 293864928323
+      name: "Ezekiel"
+      tag: "dog"
+    - id: 349857298372
+      name: "Holly"
+      tag: "dog"
+    - id: 834628064382
+      name: "Ben"
+      tag: "dog"
+    - id: 183465134682
+      name: "Fluffy"
+      tag: "dog"

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="com_auth0_client_id" translatable="false">oeuFflzXO3Di7W6daBlbcTTxLrwVyLd9</string>
+    <string name="com_auth0_domain_scheme" translatable="false">demo</string>
+    <string name="com_auth0_domain" translatable="false">gcx-dev.eu.auth0.com</string>
+    <string name="com_auth0_scope" translatable="false">openid profile email</string>
+
+</resources>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="TextAppearance.Body1" parent="@style/TextAppearance.MaterialComponents.Body1">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Body2" parent="@style/TextAppearance.MaterialComponents.Body2">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Headline1" parent="@style/TextAppearance.MaterialComponents.Headline1">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Headline2" parent="@style/TextAppearance.MaterialComponents.Headline2">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Headline3" parent="@style/TextAppearance.MaterialComponents.Headline3">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Headline4" parent="@style/TextAppearance.MaterialComponents.Headline4">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Headline5" parent="@style/TextAppearance.MaterialComponents.Headline5">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Headline6" parent="@style/TextAppearance.MaterialComponents.Headline6">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Button" parent="@style/TextAppearance.MaterialComponents.Button">
+        <item name="textAllCaps">false</item>
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Caption" parent="@style/TextAppearance.MaterialComponents.Caption">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Overline" parent="@style/TextAppearance.MaterialComponents.Overline">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Subtitle1" parent="@style/TextAppearance.MaterialComponents.Subtitle1">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+
+    <style name="TextAppearance.Subtitle2" parent="@style/TextAppearance.MaterialComponents.Subtitle2">
+        <!-- Place all the custom text appearance attributes here -->
+    </style>
+</resources>

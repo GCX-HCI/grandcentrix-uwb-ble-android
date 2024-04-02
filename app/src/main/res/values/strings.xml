@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">GCX App Scaffold</string>
+    <string name="title_home">Home</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_theming">Theming</string>
+    <string name="title_settings">Settings</string>
+
+    <string name="profile_text_state_auth">Auth State: %1$s</string>
+    <string name="profile_button_login">Login</string>
+    <string name="profile_button_logout">Logout</string>
+    <string name="profile_image_description">Profile Image</string>
+
+    <string name="home_fragment">This is home Fragment</string>
+    <string name="home_network_headline">Network test</string>
+    <string name="home_network_description">You can test the network here. Start you local server. If you don\'t know how, tap this text</string>
+    <string name="home_network_question_mark_content_description">Tap here to learn how to start a local stub server</string>
+    <string name="home_network_request_pets">All pets</string>
+    <string name="home_network_request_single_pet">One pet</string>
+    <string name="home_network_request_create_pet">Create pet</string>
+    <string name="home_network_start_server_dialog_title">How to start the stub server?</string>
+    <string name="home_network_start_server_dialog_text">To find out how to start the stub server go to the folder named `stub-server` in the root directory of this project. There is a readme file with further information.</string>
+
+    <string name="navigation_back">Back</string>
+    <string name="generic_navigation_back">Back</string>
+    <string name="generic_dialog_confirm">OK</string>
+    <string name="generic_dialog_dismiss">Cancel</string>
+</resources>
