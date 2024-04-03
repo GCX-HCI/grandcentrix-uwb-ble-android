@@ -114,7 +114,7 @@ class GcxBleScannerTest {
     }
 
     @Test
-    fun `startScan with ble enabled should return scan result`() =
+    fun `Given ble is enabled, when start ble scan, then return scan result`() =
         runTest {
             val scanCallback: ScanCallback = mockk()
             every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
