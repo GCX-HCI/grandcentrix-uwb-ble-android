@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.util.Log
+import gcx.ble.exception.BluetoothDisabledException
 import gcx.ble.manager.BleManager
 import gcx.ble.scanner.GcxBleScanner
 import io.mockk.every
@@ -16,11 +17,14 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +44,7 @@ class GcxBleScannerTest {
     }
 
     @Test
-    fun `startScan with ble not enabled should throw error`() =
+    fun `Given ble is disabled, when start ble scan, then a error should be thrown`() =
         runTest {
             every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
             every { bleManager.bluetoothAdapter().isEnabled } returns false
@@ -51,16 +55,16 @@ class GcxBleScannerTest {
                     bleManager = bleManager,
                 )
 
-            var errorWasThrown = false
-            gcxBleScanner.startScan {
-                errorWasThrown = true
-            }.collect()
+            var errorWasThrown: BluetoothDisabledException? = null
+            gcxBleScanner.startScan()
+                .catch { errorWasThrown = it as BluetoothDisabledException }
+                .collect()
             advanceUntilIdle()
-            assertTrue(errorWasThrown)
+            assertNotNull(errorWasThrown)
         }
 
     @Test
-    fun `startScan with no permission should throw SecurityException`() =
+    fun `Given permission is denied, when start ble scan, then a error should be thrown`() =
         runTest {
             mockkStatic(Log::class)
             every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
@@ -75,20 +79,15 @@ class GcxBleScannerTest {
                 )
 
             var errorWasThrown = false
-            val job =
-                launch {
-                    gcxBleScanner.startScan {
-                        errorWasThrown = true
-                    }.collect()
-                }
-            job.start()
-            delay(1_000)
-            job.cancel()
+            gcxBleScanner.startScan()
+                .catch { errorWasThrown = true }
+                .collect()
+            advanceUntilIdle()
             assertTrue(errorWasThrown)
         }
 
     @Test
-    fun `startScan with ble enabled should call bluetoothLeScanner startScan()`() =
+    fun `Given ble is enabled, when start ble scan, then bluetoothLeScan should call startScan()`() =
         runTest {
             every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
             every { bleManager.bluetoothAdapter().isEnabled } returns true
@@ -100,7 +99,7 @@ class GcxBleScannerTest {
                     bleManager = bleManager,
                 )
 
-            val job = launch { gcxBleScanner.startScan { }.collect() }
+            val job = launch { gcxBleScanner.startScan().collect() }
             job.start()
             delay(1_000)
             job.cancel()
@@ -135,7 +134,7 @@ class GcxBleScannerTest {
 
             triggerScanCallback(scanCallback)
 
-            val job = launch { gcxBleScanner.startScan { }.collect() }
+            val job = launch { gcxBleScanner.startScan().collect() }
             job.start()
             delay(1_000)
             job.cancel()
