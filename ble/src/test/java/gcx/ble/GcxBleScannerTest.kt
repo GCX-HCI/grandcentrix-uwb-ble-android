@@ -17,7 +17,6 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -37,18 +36,27 @@ class GcxBleScannerTest {
 
     @BeforeEach
     fun setup() {
-        bleManager = mockk()
         bluetoothLeScanner = mockk()
         bluetoothAdapter = mockk()
         scanResultMock = mockk()
+
+        bleManager =
+            mockk {
+                every { bluetoothAdapter() } returns bluetoothAdapter
+                every { bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
+            }
+    }
+
+    private fun createMock(isBleEnabled: Boolean) {
+        every { bleManager.bluetoothAdapter().isEnabled } returns isBleEnabled
+        justRun { bluetoothLeScanner.startScan(any()) }
+        justRun { bluetoothLeScanner.stopScan(any<ScanCallback>()) }
     }
 
     @Test
     fun `Given ble is disabled, when start ble scan, then a error should be thrown`() =
         runTest {
-            every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
-            every { bleManager.bluetoothAdapter().isEnabled } returns false
-            every { bleManager.bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
+            createMock(isBleEnabled = false)
 
             val gcxBleScanner =
                 GcxBleScanner(
@@ -67,11 +75,9 @@ class GcxBleScannerTest {
     fun `Given permission is denied, when start ble scan, then a error should be thrown`() =
         runTest {
             mockkStatic(Log::class)
-            every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
+            createMock(isBleEnabled = true)
             every { bleManager.bluetoothAdapter().isEnabled } returns true
-            every { bleManager.bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
             every { bluetoothLeScanner.startScan(any()) } throws SecurityException("Permission missing!")
-            justRun { bluetoothLeScanner.stopScan(any<ScanCallback>()) }
             every { Log.d(any(), any()) } returns 0
             val gcxBleScanner =
                 GcxBleScanner(
@@ -89,11 +95,8 @@ class GcxBleScannerTest {
     @Test
     fun `Given ble is enabled, when start ble scan, then bluetoothLeScan should call startScan()`() =
         runTest {
-            every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
-            every { bleManager.bluetoothAdapter().isEnabled } returns true
-            every { bleManager.bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
-            justRun { bluetoothLeScanner.startScan(any()) }
-            justRun { bluetoothLeScanner.stopScan(any<ScanCallback>()) }
+            createMock(isBleEnabled = true)
+
             val gcxBleScanner =
                 GcxBleScanner(
                     bleManager = bleManager,
@@ -117,11 +120,7 @@ class GcxBleScannerTest {
     fun `Given ble is enabled, when start ble scan, then return scan result`() =
         runTest {
             val scanCallback: ScanCallback = mockk()
-            every { bleManager.bluetoothAdapter() } returns bluetoothAdapter
-            every { bleManager.bluetoothAdapter().isEnabled } returns true
-            every { bleManager.bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
-            justRun { bluetoothLeScanner.startScan(any()) }
-            justRun { bluetoothLeScanner.stopScan(any<ScanCallback>()) }
+            createMock(isBleEnabled = true)
 
             every { scanCallback.onScanResult(any(), any()) } answers {
                 val result = arg<ScanResult>(1)
