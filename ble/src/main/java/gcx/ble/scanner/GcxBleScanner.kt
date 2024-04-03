@@ -12,14 +12,14 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-private const val TAG = "BLE_SCANNER"
+private const val TAG = "BleScanner"
 
 interface BleScanner {
     fun startScan(): Flow<ScanResult>
 }
 
 class GcxBleScanner(
-    private val bleManager: BleManager,
+    bleManager: BleManager,
 ) : BleScanner {
     private val bluetoothAdapter: BluetoothAdapter = bleManager.bluetoothAdapter()
     private val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner

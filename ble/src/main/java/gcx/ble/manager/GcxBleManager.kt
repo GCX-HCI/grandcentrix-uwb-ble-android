@@ -4,16 +4,14 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 
-private const val TAG = "GCX_BLE_MANAGER"
-
 interface BleManager {
     fun bluetoothAdapter(): BluetoothAdapter
 }
 
 class GcxBleManager(
-    private val context: Context,
+    context: Context,
 ) : BleManager {
-    val bluetoothAdapter: BluetoothAdapter
+    private val bluetoothAdapter: BluetoothAdapter
 
     override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
