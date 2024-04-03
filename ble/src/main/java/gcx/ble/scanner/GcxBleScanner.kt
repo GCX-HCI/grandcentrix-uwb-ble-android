@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.callbackFlow
 private const val TAG = "BLE_SCANNER"
 
 interface BleScanner {
-    fun startScan(onScanFailure: (Error) -> Unit): Flow<ScanResult>
+    fun startScan(): Flow<ScanResult>
 }
 
 class GcxBleScanner(
@@ -23,10 +23,9 @@ class GcxBleScanner(
     private val bluetoothAdapter: BluetoothAdapter = bleManager.bluetoothAdapter()
     private val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
 
-    override fun startScan(onScanFailure: (Error) -> Unit): Flow<ScanResult> =
+    override fun startScan(): Flow<ScanResult> =
         callbackFlow {
             if (!bluetoothAdapter.isEnabled) {
-                onScanFailure(Error("BT Adapter is not turned on!"))
                 close()
                 return@callbackFlow
             }
@@ -46,7 +45,7 @@ class GcxBleScanner(
 
                     override fun onScanFailed(errorCode: Int) {
                         super.onScanFailed(errorCode)
-                        onScanFailure(Error("Scan failed with error code: $errorCode"))
+                        close()
                     }
                 }
 
@@ -54,7 +53,7 @@ class GcxBleScanner(
                 bluetoothLeScanner.startScan(scanCallback)
             } catch (exception: SecurityException) {
                 Log.d(TAG, "scan failed with $exception")
-                onScanFailure(Error("Permission missing! $exception"))
+                close(exception)
             }
 
             awaitClose {

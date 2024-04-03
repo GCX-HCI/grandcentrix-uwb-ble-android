@@ -8,6 +8,7 @@ import gcx.ble.scanner.BleScanner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -17,7 +18,7 @@ data class MainActivityViewState(
 )
 
 private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
-
+private const val TAG = "MainActivityViewModel"
 class MainActivityViewModel(
     private val bleScanner: BleScanner,
 ) : ViewModel() {
@@ -26,11 +27,10 @@ class MainActivityViewModel(
 
     fun scan() {
         viewModelScope.launch {
-            bleScanner.startScan(
-                onScanFailure = { error ->
-                    Log.d("TAG", "scan: $error")
-                },
-            )
+            bleScanner.startScan()
+                .catch { error ->
+                    Log.e(TAG, "Failed to scan for devices ", error)
+                }
                 .filter { it.device.address == mobileKnowledgeAddress }
                 .collect { result ->
                     _viewState.update {
