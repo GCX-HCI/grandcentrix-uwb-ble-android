@@ -1,5 +1,6 @@
 package bjoern.kinberger.gcx.ble.scanner
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -13,16 +14,23 @@ import kotlinx.coroutines.flow.callbackFlow
 private const val TAG = "BLE_SCANNER"
 
 interface BleScanner {
-    fun startScan(): Flow<ScanResult>
+    fun startScan(onScanFailure: (Error) -> Unit): Flow<ScanResult>
 }
 
 class GcxBleScanner(
     private val bleManager: BleManager,
 ) : BleScanner {
-    private val bluetoothLeScanner: BluetoothLeScanner = bleManager.bluetoothAdapter().bluetoothLeScanner
+    private val bluetoothAdapter: BluetoothAdapter = bleManager.bluetoothAdapter()
+    private val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
 
-    override fun startScan(): Flow<ScanResult> =
+    override fun startScan(onScanFailure: (Error) -> Unit): Flow<ScanResult> =
         callbackFlow {
+            if (!bluetoothAdapter.isEnabled) {
+                onScanFailure(Error("BT Adapter is not turned on!"))
+                close()
+                return@callbackFlow
+            }
+
             val scanCallback =
                 object : ScanCallback() {
                     override fun onScanResult(
@@ -35,12 +43,18 @@ class GcxBleScanner(
                                 Log.d(TAG, "trySend throws failure $it")
                             }
                     }
+
+                    override fun onScanFailed(errorCode: Int) {
+                        super.onScanFailed(errorCode)
+                        onScanFailure(Error("Scan failed with error code: $errorCode"))
+                    }
                 }
 
             try {
                 bluetoothLeScanner.startScan(scanCallback)
             } catch (exception: SecurityException) {
                 Log.d(TAG, "scan failed with $exception")
+                onScanFailure(Error("Permission missing! $exception"))
             }
 
             awaitClose {

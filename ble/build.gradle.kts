@@ -31,10 +31,18 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 dependencies {
     implementation(libs.bundles.koin)
     implementation(libs.arrow)
     implementation(libs.bundles.coroutines)
+
+    testImplementation(libs.jupiter)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
 }

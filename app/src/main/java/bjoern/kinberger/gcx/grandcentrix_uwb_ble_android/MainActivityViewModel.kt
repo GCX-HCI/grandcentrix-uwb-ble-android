@@ -1,6 +1,7 @@
 package bjoern.kinberger.gcx.grandcentrix_uwb_ble_android
 
 import android.bluetooth.le.ScanResult
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import bjoern.kinberger.gcx.ble.scanner.BleScanner
@@ -23,7 +24,11 @@ class MainActivityViewModel(
 
     fun scan() {
         viewModelScope.launch {
-            bleScanner.startScan()
+            bleScanner.startScan(
+                onScanFailure = { error ->
+                    Log.d("TAG", "scan: $error")
+                },
+            )
                 .filter { it.device.address == "00:60:37:90:E7:11" }
                 .collect { result ->
                     _viewState.update {
