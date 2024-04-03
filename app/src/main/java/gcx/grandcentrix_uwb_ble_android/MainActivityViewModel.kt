@@ -16,6 +16,8 @@ data class MainActivityViewState(
     val results: List<ScanResult> = mutableListOf(),
 )
 
+private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
+
 class MainActivityViewModel(
     private val bleScanner: BleScanner,
 ) : ViewModel() {
@@ -29,7 +31,7 @@ class MainActivityViewModel(
                     Log.d("TAG", "scan: $error")
                 },
             )
-                .filter { it.device.address == "00:60:37:90:E7:11" }
+                .filter { it.device.address == mobileKnowledgeAddress }
                 .collect { result ->
                     _viewState.update {
                         val newResults = listOf(result)
