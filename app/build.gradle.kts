@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "bjoern.kinberger.gcx.grandcentrix_uwb_ble_android"
+    namespace = "gcx.grandcentrix_uwb_ble_android"
     compileSdk = libs.versions.compileSdk.get().toInt()
     buildToolsVersion = libs.versions.buildTools.get()
 
