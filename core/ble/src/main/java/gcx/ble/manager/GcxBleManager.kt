@@ -6,10 +6,12 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import gcx.ble.exception.BluetoothException
+import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+
+private const val TAG = "GcxBleManager"
 
 enum class ConnectionState {
     CONNECTED,
@@ -55,7 +57,8 @@ class GcxBleManager(
                         if (status == BluetoothGatt.GATT_SUCCESS) {
                             trySend(ConnectionState.READY)
                         } else {
-                            close(BluetoothException.ServiceDiscoveryFailedException)
+                            Log.e(TAG, "onServicesDiscovered: failed $status")
+                            close()
                         }
                     }
                 }
@@ -68,10 +71,10 @@ class GcxBleManager(
                     )
 
                 awaitClose {
-                    gatt.disconnect()
                     gatt.close()
                 }
             } catch (exception: SecurityException) {
+                Log.e(TAG, "connect failed with", exception)
                 close(exception)
             }
 
