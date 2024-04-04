@@ -1,4 +1,4 @@
-package bjoern.kinberger.gcx.grandcentrix_uwb_ble_android
+package gcx.grandcentrix_uwb_ble_android
 
 import org.junit.Test
 

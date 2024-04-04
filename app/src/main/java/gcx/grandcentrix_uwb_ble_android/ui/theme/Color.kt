@@ -1,4 +1,4 @@
-package bjoern.kinberger.gcx.grandcentrix_uwb_ble_android.ui.theme
+package gcx.grandcentrix_uwb_ble_android.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,4 +1,4 @@
-package bjoern.kinberger.gcx.grandcentrix_uwb_ble_android
+package gcx.ble
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("bjoern.kinberger.gcx.grandcentrix_uwb_ble_android", appContext.packageName)
+        assertEquals("bjoern.kinberger.gcx.ble", appContext.packageName)
     }
 }
