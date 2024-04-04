@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -39,12 +38,10 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
     val viewState by viewModel.viewState.collectAsState()
 
     Column {
-        Row {
-            Button(onClick = { viewModel.scan() }) {
-                Text(text = "Start scan")
-            }
+        Button(onClick = { viewModel.scan() }) {
+            Text(text = "Start scan")
         }
-        viewState.results.forEach {result -> 
+        viewState.results.forEach { result ->
             Text(text = "Address: ${result.device.address}")
         }
     }
