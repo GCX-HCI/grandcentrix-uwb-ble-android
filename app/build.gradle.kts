@@ -9,7 +9,7 @@ android {
     buildToolsVersion = libs.versions.buildTools.get()
 
     defaultConfig {
-        applicationId = "bjoern.kinberger.gcx.grandcentrix_uwb_ble_android"
+        applicationId = "gcx.grandcentrix_uwb_ble_android"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
