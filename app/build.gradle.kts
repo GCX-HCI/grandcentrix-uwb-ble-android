@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    kotlin("android")
-    kotlin("kapt")
+    alias(libs.plugins.android.kotlin)
 }
 
 android {
@@ -52,6 +51,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":ble"))
     implementation(libs.bundles.koin)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
