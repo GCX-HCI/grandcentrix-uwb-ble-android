@@ -5,11 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -45,27 +41,15 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
     val viewState by viewModel.viewState.collectAsState()
 
     Column {
-        Row {
-            Button(onClick = { viewModel.scan() }) {
-                Text(text = "Start scan")
-            }
-            Button(onClick = { viewModel.stopScan() }) {
-                Text(text = "Stop scan")
-            }
+        Button(onClick = { viewModel.scan() }) {
+            Text(text = "Start scan")
         }
-
-        Column(
-             modifier = Modifier
-                 .verticalScroll(rememberScrollState())
-                 .fillMaxWidth()
-        ) {
-            viewState.results.forEach { result ->
-                DeviceItem(
-                    device = result.device,
-                    onItemClicked = viewModel::connectToDevice,
-                    connectionState = viewModel.getConnectionStateForDevice(result.device)
-                )
-            }
+        viewState.results.forEach { result ->
+            DeviceItem(
+                device = result.device,
+                onItemClicked = viewModel::connectToDevice,
+                connectionState = viewState.connectionState,
+            )
         }
     }
 }
