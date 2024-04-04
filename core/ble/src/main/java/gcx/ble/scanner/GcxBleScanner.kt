@@ -27,7 +27,7 @@ class GcxBleScanner(
     override fun startScan(): Flow<ScanResult> =
         callbackFlow {
             if (!bluetoothAdapter.isEnabled) {
-                close(BluetoothDisabledException("BLE Adapter is not enabled"))
+                close(BluetoothDisabledException)
                 return@callbackFlow
             }
 

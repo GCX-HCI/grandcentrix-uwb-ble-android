@@ -23,80 +23,68 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GcxBleScannerTest {
-    private lateinit var bleManager: BleManager
-    private lateinit var bluetoothLeScanner: BluetoothLeScanner
-    private lateinit var bluetoothAdapter: BluetoothAdapter
-    private lateinit var scanResultMock: ScanResult
+    private val bluetoothAdapter: BluetoothAdapter = mockk()
+    private val bluetoothLeScanner: BluetoothLeScanner = mockk()
+    private val bleManager: BleManager =
+        mockk {
+            every { bluetoothAdapter() } returns bluetoothAdapter
+            every { bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
+            every { bluetoothAdapter().isEnabled } returns true
+            justRun { bluetoothLeScanner.startScan(any()) }
+            justRun { bluetoothLeScanner.stopScan(any<ScanCallback>()) }
+        }
 
-    @BeforeEach
-    fun setup() {
-        bluetoothLeScanner = mockk()
-        bluetoothAdapter = mockk()
-        scanResultMock = mockk()
-
-        bleManager =
-            mockk {
-                every { bluetoothAdapter() } returns bluetoothAdapter
-                every { bluetoothAdapter().bluetoothLeScanner } returns bluetoothLeScanner
-            }
-    }
-
-    private fun createMock(isBleEnabled: Boolean) {
-        every { bleManager.bluetoothAdapter().isEnabled } returns isBleEnabled
-        justRun { bluetoothLeScanner.startScan(any()) }
-        justRun { bluetoothLeScanner.stopScan(any<ScanCallback>()) }
-    }
+    private val scanResultMock: ScanResult = mockk()
 
     @Test
     fun `Given ble is disabled, when start ble scan, then a error should be thrown`() =
         runTest {
-            createMock(isBleEnabled = false)
+            every { bleManager.bluetoothAdapter().isEnabled } returns false
 
             val gcxBleScanner =
                 GcxBleScanner(
                     bleManager = bleManager,
                 )
 
-            var errorWasThrown: BluetoothDisabledException? = null
+            var thrownError: Throwable? = null
             gcxBleScanner.startScan()
-                .catch { errorWasThrown = it as BluetoothDisabledException }
+                .catch { thrownError = it }
                 .collect()
             advanceUntilIdle()
-            assertNotNull(errorWasThrown)
+            assertEquals(BluetoothDisabledException, thrownError)
         }
 
     @Test
     fun `Given permission is denied, when start ble scan, then a error should be thrown`() =
         runTest {
             mockkStatic(Log::class)
-            createMock(isBleEnabled = true)
-            every { bleManager.bluetoothAdapter().isEnabled } returns true
-            every { bluetoothLeScanner.startScan(any()) } throws SecurityException("Permission missing!")
-            every { Log.d(any(), any()) } returns 0
+
+            every { bluetoothLeScanner.startScan(any()) } throws SecurityException()
+            every { Log.e(any(), any()) } returns 0
+
             val gcxBleScanner =
                 GcxBleScanner(
                     bleManager = bleManager,
                 )
 
-            var errorWasThrown = false
+            var thrownError: Throwable? = null
             gcxBleScanner.startScan()
-                .catch { errorWasThrown = true }
+                .catch { thrownError = it }
                 .collect()
             advanceUntilIdle()
-            assertTrue(errorWasThrown)
+            assertInstanceOf(SecurityException::class.java, thrownError)
         }
 
     @Test
     fun `Given ble is enabled, when start ble scan, then bluetoothLeScan should call startScan()`() =
         runTest {
-            createMock(isBleEnabled = true)
-
             val gcxBleScanner =
                 GcxBleScanner(
                     bleManager = bleManager,
@@ -120,7 +108,6 @@ class GcxBleScannerTest {
     fun `Given ble is enabled, when start ble scan, then return scan result`() =
         runTest {
             val scanCallback: ScanCallback = mockk()
-            createMock(isBleEnabled = true)
 
             every { scanCallback.onScanResult(any(), any()) } answers {
                 val result = arg<ScanResult>(1)
