@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import gcx.ble.manager.BleManager
 import gcx.ble.manager.ConnectionState
 import gcx.ble.scanner.BleScanner
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,13 +33,14 @@ class MainActivityViewModel(
     private val _viewState = MutableStateFlow(MainActivityViewState())
     val viewState: StateFlow<MainActivityViewState> = _viewState.asStateFlow()
 
+    private var scanScope: Job? = null
+
     fun scan() {
-        viewModelScope.launch {
+        scanScope = viewModelScope.launch {
             bleScanner.startScan()
                 .catch { error ->
                     Log.e(TAG, "Failed to scan for devices ", error)
                 }
-                .filter { it.device.address == mobileKnowledgeAddress }
                 .collect { result ->
                     _viewState.update {
                         val newResults = listOf(result)
@@ -46,9 +48,12 @@ class MainActivityViewModel(
                             results = it.results + newResults,
                         )
                     }
-                    cancel()
                 }
         }
+    }
+
+    fun stopScan() {
+        scanScope?.cancel("stop scanning")
     }
 
     fun connectToDevice(bleDevice: BluetoothDevice) {
