@@ -38,7 +38,6 @@ android {
 
 dependencies {
     implementation(libs.bundles.koin)
-    implementation(libs.arrow)
     implementation(libs.bundles.coroutines)
 
     testImplementation(libs.jupiter)
