@@ -17,16 +17,14 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GcxBleScannerTest {
@@ -90,10 +88,8 @@ class GcxBleScannerTest {
                     bleManager = bleManager,
                 )
 
-            val job = launch { gcxBleScanner.startScan().collect() }
-            job.start()
-            delay(1_000)
-            job.cancel()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { gcxBleScanner.startScan().collect() }
+            advanceUntilIdle()
             verify { bluetoothLeScanner.startScan(any()) }
         }
 
@@ -120,10 +116,8 @@ class GcxBleScannerTest {
 
             triggerScanCallback(scanCallback)
 
-            val job = launch { gcxBleScanner.startScan().collect() }
-            job.start()
-            delay(1_000)
-            job.cancel()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { gcxBleScanner.startScan().collect() }
+            advanceUntilIdle()
             verify {
                 scanCallback.onScanResult(
                     ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
