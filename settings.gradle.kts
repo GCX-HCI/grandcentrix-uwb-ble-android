@@ -14,5 +14,8 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "grandcentrix-uwb-ble-android"
-include(":app")
-include(":core:ble")
+include(
+    ":app",
+    ":core:ble",
+    ":core:test"
+)
