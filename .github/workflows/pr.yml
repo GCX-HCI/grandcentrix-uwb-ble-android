@@ -1,0 +1,78 @@
+name: PR
+
+on:
+  pull_request:
+    types: [ opened, reopened, ready_for_review, synchronize ]
+  merge_group:
+    types: [ checks_requested ]
+
+# Cancel previous runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # RUN UNIT TESTS AND LINT
+  test:
+    name: Run Unit Tests
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: Run unit tests
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: testDebugUnitTest
+        env:
+          GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
+        timeout-minutes: 30
+
+      # Annotate PR run with info about how many tests were run successfully, failed, and were skipped
+      - name: Annotate PR with JUnit Report
+        if: always() # always run even if the previous step fails
+        uses: mikepenz/action-junit-report@v4.2.1
+        with:
+          report_paths: '**/build/test-results/**/TEST-*.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Run LINT check
+      - name: Run lint
+        if: always() # always run even if the previous step fails
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: lint
+        env:
+          GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
+        continue-on-error: true
+        timeout-minutes: 20
+
+      # Setup Ruby to allow for caching of danger install artifacts
+      - name: Setup Ruby
+        if: always() # always run even if the previous step fails
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1.0'
+          bundler-cache: true
+
+      - name: Install Danger
+        if: always() # always run even if the previous step fails
+        run: |
+          # install danger and its dependencies using bundler
+          gem install danger
+      - name: Run Danger
+        if: always() # always run even if the previous step fails
+        run: |
+          # execute danger for this PR
+          bundle exec danger --dangerfile=Dangerfile --danger_id=danger-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
