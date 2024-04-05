@@ -5,7 +5,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.util.Log
-import gcx.ble.exception.BluetoothDisabledException
+import gcx.ble.exception.BluetoothException
 import gcx.ble.manager.BleManager
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
@@ -27,7 +27,7 @@ class GcxBleScanner(
     override fun startScan(): Flow<ScanResult> =
         callbackFlow {
             if (!bluetoothAdapter.isEnabled) {
-                close(BluetoothDisabledException)
+                close(BluetoothException.BluetoothDisabledException)
                 return@callbackFlow
             }
 

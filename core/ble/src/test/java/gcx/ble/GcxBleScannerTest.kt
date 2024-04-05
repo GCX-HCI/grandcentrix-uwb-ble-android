@@ -8,7 +8,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.util.Log
-import gcx.ble.exception.BluetoothDisabledException
+import gcx.ble.exception.BluetoothException
 import gcx.ble.manager.BleManager
 import gcx.ble.scanner.GcxBleScanner
 import io.mockk.every
@@ -56,7 +56,7 @@ class GcxBleScannerTest {
                 .catch { thrownError = it }
                 .collect()
             advanceUntilIdle()
-            assertEquals(BluetoothDisabledException, thrownError)
+            assertEquals(BluetoothException.BluetoothDisabledException, thrownError)
         }
 
     @Test
