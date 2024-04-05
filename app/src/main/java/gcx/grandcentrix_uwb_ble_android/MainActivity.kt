@@ -63,7 +63,7 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
                 DeviceItem(
                     device = result.device,
                     onItemClicked = viewModel::connectToDevice,
-                    connectionState = viewState.connectionState,
+                    connectionState = viewModel.getConnectionStateForDevice(result.device)
                 )
             }
         }
