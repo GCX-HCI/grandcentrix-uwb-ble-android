@@ -48,6 +48,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 dependencies {
@@ -57,4 +60,10 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
+
+    testImplementation(project(":core:test"))
+    testImplementation(libs.jupiter)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
 }
