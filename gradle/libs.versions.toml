@@ -18,7 +18,7 @@ androidx_appcompat = "1.6.1"
 androidx_lifecycle = "2.7.0"
 androidx_activity_compose = "1.8.2"
 androidx_navigation_compose = "2.7.7"
-compose_bom = "2024.03.00"
+compose_bom = "2024.04.00"
 compose_compiler = "1.5.11"
 
 coroutines = "1.7.3"
