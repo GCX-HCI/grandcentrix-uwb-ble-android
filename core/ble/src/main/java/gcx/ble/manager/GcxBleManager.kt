@@ -68,6 +68,7 @@ class GcxBleManager(
                     )
 
                 awaitClose {
+                    gatt.disconnect()
                     gatt.close()
                 }
             } catch (exception: SecurityException) {
