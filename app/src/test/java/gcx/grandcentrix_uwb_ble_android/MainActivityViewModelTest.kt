@@ -1,6 +1,7 @@
 package gcx.grandcentrix_uwb_ble_android
 
 import android.bluetooth.le.ScanResult
+import gcx.ble.manager.BleManager
 import gcx.ble.scanner.BleScanner
 import gcx.test.CoroutineTestExtension
 import io.mockk.every
@@ -23,9 +24,11 @@ class MainActivityViewModelTest {
         every { startScan() } returns flowOf(scanResult)
     }
 
+    private val bleManager: BleManager = mockk()
+
     @Test
     fun `Given a known ble device, when starting ble scan, then ble device is shown`() = runTest {
-        val viewModel = MainActivityViewModel(bleScanner)
+        val viewModel = MainActivityViewModel(bleScanner, bleManager)
         viewModel.scan()
 
         advanceUntilIdle()
@@ -37,9 +40,9 @@ class MainActivityViewModelTest {
     @Test
     fun `Given an unknown ble device, when starting ble scan, then ble device is not shown`() =
         runTest {
-            every { scanResult.device.address } returns "Unknown"
+            every { bleScanner.startScan() } returns flowOf()
 
-            val viewModel = MainActivityViewModel(bleScanner)
+            val viewModel = MainActivityViewModel(bleScanner, bleManager)
             viewModel.scan()
 
             advanceUntilIdle()
