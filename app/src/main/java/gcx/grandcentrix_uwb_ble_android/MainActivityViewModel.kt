@@ -14,13 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainActivityViewState(
     val results: List<ScanResult> = mutableListOf(),
-    val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
+    val connectionState: Pair<BluetoothDevice?, ConnectionState> = Pair(null, ConnectionState.DISCONNECTED)
 )
 
 private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
@@ -62,10 +61,17 @@ class MainActivityViewModel(
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            connectionState = connectionState,
+                            connectionState = Pair(bleDevice, connectionState),
                         )
                     }
                 }
         }
     }
+
+    fun getConnectionStateForDevice(bleDevice: BluetoothDevice): ConnectionState =
+        if (viewState.value.connectionState.first == bleDevice) {
+            viewState.value.connectionState.second
+        } else {
+            ConnectionState.DISCONNECTED
+        }
 }
