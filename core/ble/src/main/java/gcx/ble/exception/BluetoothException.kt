@@ -7,7 +7,7 @@ sealed class BluetoothException(override val message: String?) : Exception() {
 
     data object BluetoothTimeoutException : BluetoothException("BLE action timeout")
 
-    data object BluetoothServiceNotSupportedException :
+    data object ServiceNotSupportedException :
         BluetoothException("The given service is not supported")
 
     data class BluetoothNullPointerException(

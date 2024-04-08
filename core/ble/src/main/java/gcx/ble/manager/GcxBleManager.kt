@@ -51,8 +51,6 @@ class GcxBleManager(
 
     private val resultChannel = Channel<BluetoothResult>()
 
-    private var bluetoothGatt: BluetoothGatt? = null
-
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
 
@@ -83,9 +81,11 @@ class GcxBleManager(
                         if (status == BluetoothGatt.GATT_SUCCESS) {
                             trySend(ConnectionState.READY)
                             if (isRequiredServiceSupported(gatt)) {
-                                initialize()
+                                initialize(
+                                    gatt = gatt
+                                )
                             } else {
-                                close(BluetoothException.BluetoothServiceNotSupportedException)
+                                close(BluetoothException.ServiceNotSupportedException)
                             }
                         } else {
                             close(BluetoothException.ServiceDiscoveryFailedException)
@@ -136,7 +136,7 @@ class GcxBleManager(
                     }
                 }
             try {
-                bluetoothGatt =
+                val gatt =
                     bleDevice.connectGatt(
                         context,
                         false,
@@ -144,9 +144,8 @@ class GcxBleManager(
                     )
 
                 awaitClose {
-                    bluetoothGatt?.disconnect()
-                    bluetoothGatt?.close()
-                    bluetoothGatt = null
+                    gatt.disconnect()
+                    gatt.close()
                 }
             } catch (exception: SecurityException) {
                 close(exception)
@@ -166,19 +165,15 @@ class GcxBleManager(
         return rxCharacteristic != null && txCharacteristic != null
     }
 
-    private fun initialize() {
-        observeTxCharacteristic()
+    private fun initialize(gatt: BluetoothGatt) {
+        observeTxCharacteristic(gatt)
 
         scope.launch {
-            bluetoothGatt?.let { gatt ->
-                val writeResult = writeRxCharacteristic(
-                    gatt = gatt,
-                    data = byteArrayOf(0xA5.toByte())
-                )
-                Log.d(TAG, "write characteristic $writeResult")
-            } ?: run {
-                throw BluetoothException.BluetoothNullPointerException(BluetoothGatt::class.java.name)
-            }
+            val writeResult = writeRxCharacteristic(
+                gatt = gatt,
+                data = byteArrayOf(0xA5.toByte())
+            )
+            Log.d(TAG, "write characteristic $writeResult")
         }
     }
 
@@ -198,13 +193,9 @@ class GcxBleManager(
         }
     }
 
-    private fun observeTxCharacteristic() {
-        bluetoothGatt?.let { gatt ->
-            val characteristic = txCharacteristic
-            gatt.setCharacteristicNotification(characteristic, true)
-        } ?: run {
-            throw BluetoothException.BluetoothNullPointerException(BluetoothGatt::class.java.name)
-        }
+    private fun observeTxCharacteristic(gatt: BluetoothGatt) {
+        val characteristic = txCharacteristic
+        gatt.setCharacteristicNotification(characteristic, true)
     }
 
     private suspend fun waitForResult(uuid: UUID): BluetoothResult {
