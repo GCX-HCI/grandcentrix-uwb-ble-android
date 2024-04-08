@@ -1,25 +1,26 @@
 package gcx.grandcentrix_uwb_ble_android
 
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanResult
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import gcx.ble.manager.BleManager
 import gcx.ble.manager.ConnectionState
 import gcx.ble.scanner.BleScanner
+import gcx.grandcentrix_uwb_ble_android.model.GcxBleDevice
+import gcx.grandcentrix_uwb_ble_android.model.toGcxBleDevice
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainActivityViewState(
-    val results: List<ScanResult> = mutableListOf(),
-    val connectionState: Pair<BluetoothDevice?, ConnectionState> = Pair(null, ConnectionState.DISCONNECTED)
+    val results: List<GcxBleDevice> = mutableListOf(),
 )
 
 private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
@@ -40,9 +41,10 @@ class MainActivityViewModel(
                 .catch { error ->
                     Log.e(TAG, "Failed to scan for devices ", error)
                 }
+                .filter { it.device.address == mobileKnowledgeAddress }
                 .collect { result ->
                     _viewState.update {
-                        val newResults = listOf(result)
+                        val newResults = listOf(result.toGcxBleDevice())
                         it.copy(
                             results = it.results + newResults,
                         )
@@ -60,18 +62,28 @@ class MainActivityViewModel(
             bleManager.connect(bleDevice)
                 .collect { connectionState ->
                     _viewState.update {
-                        it.copy(
-                            connectionState = Pair(bleDevice, connectionState),
+                        updateDeviceConnectionState(
+                            viewState = it,
+                            bleDevice = bleDevice,
+                            connectionState = connectionState
                         )
                     }
                 }
         }
     }
 
-    fun getConnectionStateForDevice(bleDevice: BluetoothDevice): ConnectionState =
-        if (viewState.value.connectionState.first == bleDevice) {
-            viewState.value.connectionState.second
-        } else {
-            ConnectionState.DISCONNECTED
-        }
+    private fun updateDeviceConnectionState(
+        viewState: MainActivityViewState,
+        bleDevice: BluetoothDevice,
+        connectionState: ConnectionState
+    ): MainActivityViewState {
+        val devices = viewState.results.toMutableList()
+        devices[devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address }] =
+            devices[devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address }].copy(
+                connectionState = connectionState
+            )
+        return viewState.copy(
+            results = devices
+        )
+    }
 }
