@@ -29,6 +29,7 @@ class GcxBleManagerTest {
     private val bluetoothGatt: BluetoothGatt = mockk {
         justRun { disconnect() }
         justRun { close() }
+        every { discoverServices() } returns true
     }
     private val bluetoothAdapter: BluetoothAdapter = mockk()
     private val bluetoothManager: BluetoothManager = mockk()
@@ -36,8 +37,6 @@ class GcxBleManagerTest {
         every { getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager } returns bluetoothManager
         every { bluetoothManager.adapter } returns bluetoothAdapter
     }
-
-
 
     @Test
     fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() = runTest {
@@ -48,8 +47,6 @@ class GcxBleManagerTest {
             gattCallbackCapture.captured.onConnectionStateChange(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
             bluetoothGatt
         }
-
-        every { bluetoothGatt.discoverServices() } returns true
 
         val gxcBleManager = GcxBleManager(context = context)
 
@@ -94,9 +91,6 @@ class GcxBleManagerTest {
             gattCallbackCapture.captured.onConnectionStateChange(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
             bluetoothGatt
         }
-
-        every { bluetoothGatt.discoverServices() } returns true
-
         val gxcBleManager = GcxBleManager(context = context)
 
 
@@ -119,8 +113,6 @@ class GcxBleManagerTest {
             bluetoothGatt
         }
 
-        every { bluetoothGatt.discoverServices() } returns true
-
         val gxcBleManager = GcxBleManager(context = context)
 
 
@@ -142,8 +134,6 @@ class GcxBleManagerTest {
             gattCallbackCapture.captured.onServicesDiscovered(bluetoothGatt, BluetoothGatt.GATT_FAILURE)
             bluetoothGatt
         }
-
-        every { bluetoothGatt.discoverServices() } returns true
 
         val gxcBleManager = GcxBleManager(context = context)
 
