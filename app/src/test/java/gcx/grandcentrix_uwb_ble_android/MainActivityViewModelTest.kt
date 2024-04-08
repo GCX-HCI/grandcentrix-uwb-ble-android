@@ -94,7 +94,7 @@ class MainActivityViewModelTest {
     fun `Given ble device, when get connection state for device, then return connection state of the device `() =
         runTest {
 
-            every { bleManager.connect(bluetoothDevice) } returns flowOf(ConnectionState.READY)
+            every { bleManager.connect(bluetoothDevice) } returns flowOf(ConnectionState.SERVICES_DISCOVERED)
 
             val viewModel = MainActivityViewModel(bleScanner, bleManager)
             viewModel.connectToDevice(bluetoothDevice)
@@ -103,7 +103,7 @@ class MainActivityViewModelTest {
 
             val result = viewModel.getConnectionStateForDevice(bluetoothDevice)
             Assertions.assertEquals(
-                ConnectionState.READY,
+                ConnectionState.SERVICES_DISCOVERED,
                 result
             )
         }

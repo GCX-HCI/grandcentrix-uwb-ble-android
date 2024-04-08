@@ -10,12 +10,10 @@ import android.content.Context
 import gcx.ble.exception.BluetoothException
 import gcx.ble.manager.ConnectionState
 import gcx.ble.manager.GcxBleManager
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -129,7 +127,7 @@ class GcxBleManagerTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
                 println("collect ${connectionState.name}")
-                assertEquals(ConnectionState.READY, connectionState)
+                assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
             }
         }
         advanceUntilIdle()

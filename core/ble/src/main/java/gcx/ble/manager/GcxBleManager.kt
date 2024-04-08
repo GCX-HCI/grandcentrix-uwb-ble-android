@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.callbackFlow
 enum class ConnectionState {
     CONNECTED,
     DISCONNECTED,
-    READY,
+    SERVICES_DISCOVERED,
 }
 
 interface BleManager {
@@ -53,7 +53,7 @@ class GcxBleManager(
                         status: Int,
                     ) {
                         if (status == BluetoothGatt.GATT_SUCCESS) {
-                            trySend(ConnectionState.READY)
+                            trySend(ConnectionState.SERVICES_DISCOVERED)
                         } else {
                             close(BluetoothException.ServiceDiscoveryFailedException)
                         }
