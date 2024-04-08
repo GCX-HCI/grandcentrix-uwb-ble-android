@@ -14,12 +14,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainActivityViewState(
     val results: List<ScanResult> = mutableListOf(),
-    val connectionState: Pair<BluetoothDevice?, ConnectionState> = Pair(null, ConnectionState.DISCONNECTED)
+    val connectionState: Pair<BluetoothDevice?, ConnectionState> = Pair(
+        null,
+        ConnectionState.DISCONNECTED
+    )
 )
 
 private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
@@ -58,6 +62,9 @@ class MainActivityViewModel(
     fun connectToDevice(bleDevice: BluetoothDevice) {
         viewModelScope.launch {
             bleManager.connect(bleDevice)
+                .catch {
+                    Log.e(TAG, "connectToDevice failed", it)
+                }
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
