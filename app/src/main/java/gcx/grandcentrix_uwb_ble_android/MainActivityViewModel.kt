@@ -32,10 +32,10 @@ class MainActivityViewModel(
     private val _viewState = MutableStateFlow(MainActivityViewState())
     val viewState: StateFlow<MainActivityViewState> = _viewState.asStateFlow()
 
-    private var scanScope: Job? = null
+    private var scanJob: Job? = null
 
     fun scan() {
-        scanScope = viewModelScope.launch {
+        scanJob = viewModelScope.launch {
             bleScanner.startScan()
                 .catch { error ->
                     Log.e(TAG, "Failed to scan for devices ", error)
@@ -52,7 +52,7 @@ class MainActivityViewModel(
     }
 
     fun stopScan() {
-        scanScope?.cancel("stop scanning")
+        scanJob?.cancel("stop scanning")
     }
 
     fun connectToDevice(bleDevice: BluetoothDevice) {
