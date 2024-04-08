@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import gcx.ble.manager.ConnectionState
+import gcx.grandcentrix_uwb_ble_android.model.GcxBleDevice
 import gcx.grandcentrix_uwb_ble_android.ui.theme.GrandcentrixuwbbleandroidTheme
 import org.koin.androidx.compose.getViewModel
 
@@ -59,11 +60,10 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
                  .verticalScroll(rememberScrollState())
                  .fillMaxWidth()
         ) {
-            viewState.results.forEach { result ->
+            viewState.results.forEach { device ->
                 DeviceItem(
-                    device = result.device,
+                    device = device,
                     onItemClicked = viewModel::connectToDevice,
-                    connectionState = viewModel.getConnectionStateForDevice(result.device)
                 )
             }
         }
@@ -72,14 +72,13 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
 
 @Composable
 fun DeviceItem(
-    device: BluetoothDevice,
+    device: GcxBleDevice,
     onItemClicked: (BluetoothDevice) -> Unit,
-    connectionState: ConnectionState,
 ) {
-    OutlinedButton(onClick = { onItemClicked(device) }) {
+    OutlinedButton(onClick = { onItemClicked(device.bluetoothDevice) }) {
         Column {
-            Text(text = "Address: ${device.address}")
-            Text(text = "Connection state: ${connectionState.name}")
+            Text(text = "Address: ${device.bluetoothDevice.address}")
+            Text(text = "Connection state: ${device.connectionState}")
         }
     }
 }

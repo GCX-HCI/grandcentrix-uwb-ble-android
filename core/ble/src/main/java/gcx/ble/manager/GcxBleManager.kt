@@ -29,7 +29,7 @@ private const val TAG = "BleManager"
 enum class ConnectionState {
     CONNECTED,
     DISCONNECTED,
-    READY,
+    SERVICES_DISCOVERED,
 }
 
 interface BleManager {
@@ -79,7 +79,7 @@ class GcxBleManager(
                         status: Int,
                     ) {
                         if (status == BluetoothGatt.GATT_SUCCESS) {
-                            trySend(ConnectionState.READY)
+                            trySend(ConnectionState.SERVICES_DISCOVERED)
                             if (isRequiredServiceSupported(gatt)) {
                                 initialize(
                                     gatt = gatt
@@ -135,13 +135,10 @@ class GcxBleManager(
                         }
                     }
                 }
+
             try {
-                val gatt =
-                    bleDevice.connectGatt(
-                        context,
-                        false,
-                        gattCallback,
-                    )
+
+                val gatt = bleDevice.connectGatt(context, false, gattCallback)
 
                 awaitClose {
                     gatt.disconnect()
