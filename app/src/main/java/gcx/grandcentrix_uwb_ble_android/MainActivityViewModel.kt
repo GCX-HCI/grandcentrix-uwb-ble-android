@@ -41,7 +41,6 @@ class MainActivityViewModel(
                 .catch { error ->
                     Log.e(TAG, "Failed to scan for devices ", error)
                 }
-                .filter { it.device.address == mobileKnowledgeAddress }
                 .collect { result ->
                     _viewState.update {
                         val newResults = listOf(result.toGcxBleDevice())
