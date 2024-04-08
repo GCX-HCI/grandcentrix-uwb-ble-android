@@ -66,7 +66,7 @@ class GcxBleManagerTest {
     }
 
     @Test
-    fun `Given bluetooth device, when flow callback is canceled, then return connection state DISCONNECTED`() = runTest {
+    fun `Given bluetooth device, when connection attempt fails, then return connection state DISCONNECTED`() = runTest {
         val bluetoothDevice: BluetoothDevice = mockk()
         val gattCallbackCapture = slot<BluetoothGattCallback>()
 
