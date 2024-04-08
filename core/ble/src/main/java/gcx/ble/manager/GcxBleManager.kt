@@ -49,7 +49,7 @@ class GcxBleManager(
     private val scope = CoroutineScope(coroutineContext + SupervisorJob())
     private val bluetoothAdapter: BluetoothAdapter
 
-    private val resultChannel = Channel<BluetoothResult>()
+    private val resultChannel = Channel<BluetoothResult>(Channel.CONFLATED)
 
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
@@ -169,11 +169,10 @@ class GcxBleManager(
         observeTxCharacteristic(gatt)
 
         scope.launch {
-            val writeResult = writeRxCharacteristic(
+           writeRxCharacteristic(
                 gatt = gatt,
                 data = byteArrayOf(0xA5.toByte())
             )
-            Log.d(TAG, "write characteristic $writeResult")
         }
     }
 
@@ -194,8 +193,7 @@ class GcxBleManager(
     }
 
     private fun observeTxCharacteristic(gatt: BluetoothGatt) {
-        val characteristic = txCharacteristic
-        gatt.setCharacteristicNotification(characteristic, true)
+        gatt.setCharacteristicNotification(txCharacteristic, true)
     }
 
     private suspend fun waitForResult(uuid: UUID): BluetoothResult {
