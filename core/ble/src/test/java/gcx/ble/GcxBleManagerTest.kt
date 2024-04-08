@@ -53,7 +53,6 @@ class GcxBleManagerTest {
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
-                println("collect ${connectionState.name}")
                 assertEquals(ConnectionState.CONNECTED, connectionState)
             }
         }
@@ -75,7 +74,6 @@ class GcxBleManagerTest {
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
-                println("collect ${connectionState.name}")
                 assertEquals(ConnectionState.DISCONNECTED, connectionState)
             }
         }
@@ -118,7 +116,6 @@ class GcxBleManagerTest {
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
-                println("collect ${connectionState.name}")
                 assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
             }
         }
