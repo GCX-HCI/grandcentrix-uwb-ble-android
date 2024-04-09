@@ -60,7 +60,7 @@ class GcxBleManager(
                     }
                 }
             try {
-val gatt = bleDevice.connectGatt(context, false, gattCallback)
+                val gatt = bleDevice.connectGatt(context, false, gattCallback)
 
                 awaitClose {
                     gatt.disconnect()
