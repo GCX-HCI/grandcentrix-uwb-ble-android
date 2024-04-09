@@ -20,14 +20,17 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(CoroutineTestExtension::class)
 class MainActivityViewModelTest {
 
+    private val bluetoothDevice: BluetoothDevice = mockk {
+        every { address } returns  "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
+    }
     private val scanResult: ScanResult = mockk {
-        every { device.address } returns "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
+        every { device } returns bluetoothDevice
     }
     private val bleScanner: BleScanner = mockk {
         every { startScan() } returns flowOf(scanResult)
     }
 
-    private val bluetoothDevice: BluetoothDevice = mockk()
+
 
     private val bleManager: BleManager = mockk()
 
@@ -57,12 +60,13 @@ class MainActivityViewModelTest {
         }
 
     @Test
-    fun `Given an ble device, when connect to device, then ble is connected`() =
+    fun `Given an ble device, when connect to device, then ble device is connected`() =
         runTest {
 
             every { bleManager.connect(bluetoothDevice) } returns flowOf(ConnectionState.CONNECTED)
 
             val viewModel = MainActivityViewModel(bleScanner, bleManager)
+            viewModel.scan()
             viewModel.connectToDevice(bluetoothDevice)
 
             advanceUntilIdle()
@@ -70,41 +74,44 @@ class MainActivityViewModelTest {
             val viewState = viewModel.viewState.value
             Assertions.assertEquals(
                 ConnectionState.CONNECTED,
-                viewState.connectionState.second
+                viewState.results.first().connectionState
             )
         }
 
     @Test
-    fun `Given no ble device, when get connection state for device, then connection state is DISCONNECTED`() =
+    fun `Given an ble device, when discover services, then connection state is Services_Discovered`() =
         runTest {
 
+            every { bleManager.connect(bluetoothDevice) } returns flowOf(ConnectionState.SERVICES_DISCOVERED)
+
             val viewModel = MainActivityViewModel(bleScanner, bleManager)
-            viewModel.getConnectionStateForDevice(bluetoothDevice)
+            viewModel.scan()
+            viewModel.connectToDevice(bluetoothDevice)
+
+            advanceUntilIdle()
+
+            val viewState = viewModel.viewState.value
+            Assertions.assertEquals(
+                ConnectionState.SERVICES_DISCOVERED,
+                viewState.results.first().connectionState
+            )
+        }
+
+    @Test
+    fun `Given start scan, when found ble device, then ble device is disconnected`() =
+        runTest {
+
+            every { bleManager.connect(bluetoothDevice) } returns flowOf(ConnectionState.CONNECTED)
+
+            val viewModel = MainActivityViewModel(bleScanner, bleManager)
+            viewModel.scan()
 
             advanceUntilIdle()
 
             val viewState = viewModel.viewState.value
             Assertions.assertEquals(
                 ConnectionState.DISCONNECTED,
-                viewState.connectionState.second
-            )
-        }
-
-    @Test
-    fun `Given ble device, when get connection state for device, then return connection state of the device `() =
-        runTest {
-
-            every { bleManager.connect(bluetoothDevice) } returns flowOf(ConnectionState.SERVICES_DISCOVERED)
-
-            val viewModel = MainActivityViewModel(bleScanner, bleManager)
-            viewModel.connectToDevice(bluetoothDevice)
-
-            advanceUntilIdle()
-
-            val result = viewModel.getConnectionStateForDevice(bluetoothDevice)
-            Assertions.assertEquals(
-                ConnectionState.SERVICES_DISCOVERED,
-                result
+                viewState.results.first().connectionState
             )
         }
 }
