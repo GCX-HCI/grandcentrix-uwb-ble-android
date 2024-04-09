@@ -61,8 +61,7 @@ class MainActivityViewModel(
             bleManager.connect(bleDevice)
                 .collect { connectionState ->
                     _viewState.update {
-                        updateDeviceConnectionState(
-                            viewState = it,
+                        it.updateDeviceConnectionState(
                             bleDevice = bleDevice,
                             connectionState = connectionState
                         )
@@ -75,12 +74,12 @@ class MainActivityViewModel(
         bleDevice: BluetoothDevice,
         connectionState: ConnectionState
     ): MainActivityViewState {
-        val devices = viewState.results.toMutableList()
+        val devices = this.results.toMutableList()
         val index = devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address } 
         devices[index] = devices[index].copy(
                 connectionState = connectionState
             )
-        return viewState.copy(
+        return this.copy(
             results = devices
         )
     }
