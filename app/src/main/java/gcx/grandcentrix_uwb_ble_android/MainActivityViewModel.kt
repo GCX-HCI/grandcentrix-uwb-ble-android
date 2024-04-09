@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainActivityViewState(
-    val results: List<GcxBleDevice> = mutableListOf(),
+    val results: List<GcxBleDevice> = emptyList(),
 )
 
 private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
