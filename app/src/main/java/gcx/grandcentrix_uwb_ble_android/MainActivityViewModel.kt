@@ -77,8 +77,8 @@ class MainActivityViewModel(
         connectionState: ConnectionState
     ): MainActivityViewState {
         val devices = viewState.results.toMutableList()
-        devices[devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address }] =
-            devices[devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address }].copy(
+        val index = devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address } 
+        devices[index] = devices[index].copy(
                 connectionState = connectionState
             )
         return viewState.copy(
