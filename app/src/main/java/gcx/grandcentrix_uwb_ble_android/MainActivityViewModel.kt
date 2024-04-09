@@ -71,8 +71,7 @@ class MainActivityViewModel(
         }
     }
 
-    private fun updateDeviceConnectionState(
-        viewState: MainActivityViewState,
+    private fun MainActivityViewState.updateDeviceConnectionState(
         bleDevice: BluetoothDevice,
         connectionState: ConnectionState
     ): MainActivityViewState {
