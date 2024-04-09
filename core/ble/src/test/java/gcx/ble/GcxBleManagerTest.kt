@@ -158,7 +158,7 @@ class GcxBleManagerTest {
         }
 
     @Test
-    fun `Given bluetooth device, when service discovered success, then return connection state READY`() =
+    fun `Given bluetooth device, when service discovered success, then return connection state SERVICES_DISCOVERED`() =
         runTest {
             val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
@@ -179,9 +179,9 @@ class GcxBleManagerTest {
 
             val gxcBleManager = GcxBleManager(context = context)
 
+
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
-
                     assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
                 }
             }
