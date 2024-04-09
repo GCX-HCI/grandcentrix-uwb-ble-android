@@ -39,109 +39,162 @@ class GcxBleManagerTest {
     }
 
     @Test
-    fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() = runTest {
-        val bluetoothDevice: BluetoothDevice = mockk()
-        val gattCallbackCapture = slot<BluetoothGattCallback>()
+    fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() =
+        runTest {
+            val bluetoothDevice: BluetoothDevice = mockk()
+            val gattCallbackCapture = slot<BluetoothGattCallback>()
 
-        every { bluetoothDevice.connectGatt(any(), any(), capture(gattCallbackCapture)) } answers {
-            gattCallbackCapture.captured.onConnectionStateChange(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
-            bluetoothGatt
+            every {
+                bluetoothDevice.connectGatt(
+                    any(),
+                    any(),
+                    capture(gattCallbackCapture)
+                )
+            } answers {
+                gattCallbackCapture.captured.onConnectionStateChange(
+                    bluetoothGatt,
+                    BluetoothGatt.GATT_SUCCESS,
+                    BluetoothProfile.STATE_CONNECTED
+                )
+                bluetoothGatt
+            }
+
+            val gxcBleManager = GcxBleManager(context = context)
+
+
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
+                    assertEquals(ConnectionState.CONNECTED, connectionState)
+                }
+            }
+            advanceUntilIdle()
         }
 
-        val gxcBleManager = GcxBleManager(context = context)
+    @Test
+    fun `Given bluetooth device, when connection attempt fails, then return connection state DISCONNECTED`() =
+        runTest {
+            val bluetoothDevice: BluetoothDevice = mockk()
+            val gattCallbackCapture = slot<BluetoothGattCallback>()
+
+            every {
+                bluetoothDevice.connectGatt(
+                    any(),
+                    any(),
+                    capture(gattCallbackCapture)
+                )
+            } answers {
+                gattCallbackCapture.captured.onConnectionStateChange(
+                    bluetoothGatt,
+                    BluetoothGatt.GATT_SUCCESS,
+                    BluetoothProfile.STATE_DISCONNECTED
+                )
+                bluetoothGatt
+            }
+
+            val gxcBleManager = GcxBleManager(context = context)
 
 
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
-                assertEquals(ConnectionState.CONNECTED, connectionState)
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
+                    assertEquals(ConnectionState.DISCONNECTED, connectionState)
+                }
+            }
+            advanceUntilIdle()
+        }
+
+    @Test
+    fun `Given bluetooth device, when connect to gatt success, then discover services is called`() =
+        runTest {
+            val bluetoothDevice: BluetoothDevice = mockk()
+            val gattCallbackCapture = slot<BluetoothGattCallback>()
+
+            every {
+                bluetoothDevice.connectGatt(
+                    any(),
+                    any(),
+                    capture(gattCallbackCapture)
+                )
+            } answers {
+                gattCallbackCapture.captured.onConnectionStateChange(
+                    bluetoothGatt,
+                    BluetoothGatt.GATT_SUCCESS,
+                    BluetoothProfile.STATE_CONNECTED
+                )
+                bluetoothGatt
+            }
+            val gxcBleManager = GcxBleManager(context = context)
+
+
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gxcBleManager.connect(bluetoothDevice).collect()
+            }
+            advanceUntilIdle()
+            verify {
+                bluetoothGatt.discoverServices()
             }
         }
-      advanceUntilIdle()
-    }
 
     @Test
-    fun `Given bluetooth device, when connection attempt fails, then return connection state DISCONNECTED`() = runTest {
-        val bluetoothDevice: BluetoothDevice = mockk()
-        val gattCallbackCapture = slot<BluetoothGattCallback>()
+    fun `Given bluetooth device, when service discovered success, then return connection state SERVICES_DISCOVERED`() =
+        runTest {
+            val bluetoothDevice: BluetoothDevice = mockk()
+            val gattCallbackCapture = slot<BluetoothGattCallback>()
 
-        every { bluetoothDevice.connectGatt(any(), any(), capture(gattCallbackCapture)) } answers {
-            gattCallbackCapture.captured.onConnectionStateChange(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_DISCONNECTED)
-            bluetoothGatt
-        }
-
-        val gxcBleManager = GcxBleManager(context = context)
-
-
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
-                assertEquals(ConnectionState.DISCONNECTED, connectionState)
+            every {
+                bluetoothDevice.connectGatt(
+                    any(),
+                    any(),
+                    capture(gattCallbackCapture)
+                )
+            } answers {
+                gattCallbackCapture.captured.onServicesDiscovered(
+                    bluetoothGatt,
+                    BluetoothGatt.GATT_SUCCESS
+                )
+                bluetoothGatt
             }
-        }
-        advanceUntilIdle()
-    }
 
-    @Test
-    fun `Given bluetooth device, when connect to gatt success, then discover services is called`() = runTest {
-        val bluetoothDevice: BluetoothDevice = mockk()
-        val gattCallbackCapture = slot<BluetoothGattCallback>()
-
-        every { bluetoothDevice.connectGatt(any(), any(), capture(gattCallbackCapture)) } answers {
-            gattCallbackCapture.captured.onConnectionStateChange(bluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
-            bluetoothGatt
-        }
-        val gxcBleManager = GcxBleManager(context = context)
+            val gxcBleManager = GcxBleManager(context = context)
 
 
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            gxcBleManager.connect(bluetoothDevice).collect()
-        }
-        advanceUntilIdle()
-        verify {
-            bluetoothGatt.discoverServices()
-        }
-    }
-
-    @Test
-    fun `Given bluetooth device, when service discovered success, then return connection state SERVICES_DISCOVERED`() = runTest {
-        val bluetoothDevice: BluetoothDevice = mockk()
-        val gattCallbackCapture = slot<BluetoothGattCallback>()
-
-        every { bluetoothDevice.connectGatt(any(), any(), capture(gattCallbackCapture)) } answers {
-            gattCallbackCapture.captured.onServicesDiscovered(bluetoothGatt, BluetoothGatt.GATT_SUCCESS)
-            bluetoothGatt
-        }
-
-        val gxcBleManager = GcxBleManager(context = context)
-
-
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            gxcBleManager.connect(bluetoothDevice).collect {connectionState ->
-                assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
+                    assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
+                }
             }
+            advanceUntilIdle()
         }
-        advanceUntilIdle()
-    }
 
     @Test
-    fun `Given bluetooth device, when service discovered failed, then throw ServiceDiscoveryFailedException`() = runTest {
-        val bluetoothDevice: BluetoothDevice = mockk()
-        val gattCallbackCapture = slot<BluetoothGattCallback>()
+    fun `Given bluetooth device, when service discovered failed, then throw ServiceDiscoveryFailedException`() =
+        runTest {
+            val bluetoothDevice: BluetoothDevice = mockk()
+            val gattCallbackCapture = slot<BluetoothGattCallback>()
 
-        every { bluetoothDevice.connectGatt(any(), any(), capture(gattCallbackCapture)) } answers {
-            gattCallbackCapture.captured.onServicesDiscovered(bluetoothGatt, BluetoothGatt.GATT_FAILURE)
-            bluetoothGatt
+            every {
+                bluetoothDevice.connectGatt(
+                    any(),
+                    any(),
+                    capture(gattCallbackCapture)
+                )
+            } answers {
+                gattCallbackCapture.captured.onServicesDiscovered(
+                    bluetoothGatt,
+                    BluetoothGatt.GATT_FAILURE
+                )
+                bluetoothGatt
+            }
+
+            val gxcBleManager = GcxBleManager(context = context)
+
+
+            var thrownError: Throwable? = null
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gxcBleManager.connect(bluetoothDevice)
+                    .catch { thrownError = it }
+                    .collect()
+            }
+            advanceUntilIdle()
+            assertEquals(BluetoothException.ServiceDiscoveryFailedException, thrownError)
         }
-
-        val gxcBleManager = GcxBleManager(context = context)
-
-
-        var thrownError: Throwable? = null
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            gxcBleManager.connect(bluetoothDevice)
-                .catch { thrownError = it }
-                .collect()
-        }
-        advanceUntilIdle()
-        assertEquals(BluetoothException.ServiceDiscoveryFailedException, thrownError)
-    }
 }
