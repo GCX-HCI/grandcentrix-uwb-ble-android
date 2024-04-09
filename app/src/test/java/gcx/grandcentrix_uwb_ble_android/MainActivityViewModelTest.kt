@@ -12,7 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class MainActivityViewModelTest {
 
     private val bluetoothDevice: BluetoothDevice = mockk {
-        every { address } returns  "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
+        every { address } returns "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
     }
     private val scanResult: ScanResult = mockk {
         every { device } returns bluetoothDevice
@@ -29,8 +29,6 @@ class MainActivityViewModelTest {
     private val bleScanner: BleScanner = mockk {
         every { startScan() } returns flowOf(scanResult)
     }
-
-
 
     private val bleManager: BleManager = mockk()
 
@@ -72,7 +70,7 @@ class MainActivityViewModelTest {
             advanceUntilIdle()
 
             val viewState = viewModel.viewState.value
-            Assertions.assertEquals(
+            assertEquals(
                 ConnectionState.CONNECTED,
                 viewState.results.first().connectionState
             )
@@ -91,7 +89,7 @@ class MainActivityViewModelTest {
             advanceUntilIdle()
 
             val viewState = viewModel.viewState.value
-            Assertions.assertEquals(
+            assertEquals(
                 ConnectionState.SERVICES_DISCOVERED,
                 viewState.results.first().connectionState
             )
@@ -109,7 +107,7 @@ class MainActivityViewModelTest {
             advanceUntilIdle()
 
             val viewState = viewModel.viewState.value
-            Assertions.assertEquals(
+            assertEquals(
                 ConnectionState.DISCONNECTED,
                 viewState.results.first().connectionState
             )
