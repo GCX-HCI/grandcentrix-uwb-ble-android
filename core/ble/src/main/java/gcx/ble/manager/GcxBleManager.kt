@@ -130,7 +130,10 @@ class GcxBleManager(
                     ) {
                         super.onCharacteristicChanged(gatt, characteristic, value)
                         when (value.first()) {
-                            OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> Log.d(TAG, "onCharacteristicChanged: device config package ${value.contentToString()}")
+                            OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> Log.d(
+                                TAG,
+                                "onCharacteristicChanged: device config package ${value.contentToString()}"
+                            )
                         }
                     }
                 }
