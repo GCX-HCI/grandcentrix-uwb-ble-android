@@ -10,6 +10,7 @@ import android.content.Context
 import android.util.Log
 import gcx.ble.exception.BluetoothException
 import gcx.ble.model.BluetoothResult
+import gcx.ble.protocol.OOBMessageProtocol
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
@@ -125,11 +126,8 @@ class GcxBleManager(
                         value: ByteArray
                     ) {
                         super.onCharacteristicChanged(gatt, characteristic, value)
-                        if (value.first() == 0x01.toByte()) {
-                            Log.d(
-                                TAG,
-                                "onCharacteristicChanged: device config package ${value.contentToString()}"
-                            )
+                        when (value.first()) {
+                            OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> Log.d(TAG, "onCharacteristicChanged: device config package ${value.contentToString()}")
                         }
                     }
                 }
@@ -166,7 +164,7 @@ class GcxBleManager(
         scope.launch {
             writeRxCharacteristic(
                 gatt = gatt,
-                data = byteArrayOf(0xA5.toByte())
+                data = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
             )
         }
     }
