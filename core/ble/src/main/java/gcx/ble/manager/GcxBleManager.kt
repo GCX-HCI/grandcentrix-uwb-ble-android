@@ -21,6 +21,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -191,11 +194,9 @@ class GcxBleManager(
 
     private suspend fun waitForResult(uuid: UUID): BluetoothResult {
         return withTimeoutOrNull(TimeUnit.SECONDS.toMillis(BLE_READ_WRITE_TIMEOUT)) {
-            var bluetoothResult: BluetoothResult = resultChannel.receive()
-            while (bluetoothResult.uuid != uuid) {
-                bluetoothResult = resultChannel.receive()
-            }
-            bluetoothResult
+            resultChannel.receiveAsFlow()
+                .filter { it.uuid == uuid }
+                .first()
         } ?: run {
             throw BluetoothException.BluetoothTimeoutException
         }
