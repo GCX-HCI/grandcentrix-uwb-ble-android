@@ -81,9 +81,7 @@ class GcxBleManager(
                         if (status == BluetoothGatt.GATT_SUCCESS) {
                             trySend(ConnectionState.SERVICES_DISCOVERED)
                             if (isRequiredServiceSupported(gatt)) {
-                                initialize(
-                                    gatt = gatt
-                                )
+                                initialize(gatt = gatt)
                             } else {
                                 close(BluetoothException.ServiceNotSupportedException)
                             }
@@ -166,7 +164,7 @@ class GcxBleManager(
         observeTxCharacteristic(gatt)
 
         scope.launch {
-           writeRxCharacteristic(
+            writeRxCharacteristic(
                 gatt = gatt,
                 data = byteArrayOf(0xA5.toByte())
             )
