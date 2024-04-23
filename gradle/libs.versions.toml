@@ -31,7 +31,7 @@ arrow = "1.1.2"
 jupiter = "5.9.1"
 androidx_junit = "1.1.4"
 androidx_espresso = "3.5.0"
-mockk = "1.13.4"
+mockk = "1.13.10"
 
 [libraries]
 plugin_android = { module = "com.android.tools.build:gradle", version.ref = "android_gradle_plugin" }
