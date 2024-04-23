@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "gcx.ble"
+    namespace = "net.grandcentrix.ble"
     compileSdk = libs.versions.compileSdk.get().toInt()
     buildToolsVersion = libs.versions.buildTools.get()
 

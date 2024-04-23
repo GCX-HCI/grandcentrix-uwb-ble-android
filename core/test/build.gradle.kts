@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "gcx.test"
+    namespace = "net.grandcentrix.test"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     compileOptions {
