@@ -5,5 +5,5 @@ import java.util.UUID
 data class BluetoothResult(
     val uuid: UUID,
     val data: ByteArray?,
-    val status: Int,
+    val status: Int
 )

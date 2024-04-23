@@ -1,6 +1,6 @@
 package gcx.ble.exception
 
-sealed class BluetoothException(override val message: String?): Exception() {
+sealed class BluetoothException(override val message: String?) : Exception() {
     data object BluetoothDisabledException : BluetoothException("BLE Adapter is not enabled")
 
     data object ServiceDiscoveryFailedException : BluetoothException("Service discovery failed")
@@ -11,7 +11,6 @@ sealed class BluetoothException(override val message: String?): Exception() {
         BluetoothException("The given service is not supported")
 
     data class BluetoothNullPointerException(
-        val className: String,
+        val className: String
     ) : BluetoothException("$className is null")
 }
-

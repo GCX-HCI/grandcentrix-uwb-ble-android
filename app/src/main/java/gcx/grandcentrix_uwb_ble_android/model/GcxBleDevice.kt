@@ -6,7 +6,7 @@ import gcx.ble.manager.ConnectionState
 
 data class GcxBleDevice(
     val bluetoothDevice: BluetoothDevice,
-    val connectionState: ConnectionState,
+    val connectionState: ConnectionState
 )
 
 fun ScanResult.toGcxBleDevice() = GcxBleDevice(

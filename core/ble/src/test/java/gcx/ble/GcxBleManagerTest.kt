@@ -26,7 +26,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class GcxBleManagerTest {
 
@@ -51,10 +50,11 @@ class GcxBleManagerTest {
     private val bluetoothAdapter: BluetoothAdapter = mockk()
     private val bluetoothManager: BluetoothManager = mockk()
     private val context: Context = mockk {
-        every { getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager } returns bluetoothManager
+        every {
+            getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        } returns bluetoothManager
         every { bluetoothManager.adapter } returns bluetoothAdapter
     }
-
 
     @Test
     fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() =
@@ -77,10 +77,7 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-
-
             val gxcBleManager = GcxBleManager(context = context)
-
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
@@ -113,7 +110,6 @@ class GcxBleManagerTest {
 
             val gxcBleManager = GcxBleManager(context = context)
 
-
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
                     assertEquals(ConnectionState.DISCONNECTED, connectionState)
@@ -143,10 +139,7 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-
-
             val gxcBleManager = GcxBleManager(context = context)
-
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect()
@@ -179,7 +172,6 @@ class GcxBleManagerTest {
 
             val gxcBleManager = GcxBleManager(context = context)
 
-
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
                     assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
@@ -208,10 +200,7 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-
-
             val gxcBleManager = GcxBleManager(context = context)
-
 
             var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -248,7 +237,6 @@ class GcxBleManagerTest {
             every { bluetoothGatt.discoverServices() } returns true
 
             val gxcBleManager = GcxBleManager(context = context)
-
 
             var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -312,7 +300,7 @@ class GcxBleManagerTest {
                 gattCallbackCapture.captured.onCharacteristicWrite(
                     bluetoothGatt,
                     rxCharacteristic,
-                    BluetoothGatt.GATT_SUCCESS,
+                    BluetoothGatt.GATT_SUCCESS
                 )
                 bluetoothGatt
             }
@@ -321,10 +309,12 @@ class GcxBleManagerTest {
 
             val gxcBleManager = GcxBleManager(
                 coroutineContext = coroutineContext,
-                context = context,
+                context = context
             )
 
-            val rxCharacteristicField = GcxBleManager::class.java.getDeclaredField("rxCharacteristic")
+            val rxCharacteristicField = GcxBleManager::class.java.getDeclaredField(
+                "rxCharacteristic"
+            )
             rxCharacteristicField.isAccessible = true
             rxCharacteristicField.set(gxcBleManager, rxCharacteristic)
 
@@ -334,7 +324,11 @@ class GcxBleManagerTest {
             }
             advanceUntilIdle()
             verify {
-                bluetoothGatt.writeCharacteristic(rxCharacteristic, byteArrayOf(0xA5.toByte()), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                bluetoothGatt.writeCharacteristic(
+                    rxCharacteristic,
+                    byteArrayOf(0xA5.toByte()),
+                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                )
             }
         }
 }

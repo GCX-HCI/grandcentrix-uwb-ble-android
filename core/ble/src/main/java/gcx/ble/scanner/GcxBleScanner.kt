@@ -19,50 +19,45 @@ interface BleScanner {
 }
 
 class GcxBleScanner(
-    bleManager: BleManager,
+    bleManager: BleManager
 ) : BleScanner {
     private val bluetoothAdapter: BluetoothAdapter = bleManager.bluetoothAdapter()
     private val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
 
-    override fun startScan(): Flow<ScanResult> =
-        callbackFlow {
-            if (!bluetoothAdapter.isEnabled) {
-                close(BluetoothException.BluetoothDisabledException)
-                return@callbackFlow
+    override fun startScan(): Flow<ScanResult> = callbackFlow {
+        if (!bluetoothAdapter.isEnabled) {
+            close(BluetoothException.BluetoothDisabledException)
+            return@callbackFlow
+        }
+
+        val scanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                super.onScanResult(callbackType, result)
+                trySend(result)
+                    .onFailure {
+                        Log.d(TAG, "trySend throws failure $it")
+                    }
             }
 
-            val scanCallback =
-                object : ScanCallback() {
-                    override fun onScanResult(
-                        callbackType: Int,
-                        result: ScanResult,
-                    ) {
-                        super.onScanResult(callbackType, result)
-                        trySend(result)
-                            .onFailure {
-                                Log.d(TAG, "trySend throws failure $it")
-                            }
-                    }
-
-                    override fun onScanFailed(errorCode: Int) {
-                        super.onScanFailed(errorCode)
-                        close()
-                    }
-                }
-
-            try {
-                bluetoothLeScanner.startScan(scanCallback)
-            } catch (exception: SecurityException) {
-                Log.e(TAG, "scan failed with $exception")
-                close(exception)
-            }
-
-            awaitClose {
-                try {
-                    bluetoothLeScanner.stopScan(scanCallback)
-                } catch (exception: SecurityException) {
-                    Log.e(TAG, "stop scan failed", exception)
-                }
+            override fun onScanFailed(errorCode: Int) {
+                super.onScanFailed(errorCode)
+                close()
             }
         }
+
+        try {
+            bluetoothLeScanner.startScan(scanCallback)
+        } catch (exception: SecurityException) {
+            Log.e(TAG, "scan failed with $exception")
+            close(exception)
+        }
+
+        awaitClose {
+            try {
+                bluetoothLeScanner.stopScan(scanCallback)
+            } catch (exception: SecurityException) {
+                Log.e(TAG, "stop scan failed", exception)
+            }
+        }
+    }
 }

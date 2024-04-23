@@ -15,8 +15,8 @@ class App : Application() {
             modules(
                 listOf(
                     mainModule,
-                    bleModule,
-                ),
+                    bleModule
+                )
             )
         }
     }
