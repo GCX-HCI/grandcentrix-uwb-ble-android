@@ -61,6 +61,7 @@ class GcxBleManager(
 
     override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
+    @SuppressLint("MissingPermission")
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -69,7 +70,7 @@ class GcxBleManager(
                     gatt.discoverServices()
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                     trySend(ConnectionState.DISCONNECTED)
-                    close()
+                    gatt.close()
                 }
             }
 
@@ -80,6 +81,7 @@ class GcxBleManager(
                         observeTxCharacteristic(gatt)
                             .onFailure {
                                 close(it)
+                                cleanUpGattStack(gatt)
                             }
 
                         scope.launch {
@@ -89,13 +91,16 @@ class GcxBleManager(
                             )
                             result.onFailure {
                                 close(it)
+                                cleanUpGattStack(gatt)
                             }
                         }
                     } else {
                         close(BluetoothException.ServiceNotSupportedException)
+                        cleanUpGattStack(gatt)
                     }
                 } else {
                     close(BluetoothException.ServiceDiscoveryFailedException)
+                    cleanUpGattStack(gatt)
                 }
             }
 
@@ -146,12 +151,17 @@ class GcxBleManager(
             val gatt = bleDevice.connectGatt(context, false, gattCallback)
 
             awaitClose {
-                gatt.disconnect()
-                gatt.close()
+                cleanUpGattStack(gatt)
             }
         } catch (exception: SecurityException) {
             close(exception)
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun cleanUpGattStack(gatt: BluetoothGatt) {
+        gatt.disconnect()
+        gatt.close()
     }
 
     private fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
