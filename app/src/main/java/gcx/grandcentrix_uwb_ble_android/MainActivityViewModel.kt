@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -38,9 +37,7 @@ class MainActivityViewModel(
     fun scan() {
         scanJob = viewModelScope.launch {
             bleScanner.startScan()
-                .catch { error ->
-                    Log.e(TAG, "Failed to scan for devices ", error)
-                }
+                .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                 .collect { result ->
                     _viewState.update {
                         val newResults = listOf(result.toGcxBleDevice())
@@ -59,6 +56,7 @@ class MainActivityViewModel(
     fun connectToDevice(bleDevice: BluetoothDevice) {
         viewModelScope.launch {
             bleManager.connect(bleDevice)
+                .catch { Log.e(TAG, "connectToDevice failed", it) }
                 .collect { connectionState ->
                     _viewState.update {
                         it.updateDeviceConnectionState(
@@ -75,10 +73,10 @@ class MainActivityViewModel(
         connectionState: ConnectionState
     ): MainActivityViewState {
         val devices = this.results.toMutableList()
-        val index = devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address } 
+        val index = devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address }
         devices[index] = devices[index].copy(
-                connectionState = connectionState
-            )
+            connectionState = connectionState
+        )
         return this.copy(
             results = devices
         )

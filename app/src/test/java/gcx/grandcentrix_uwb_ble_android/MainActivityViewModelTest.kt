@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class MainActivityViewModelTest {
 
     private val bluetoothDevice: BluetoothDevice = mockk {
-        every { address } returns "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
+        every { address } returns  "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
     }
     private val scanResult: ScanResult = mockk {
         every { device } returns bluetoothDevice
