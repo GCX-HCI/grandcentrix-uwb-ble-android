@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "gcx.grandcentrix_uwb_ble_android"
+    namespace = "net.grandcentrix.uwbBleAndroid"
     compileSdk = libs.versions.compileSdk.get().toInt()
     buildToolsVersion = libs.versions.buildTools.get()
 
     defaultConfig {
-        applicationId = "gcx.grandcentrix_uwb_ble_android"
+        applicationId = "net.grandcentrix.uwbBleAndroid"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
