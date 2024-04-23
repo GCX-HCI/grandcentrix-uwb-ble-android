@@ -5,6 +5,5 @@ enum class OOBMessageProtocol(val command: Byte) {
     UWB_DEVICE_CONFIG_DATA(0x01),
 
     // Messages from the UWB controlee
-    INITIALIZE(0xA5.toByte()),
-
+    INITIALIZE(0xA5.toByte())
 }

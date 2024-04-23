@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainActivityViewState(
-    val results: List<GcxBleDevice> = emptyList(),
+    val results: List<GcxBleDevice> = emptyList()
 )
 
 private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
@@ -27,7 +27,7 @@ private const val TAG = "MainActivityViewModel"
 
 class MainActivityViewModel(
     private val bleScanner: BleScanner,
-    private val bleManager: BleManager,
+    private val bleManager: BleManager
 ) : ViewModel() {
     private val _viewState = MutableStateFlow(MainActivityViewState())
     val viewState: StateFlow<MainActivityViewState> = _viewState.asStateFlow()
@@ -41,9 +41,7 @@ class MainActivityViewModel(
                 .collect { result ->
                     _viewState.update {
                         val newResults = listOf(result.toGcxBleDevice())
-                        it.copy(
-                            results = it.results + newResults,
-                        )
+                        it.copy(results = it.results + newResults)
                     }
                 }
         }
@@ -74,11 +72,7 @@ class MainActivityViewModel(
     ): MainActivityViewState {
         val devices = this.results.toMutableList()
         val index = devices.indexOfFirst { it.bluetoothDevice.address == bleDevice.address }
-        devices[index] = devices[index].copy(
-            connectionState = connectionState
-        )
-        return this.copy(
-            results = devices
-        )
+        devices[index] = devices[index].copy(connectionState = connectionState)
+        return this.copy(results = devices)
     }
 }

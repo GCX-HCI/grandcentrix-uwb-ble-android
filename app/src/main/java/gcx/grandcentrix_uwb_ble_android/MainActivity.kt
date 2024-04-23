@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import gcx.ble.manager.ConnectionState
 import gcx.grandcentrix_uwb_ble_android.model.GcxBleDevice
 import gcx.grandcentrix_uwb_ble_android.ui.theme.GrandcentrixuwbbleandroidTheme
 import org.koin.androidx.compose.getViewModel
@@ -32,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     ScanScreen()
                 }
@@ -56,14 +55,14 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
         }
 
         Column(
-             modifier = Modifier
-                 .verticalScroll(rememberScrollState())
-                 .fillMaxWidth()
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
         ) {
             viewState.results.forEach { device ->
                 DeviceItem(
                     device = device,
-                    onItemClicked = viewModel::connectToDevice,
+                    onItemClicked = viewModel::connectToDevice
                 )
             }
         }
@@ -71,10 +70,7 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
 }
 
 @Composable
-fun DeviceItem(
-    device: GcxBleDevice,
-    onItemClicked: (BluetoothDevice) -> Unit,
-) {
+fun DeviceItem(device: GcxBleDevice, onItemClicked: (BluetoothDevice) -> Unit) {
     OutlinedButton(onClick = { onItemClicked(device.bluetoothDevice) }) {
         Column {
             Text(text = "Address: ${device.bluetoothDevice.address}")

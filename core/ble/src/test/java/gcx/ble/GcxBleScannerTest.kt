@@ -42,22 +42,21 @@ class GcxBleScannerTest {
     private val scanResultMock: ScanResult = mockk()
 
     @Test
-    fun `Given ble is disabled, when start ble scan, then a error should be thrown`() =
-        runTest {
-            every { bleManager.bluetoothAdapter().isEnabled } returns false
+    fun `Given ble is disabled, when start ble scan, then a error should be thrown`() = runTest {
+        every { bleManager.bluetoothAdapter().isEnabled } returns false
 
-            val gcxBleScanner =
-                GcxBleScanner(
-                    bleManager = bleManager,
-                )
+        val gcxBleScanner =
+            GcxBleScanner(
+                bleManager = bleManager
+            )
 
-            var thrownError: Throwable? = null
-            gcxBleScanner.startScan()
-                .catch { thrownError = it }
-                .collect()
-            advanceUntilIdle()
-            assertEquals(BluetoothException.BluetoothDisabledException, thrownError)
-        }
+        var thrownError: Throwable? = null
+        gcxBleScanner.startScan()
+            .catch { thrownError = it }
+            .collect()
+        advanceUntilIdle()
+        assertEquals(BluetoothException.BluetoothDisabledException, thrownError)
+    }
 
     @Test
     fun `Given permission is denied, when start ble scan, then a error should be thrown`() =
@@ -69,7 +68,7 @@ class GcxBleScannerTest {
 
             val gcxBleScanner =
                 GcxBleScanner(
-                    bleManager = bleManager,
+                    bleManager = bleManager
                 )
 
             var thrownError: Throwable? = null
@@ -85,10 +84,12 @@ class GcxBleScannerTest {
         runTest {
             val gcxBleScanner =
                 GcxBleScanner(
-                    bleManager = bleManager,
+                    bleManager = bleManager
                 )
 
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { gcxBleScanner.startScan().collect() }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gcxBleScanner.startScan().collect()
+            }
             advanceUntilIdle()
             verify { bluetoothLeScanner.startScan(any()) }
         }
@@ -96,33 +97,34 @@ class GcxBleScannerTest {
     private fun triggerScanCallback(callback: ScanCallback) {
         callback.onScanResult(
             ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
-            scanResultMock,
+            scanResultMock
         )
     }
 
     @Test
-    fun `Given ble is enabled, when start ble scan, then return scan result`() =
-        runTest {
-            val scanCallback: ScanCallback = mockk()
+    fun `Given ble is enabled, when start ble scan, then return scan result`() = runTest {
+        val scanCallback: ScanCallback = mockk()
 
-            every { scanCallback.onScanResult(any(), any()) } answers {
-                val result = arg<ScanResult>(1)
-                println("scan result: $result")
-            }
-            val gcxBleScanner =
-                GcxBleScanner(
-                    bleManager = bleManager,
-                )
-
-            triggerScanCallback(scanCallback)
-
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { gcxBleScanner.startScan().collect() }
-            advanceUntilIdle()
-            verify {
-                scanCallback.onScanResult(
-                    ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
-                    scanResultMock,
-                )
-            }
+        every { scanCallback.onScanResult(any(), any()) } answers {
+            val result = arg<ScanResult>(1)
+            println("scan result: $result")
         }
+        val gcxBleScanner =
+            GcxBleScanner(
+                bleManager = bleManager
+            )
+
+        triggerScanCallback(scanCallback)
+
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            gcxBleScanner.startScan().collect()
+        }
+        advanceUntilIdle()
+        verify {
+            scanCallback.onScanResult(
+                ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                scanResultMock
+            )
+        }
+    }
 }

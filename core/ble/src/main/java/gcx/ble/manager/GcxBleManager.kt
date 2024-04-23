@@ -33,7 +33,7 @@ private const val TAG = "BleManager"
 enum class ConnectionState {
     CONNECTED,
     DISCONNECTED,
-    SERVICES_DISCOVERED,
+    SERVICES_DISCOVERED
 }
 
 interface BleManager {
@@ -47,7 +47,7 @@ class GcxBleManager(
     private val context: Context,
     private val serviceUUID: UUID = UUID.fromString(UART_SERVICE),
     private val rxUUID: UUID = UUID.fromString(UART_RX_CHARACTERISTIC),
-    private val txUUID: UUID = UUID.fromString(UART_TX_CHARACTERISTIC),
+    private val txUUID: UUID = UUID.fromString(UART_TX_CHARACTERISTIC)
 ) : BleManager {
 
     private val scope = CoroutineScope(coroutineContext + SupervisorJob())
@@ -60,98 +60,85 @@ class GcxBleManager(
 
     override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
-    override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> =
-        callbackFlow {
-            val gattCallback =
-                object : BluetoothGattCallback() {
-                    override fun onConnectionStateChange(
-                        gatt: BluetoothGatt,
-                        status: Int,
-                        newState: Int,
-                    ) {
-                        if (newState == BluetoothGatt.STATE_CONNECTED) {
-                            trySend(ConnectionState.CONNECTED)
-                            gatt.discoverServices()
-                        } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                            trySend(ConnectionState.DISCONNECTED)
-                            close()
-                        }
-                    }
-
-                    override fun onServicesDiscovered(
-                        gatt: BluetoothGatt,
-                        status: Int,
-                    ) {
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            trySend(ConnectionState.SERVICES_DISCOVERED)
-                            if (isRequiredServiceSupported(gatt)) {
-                                initialize(gatt = gatt)
-                            } else {
-                                close(BluetoothException.ServiceNotSupportedException)
-                            }
-                        } else {
-                            close(BluetoothException.ServiceDiscoveryFailedException)
-                        }
-                    }
-
-                    override fun onCharacteristicRead(
-                        gatt: BluetoothGatt,
-                        characteristic: BluetoothGattCharacteristic,
-                        value: ByteArray,
-                        status: Int
-                    ) {
-                        resultChannel.trySend(
-                            BluetoothResult(
-                                uuid = characteristic.uuid,
-                                data = value,
-                                status = status,
-                            )
-                        )
-                    }
-
-                    override fun onCharacteristicWrite(
-                        gatt: BluetoothGatt,
-                        characteristic: BluetoothGattCharacteristic,
-                        status: Int
-                    ) {
-                        resultChannel.trySend(
-                            BluetoothResult(
-                                uuid = characteristic.uuid,
-                                data = null,
-                                status = status,
-                            )
-                        )
-                    }
-
-                    override fun onCharacteristicChanged(
-                        gatt: BluetoothGatt,
-                        characteristic: BluetoothGattCharacteristic,
-                        value: ByteArray
-                    ) {
-                        super.onCharacteristicChanged(gatt, characteristic, value)
-                        when (value.first()) {
-                            OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> Log.d(
-                                TAG,
-                                "onCharacteristicChanged: device config package ${value.contentToString()}"
-                            )
-                        }
-                    }
+    override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
+        val gattCallback = object : BluetoothGattCallback() {
+            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                if (newState == BluetoothGatt.STATE_CONNECTED) {
+                    trySend(ConnectionState.CONNECTED)
+                    gatt.discoverServices()
+                } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                    trySend(ConnectionState.DISCONNECTED)
+                    close()
                 }
-
-            try {
-
-                val gatt = bleDevice.connectGatt(context, false, gattCallback)
-
-                awaitClose {
-                    gatt.disconnect()
-                    gatt.close()
-                }
-            } catch (exception: SecurityException) {
-                close(exception)
             }
 
+            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    trySend(ConnectionState.SERVICES_DISCOVERED)
+                    if (isRequiredServiceSupported(gatt)) {
+                        initialize(gatt = gatt)
+                    } else {
+                        close(BluetoothException.ServiceNotSupportedException)
+                    }
+                } else {
+                    close(BluetoothException.ServiceDiscoveryFailedException)
+                }
+            }
 
+            override fun onCharacteristicRead(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                value: ByteArray,
+                status: Int
+            ) {
+                resultChannel.trySend(
+                    BluetoothResult(
+                        uuid = characteristic.uuid,
+                        data = value,
+                        status = status
+                    )
+                )
+            }
+
+            override fun onCharacteristicWrite(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                status: Int
+            ) {
+                resultChannel.trySend(
+                    BluetoothResult(
+                        uuid = characteristic.uuid,
+                        data = null,
+                        status = status
+                    )
+                )
+            }
+
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                value: ByteArray
+            ) {
+                super.onCharacteristicChanged(gatt, characteristic, value)
+                when (value.first()) {
+                    OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> Log.d(
+                        TAG,
+                        "onCharacteristicChanged: device config package ${value.contentToString()}"
+                    )
+                }
+            }
         }
+        try {
+            val gatt = bleDevice.connectGatt(context, false, gattCallback)
+
+            awaitClose {
+                gatt.disconnect()
+                gatt.close()
+            }
+        } catch (exception: SecurityException) {
+            close(exception)
+        }
+    }
 
     private fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
         val service = gatt.getService(serviceUUID)
