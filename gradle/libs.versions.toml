@@ -4,7 +4,7 @@
 kotlin = "1.9.23"
 android_gradle_plugin = "8.2.0"
 google_service = "4.4.1"
-
+ktlint = "12.1.0"
 
 # app config
 compileSdk = "34"
@@ -71,7 +71,8 @@ coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", ve
 
 [plugins]
 android_application = { id = "com.android.application", version.ref = "android_gradle_plugin" }
-android_kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
+android_kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 
 [bundles]
 koin = ["koin", "koin_compose"]
