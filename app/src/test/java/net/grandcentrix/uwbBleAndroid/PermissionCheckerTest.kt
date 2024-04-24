@@ -3,8 +3,7 @@ package net.grandcentrix.uwbBleAndroid
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Process
-import android.text.TextUtils
+import androidx.core.content.ContextCompat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -20,21 +19,13 @@ class PermissionCheckerTest {
 
     @BeforeEach
     fun setUp() {
-        mockkStatic(Process::class)
-        every { Process.myPid() } returns 0
-        every { Process.myUid() } returns 0
+        mockkStatic(ContextCompat::class)
     }
 
     @Test
-    fun `hasPermission is granted when returns true`() {
-        mockkStatic(TextUtils::class)
-        every { TextUtils.equals(any(), any()) } returns false
+    fun `Given permission is granted, when hasPermission is called, then returns true`() {
         every {
-            context.checkPermission(
-                any(),
-                any(),
-                any()
-            )
+            ContextCompat.checkSelfPermission(context, any())
         } returns PackageManager.PERMISSION_GRANTED
         val permissionChecker = PermissionChecker(
             context
@@ -46,15 +37,9 @@ class PermissionCheckerTest {
     }
 
     @Test
-    fun `hasPermission is denied when returns true`() {
-        mockkStatic(TextUtils::class)
-        every { TextUtils.equals(any(), any()) } returns false
+    fun `Given permission is denied, when hasPermission is called, then returns false`() {
         every {
-            context.checkPermission(
-                any(),
-                any(),
-                any()
-            )
+            ContextCompat.checkSelfPermission(context, any())
         } returns PackageManager.PERMISSION_DENIED
         val permissionChecker = PermissionChecker(
             context
@@ -66,15 +51,9 @@ class PermissionCheckerTest {
     }
 
     @Test
-    fun `hasPermissions is granted when returns true`() {
-        mockkStatic(TextUtils::class)
-        every { TextUtils.equals(any(), any()) } returns false
+    fun `Given permissions are granted, when hasPermissions is called, then returns true`() {
         every {
-            context.checkPermission(
-                any(),
-                any(),
-                any()
-            )
+            ContextCompat.checkSelfPermission(context, any())
         } returns PackageManager.PERMISSION_GRANTED
         val permissionChecker = PermissionChecker(
             context
@@ -92,15 +71,9 @@ class PermissionCheckerTest {
     }
 
     @Test
-    fun `hasPermissions is denied when returns false`() {
-        mockkStatic(TextUtils::class)
-        every { TextUtils.equals(any(), any()) } returns false
+    fun `Given permissions are denied, when hasPermissions is called, then returns false`() {
         every {
-            context.checkPermission(
-                any(),
-                any(),
-                any()
-            )
+            ContextCompat.checkSelfPermission(context, any())
         } returns PackageManager.PERMISSION_DENIED
         val permissionChecker = PermissionChecker(
             context
@@ -118,10 +91,10 @@ class PermissionCheckerTest {
     }
 
     @Test
-    fun `hasPermissions only one is denied when returns false`() {
-        mockkStatic(TextUtils::class)
-        every { TextUtils.equals(any(), any()) } returns false
-        every { context.checkPermission(any(), any(), any()) } returnsMany listOf(
+    fun `Given permissions are granted besides one is denied when hasPermissions is called, then returns false`() {
+        every {
+            ContextCompat.checkSelfPermission(context, any())
+        } returnsMany listOf(
             PackageManager.PERMISSION_GRANTED,
             PackageManager.PERMISSION_GRANTED,
             PackageManager.PERMISSION_DENIED
