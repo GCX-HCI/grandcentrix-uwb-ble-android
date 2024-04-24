@@ -28,10 +28,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
-      - name: Run unit tests
+      - name: Setup gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: testDebugUnitTest
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
         env:
           GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
         timeout-minutes: 30
@@ -48,9 +49,7 @@ jobs:
       # Run LINT check
       - name: Run lint
         if: always() # always run even if the previous step fails
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: lint
+        run: ./gradlew lint
         env:
           GITHUB_PAT: ${{ secrets.PACKAGES_READ_TOKEN }}
         continue-on-error: true
