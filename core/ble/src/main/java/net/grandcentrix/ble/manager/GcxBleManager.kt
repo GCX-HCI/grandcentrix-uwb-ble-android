@@ -179,22 +179,20 @@ class GcxBleManager(
     private suspend fun writeRxCharacteristic(
         gatt: BluetoothGatt,
         data: ByteArray
-    ): Result<BluetoothResult> {
+    ): Result<BluetoothResult> = runCatching {
         val characteristic = checkNotNull(rxCharacteristic)
         gatt.writeCharacteristic(
             characteristic,
             data,
             BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
         )
-        return runCatching { waitForResult(characteristic.uuid) }
+        waitForResult(characteristic.uuid)
     }
 
     @SuppressLint("MissingPermission")
-    private fun observeTxCharacteristic(gatt: BluetoothGatt): Result<Boolean> {
-        return runCatching {
-            val characteristic = checkNotNull(txCharacteristic)
-            gatt.setCharacteristicNotification(characteristic, true)
-        }
+    private fun observeTxCharacteristic(gatt: BluetoothGatt): Result<Boolean> = runCatching {
+        val characteristic = checkNotNull(txCharacteristic)
+        gatt.setCharacteristicNotification(characteristic, true)
     }
 
     private suspend fun waitForResult(uuid: UUID): BluetoothResult {
