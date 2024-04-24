@@ -86,11 +86,10 @@ class GcxBleManager(
                             }
 
                         scope.launch {
-                            val result = writeRxCharacteristic(
+                            writeRxCharacteristic(
                                 gatt = gatt,
                                 data = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-                            )
-                            result.onFailure {
+                            ).onFailure {
                                 close(it)
                                 cleanUpGattStack(gatt)
                             }
