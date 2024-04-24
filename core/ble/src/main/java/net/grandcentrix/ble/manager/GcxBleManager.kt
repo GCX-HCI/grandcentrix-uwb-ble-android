@@ -1,5 +1,6 @@
 package net.grandcentrix.ble.manager
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -60,6 +61,7 @@ class GcxBleManager(
 
     override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
+    @SuppressLint("MissingPermission")
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -69,6 +71,7 @@ class GcxBleManager(
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                     trySend(ConnectionState.DISCONNECTED)
                     close()
+                    gatt.close()
                 }
             }
 
@@ -76,12 +79,28 @@ class GcxBleManager(
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     trySend(ConnectionState.SERVICES_DISCOVERED)
                     if (isRequiredServiceSupported(gatt)) {
-                        initialize(gatt = gatt)
+                        observeTxCharacteristic(gatt)
+                            .onFailure {
+                                close(it)
+                                cleanUpGattStack(gatt)
+                            }
+
+                        scope.launch {
+                            writeRxCharacteristic(
+                                gatt = gatt,
+                                data = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
+                            ).onFailure {
+                                close(it)
+                                cleanUpGattStack(gatt)
+                            }
+                        }
                     } else {
                         close(BluetoothException.ServiceNotSupportedException)
+                        cleanUpGattStack(gatt)
                     }
                 } else {
                     close(BluetoothException.ServiceDiscoveryFailedException)
+                    cleanUpGattStack(gatt)
                 }
             }
 
@@ -132,12 +151,17 @@ class GcxBleManager(
             val gatt = bleDevice.connectGatt(context, false, gattCallback)
 
             awaitClose {
-                gatt.disconnect()
-                gatt.close()
+                cleanUpGattStack(gatt)
             }
         } catch (exception: SecurityException) {
             close(exception)
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun cleanUpGattStack(gatt: BluetoothGatt) {
+        gatt.disconnect()
+        gatt.close()
     }
 
     private fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
@@ -151,35 +175,24 @@ class GcxBleManager(
         return rxCharacteristic != null && txCharacteristic != null
     }
 
-    private fun initialize(gatt: BluetoothGatt) {
-        observeTxCharacteristic(gatt)
-
-        scope.launch {
-            writeRxCharacteristic(
-                gatt = gatt,
-                data = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-            )
-        }
-    }
-
+    @SuppressLint("MissingPermission")
     private suspend fun writeRxCharacteristic(
         gatt: BluetoothGatt,
         data: ByteArray
-    ): BluetoothResult {
-        rxCharacteristic?.let { characteristic ->
-            gatt.writeCharacteristic(
-                characteristic,
-                data,
-                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-            )
-            return waitForResult(characteristic.uuid)
-        } ?: run {
-            throw BluetoothException.BluetoothNullPointerException("RX Characteristic")
-        }
+    ): Result<BluetoothResult> = runCatching {
+        val characteristic = checkNotNull(rxCharacteristic)
+        gatt.writeCharacteristic(
+            characteristic,
+            data,
+            BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+        )
+        waitForResult(characteristic.uuid)
     }
 
-    private fun observeTxCharacteristic(gatt: BluetoothGatt) {
-        gatt.setCharacteristicNotification(txCharacteristic, true)
+    @SuppressLint("MissingPermission")
+    private fun observeTxCharacteristic(gatt: BluetoothGatt): Result<Boolean> = runCatching {
+        val characteristic = checkNotNull(txCharacteristic)
+        gatt.setCharacteristicNotification(characteristic, true)
     }
 
     private suspend fun waitForResult(uuid: UUID): BluetoothResult {
