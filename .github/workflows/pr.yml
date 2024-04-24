@@ -3,8 +3,6 @@ name: PR
 on:
   pull_request:
     types: [ opened, reopened, ready_for_review, synchronize ]
-  merge_group:
-    types: [ checks_requested ]
 
 # Cancel previous runs for the same branch
 concurrency:
