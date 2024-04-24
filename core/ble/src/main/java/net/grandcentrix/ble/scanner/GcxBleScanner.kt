@@ -18,12 +18,7 @@ private const val TAG = "BleScanner"
 
 interface BleScanner {
 
-    @RequiresPermission(
-        allOf = [
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ]
-    )
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     fun startScan(): Flow<ScanResult>
 }
 

@@ -41,13 +41,7 @@ class MainActivityViewModel(
 
     fun scan() {
         scanJob = viewModelScope.launch {
-            if (permissionChecker.hasPermissions(
-                    listOf(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                )
-            ) {
+            if (permissionChecker.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
                 bleScanner.startScan()
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { result ->
