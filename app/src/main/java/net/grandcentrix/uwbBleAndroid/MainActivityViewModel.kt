@@ -22,7 +22,8 @@ import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 
 data class MainActivityViewState(
-    val results: List<GcxBleDevice> = emptyList()
+    val results: List<GcxBleDevice> = emptyList(),
+    val requiredPermissions: Map<String, Boolean> = mapOf()
 )
 
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
@@ -75,6 +76,23 @@ class MainActivityViewModel(
         }
     }
 
+    fun updatePermissions(permission: String, isGranted: Boolean) {
+        _viewState.update {
+            val updatedPermissions = it.requiredPermissions.toMutableMap()
+            updatedPermissions[permission] = isGranted
+            it.copy(
+                requiredPermissions = updatedPermissions.toMap()
+            )
+        }
+    }
+
+    private fun isScanPermissionGranted(): Boolean = permissionChecker.hasPermissions(
+        listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN)
+    )
+
+    private fun isConnectPermissionGranted(): Boolean =
+        permissionChecker.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+
     private fun MainActivityViewState.updateDeviceConnectionState(
         bleDevice: BluetoothDevice,
         connectionState: ConnectionState
@@ -84,11 +102,21 @@ class MainActivityViewModel(
         devices[index] = devices[index].copy(connectionState = connectionState)
         return this.copy(results = devices)
     }
-
-    fun isScanPermissionGranted(): Boolean = permissionChecker.hasPermissions(
-        listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN)
-    )
-
-    fun isConnectPermissionGranted(): Boolean =
-        permissionChecker.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    init {
+        _viewState.update {
+            it.copy(
+                requiredPermissions = mapOf(
+                    Manifest.permission.BLUETOOTH_SCAN to permissionChecker.hasPermission(
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ),
+                    Manifest.permission.ACCESS_FINE_LOCATION to permissionChecker.hasPermission(
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ),
+                    Manifest.permission.BLUETOOTH_CONNECT to permissionChecker.hasPermission(
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    )
+                )
+            )
+        }
+    }
 }

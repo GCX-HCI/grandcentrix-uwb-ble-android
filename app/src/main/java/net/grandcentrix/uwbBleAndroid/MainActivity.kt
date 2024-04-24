@@ -1,5 +1,6 @@
 package net.grandcentrix.uwbBleAndroid
 
+import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -47,18 +48,29 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
     val viewState by viewModel.viewState.collectAsState()
     val scanPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { }
+        onResult = { entry ->
+            entry.forEach { (permission, isGranted) ->
+                viewModel.updatePermissions(permission = permission, isGranted = isGranted)
+            }
+        }
     )
     Column {
         Row {
             Button(onClick = {
-                if (viewModel.isScanPermissionGranted()) {
+                if (viewState.requiredPermissions.getOrDefault(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        false
+                    ) && viewState.requiredPermissions.getOrDefault(
+                        Manifest.permission.BLUETOOTH_SCAN,
+                        false
+                    )
+                ) {
                     viewModel.scan()
                 } else {
                     scanPermissionLauncher.launch(
                         arrayOf(
-                            android.Manifest.permission.ACCESS_FINE_LOCATION,
-                            android.Manifest.permission.BLUETOOTH_SCAN
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.BLUETOOTH_SCAN
                         )
                     )
                 }
@@ -78,7 +90,11 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
             viewState.results.forEach { device ->
                 DeviceItem(
                     device = device,
-                    isConnectPermissionGranted = viewModel.isConnectPermissionGranted(),
+                    isConnectPermissionGranted = viewState.requiredPermissions.getOrDefault(
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        false
+                    ),
+                    updatePermission = viewModel::updatePermissions,
                     onItemClicked = viewModel::connectToDevice
                 )
             }
@@ -90,17 +106,23 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
 fun DeviceItem(
     device: GcxBleDevice,
     isConnectPermissionGranted: Boolean,
+    updatePermission: (String, Boolean) -> Unit,
     onItemClicked: (BluetoothDevice) -> Unit
 ) {
     val connectPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { }
+        onResult = { isGranted ->
+            updatePermission(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                isGranted
+            )
+        }
     )
     OutlinedButton(onClick = {
         if (isConnectPermissionGranted) {
             onItemClicked(device.bluetoothDevice)
         } else {
-            connectPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
+            connectPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
         }
     }) {
         Column {

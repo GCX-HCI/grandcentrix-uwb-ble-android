@@ -49,6 +49,10 @@ class MainActivityViewModelTest {
         } returns true
 
         every { hasPermission(Manifest.permission.BLUETOOTH_CONNECT) } returns true
+
+        every { hasPermission(Manifest.permission.BLUETOOTH_SCAN) } returns true
+
+        every { hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) } returns true
     }
 
     @Test
