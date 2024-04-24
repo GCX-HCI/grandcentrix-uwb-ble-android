@@ -25,7 +25,7 @@ data class MainActivityViewState(
     val results: List<GcxBleDevice> = emptyList()
 )
 
-private const val mobileKnowledgeAddress = "00:60:37:90:E7:11"
+private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 private const val TAG = "MainActivityViewModel"
 
 @SuppressLint("MissingPermission")
