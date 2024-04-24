@@ -1,7 +1,6 @@
 package net.grandcentrix.uwbBleAndroid
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -29,7 +28,6 @@ data class MainActivityViewState(
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 private const val TAG = "MainActivityViewModel"
 
-@SuppressLint("MissingPermission")
 class MainActivityViewModel(
     private val bleScanner: BleScanner,
     private val bleManager: BleManager,
@@ -42,7 +40,7 @@ class MainActivityViewModel(
 
     fun scan() {
         scanJob = viewModelScope.launch {
-            if (isScanPermissionGranted()) {
+            if (checkScanPermission()) {
                 bleScanner.startScan()
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { result ->
@@ -61,7 +59,7 @@ class MainActivityViewModel(
 
     fun connectToDevice(bleDevice: BluetoothDevice) {
         viewModelScope.launch {
-            if (isConnectPermissionGranted()) {
+            if (checkBleConnectPermission()) {
                 bleManager.connect(bleDevice)
                     .catch { Log.e(TAG, "connectToDevice failed", it) }
                     .collect { connectionState ->
@@ -86,11 +84,11 @@ class MainActivityViewModel(
         }
     }
 
-    private fun isScanPermissionGranted(): Boolean = permissionChecker.hasPermissions(
+    private fun checkScanPermission(): Boolean = permissionChecker.hasPermissions(
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN)
     )
 
-    private fun isConnectPermissionGranted(): Boolean =
+    private fun checkBleConnectPermission(): Boolean =
         permissionChecker.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
 
     private fun MainActivityViewState.updateDeviceConnectionState(
