@@ -42,13 +42,7 @@ enum class ConnectionState {
 interface BleManager {
     fun bluetoothAdapter(): BluetoothAdapter
 
-    @RequiresPermission(
-        allOf = [
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.BLUETOOTH_CONNECT
-        ]
-    )
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
 }
 

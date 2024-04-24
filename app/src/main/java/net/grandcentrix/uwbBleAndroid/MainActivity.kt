@@ -3,7 +3,9 @@ package net.grandcentrix.uwbBleAndroid
 import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,10 +45,24 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
     val viewState by viewModel.viewState.collectAsState()
-
+    val scanPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { }
+    )
     Column {
         Row {
-            Button(onClick = { viewModel.scan() }) {
+            Button(onClick = {
+                if (viewModel.isScanPermissionGranted()) {
+                    viewModel.scan()
+                } else {
+                    scanPermissionLauncher.launch(
+                        arrayOf(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.BLUETOOTH_SCAN
+                        )
+                    )
+                }
+            }) {
                 Text(text = "Start scan")
             }
             Button(onClick = { viewModel.stopScan() }) {
@@ -62,6 +78,7 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
             viewState.results.forEach { device ->
                 DeviceItem(
                     device = device,
+                    isConnectPermissionGranted = viewModel.isConnectPermissionGranted(),
                     onItemClicked = viewModel::connectToDevice
                 )
             }
@@ -70,8 +87,22 @@ fun ScanScreen(viewModel: MainActivityViewModel = getViewModel()) {
 }
 
 @Composable
-fun DeviceItem(device: GcxBleDevice, onItemClicked: (BluetoothDevice) -> Unit) {
-    OutlinedButton(onClick = { onItemClicked(device.bluetoothDevice) }) {
+fun DeviceItem(
+    device: GcxBleDevice,
+    isConnectPermissionGranted: Boolean,
+    onItemClicked: (BluetoothDevice) -> Unit
+) {
+    val connectPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { }
+    )
+    OutlinedButton(onClick = {
+        if (isConnectPermissionGranted) {
+            onItemClicked(device.bluetoothDevice)
+        } else {
+            connectPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
+        }
+    }) {
         Column {
             Text(text = "Address: ${device.bluetoothDevice.address}")
             Text(text = "Connection state: ${device.connectionState}")
