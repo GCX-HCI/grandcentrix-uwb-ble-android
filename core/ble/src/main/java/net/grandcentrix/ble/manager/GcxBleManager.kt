@@ -70,6 +70,7 @@ class GcxBleManager(
                     gatt.discoverServices()
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                     trySend(ConnectionState.DISCONNECTED)
+                    close()
                     gatt.close()
                 }
             }
