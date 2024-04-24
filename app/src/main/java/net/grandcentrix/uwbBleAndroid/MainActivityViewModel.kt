@@ -41,13 +41,7 @@ class MainActivityViewModel(
 
     fun scan() {
         scanJob = viewModelScope.launch {
-            if (permissionChecker.hasPermissions(
-                    listOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.BLUETOOTH_SCAN
-                    )
-                )
-            ) {
+            if (isScanPermissionGranted()) {
                 bleScanner.startScan()
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { result ->
@@ -66,7 +60,7 @@ class MainActivityViewModel(
 
     fun connectToDevice(bleDevice: BluetoothDevice) {
         viewModelScope.launch {
-            if (permissionChecker.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
+            if (isConnectPermissionGranted()) {
                 bleManager.connect(bleDevice)
                     .catch { Log.e(TAG, "connectToDevice failed", it) }
                     .collect { connectionState ->
