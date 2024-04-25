@@ -19,3 +19,4 @@ include(
     ":core:ble",
     ":core:test"
 )
+include(":core:data")
