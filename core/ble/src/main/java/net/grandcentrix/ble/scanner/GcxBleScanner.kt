@@ -1,10 +1,12 @@
 package net.grandcentrix.ble.scanner
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +17,8 @@ import net.grandcentrix.ble.manager.BleManager
 private const val TAG = "BleScanner"
 
 interface BleScanner {
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     fun startScan(): Flow<ScanResult>
 }
 
