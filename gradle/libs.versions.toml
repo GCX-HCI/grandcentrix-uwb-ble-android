@@ -27,6 +27,8 @@ koin = "3.5.6"
 
 arrow = "1.2.4"
 
+uwb = "1.0.0-alpha05"
+
 # test dependencies
 jupiter = "5.9.1"
 androidx_junit = "1.1.4"
@@ -68,6 +70,8 @@ androidx_junit = { module = "androidx.test.ext:junit", version.ref = "androidx_j
 androidx_espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx_espresso" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+
+uwb = { module = "androidx.core.uwb:uwb", version.ref = "uwb"}
 
 [plugins]
 android_application = { id = "com.android.application", version.ref = "android_gradle_plugin" }
