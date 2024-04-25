@@ -2,14 +2,14 @@ package net.grandcentrix.uwbBleAndroid.model
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
-import net.grandcentrix.ble.manager.ConnectionState
+import net.grandcentrix.data.model.GcxBleConnectionState
 
 data class GcxBleDevice(
     val bluetoothDevice: BluetoothDevice,
-    val connectionState: ConnectionState
+    val connectionState: GcxBleConnectionState
 )
 
 fun ScanResult.toGcxBleDevice() = GcxBleDevice(
     bluetoothDevice = device,
-    connectionState = ConnectionState.DISCONNECTED
+    connectionState = GcxBleConnectionState.DISCONNECTED
 )

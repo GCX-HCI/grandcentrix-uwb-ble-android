@@ -54,7 +54,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:ble"))
+    implementation(project(":core:data"))
     implementation(libs.bundles.koin)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
