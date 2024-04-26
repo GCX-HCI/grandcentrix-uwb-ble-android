@@ -39,7 +39,6 @@ android {
 dependencies {
     implementation(project(":core:ble"))
 
-    implementation(libs.bundles.koin)
     implementation(libs.bundles.coroutines)
     implementation(libs.uwb)
     testImplementation(libs.jupiter)
