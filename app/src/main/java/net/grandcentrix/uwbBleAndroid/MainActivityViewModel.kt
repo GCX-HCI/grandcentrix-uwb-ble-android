@@ -41,7 +41,6 @@ class MainActivityViewModel(
         scanJob = viewModelScope.launch {
             if (checkScanPermission()) {
                 uwbBleManager.startScan()
-                    .filter { it.device.address == MOBILE_KNOWLEDGE_ADDRESS }
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { result ->
                         _viewState.update {
