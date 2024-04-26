@@ -1,24 +1,17 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.library")
     alias(libs.plugins.android.kotlin)
 }
 
 android {
-    namespace = "net.grandcentrix.uwbBleAndroid"
+    namespace = "net.grandcentrix.data"
     compileSdk = libs.versions.compileSdk.get().toInt()
     buildToolsVersion = libs.versions.buildTools.get()
 
     defaultConfig {
-        applicationId = "net.grandcentrix.uwbBleAndroid"
         minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
     }
 
     buildTypes {
@@ -37,33 +30,19 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
+
     tasks.withType<Test> {
         useJUnitPlatform()
     }
 }
 
 dependencies {
-    implementation(project(":core:data"))
-    implementation(libs.bundles.koin)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.compose.bom))
-    implementation(libs.bundles.compose)
 
-    testImplementation(project(":core:test"))
+    implementation(libs.bundles.koin)
+    implementation(libs.bundles.coroutines)
+    implementation(project(":core:ble"))
+
     testImplementation(libs.jupiter)
-    testImplementation(libs.androidx.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
 }

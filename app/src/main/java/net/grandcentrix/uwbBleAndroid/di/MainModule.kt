@@ -8,8 +8,7 @@ import org.koin.dsl.module
 val mainModule = module {
     viewModel {
         MainActivityViewModel(
-            bleScanner = get(),
-            bleManager = get(),
+            uwbBleManager = get(),
             permissionChecker = get()
         )
     }
