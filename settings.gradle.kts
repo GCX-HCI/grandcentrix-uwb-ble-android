@@ -18,6 +18,6 @@ include(
     ":app",
     ":core:ble",
     ":core:test",
-    ":core:data"
+    ":core:data",
+    ":core:uwb"
 )
-include(":core:uwb")
