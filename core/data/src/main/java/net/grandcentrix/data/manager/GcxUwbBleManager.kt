@@ -8,7 +8,6 @@ import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import net.grandcentrix.ble.manager.BleManager
-import net.grandcentrix.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.ble.scanner.BleScanner
 import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.data.model.toGcxBleConnectionState
