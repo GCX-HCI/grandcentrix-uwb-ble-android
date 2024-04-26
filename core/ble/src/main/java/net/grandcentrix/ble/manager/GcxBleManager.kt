@@ -74,7 +74,6 @@ class GcxBleManager(
     override val clientController: BleClient = object : BleClient {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override suspend fun send(data: ByteArray): Result<BluetoothResult> = runCatching {
-            Log.d(TAG, "send: ")
             val characteristic = checkNotNull(rxCharacteristic)
             val gatt = checkNotNull(gatt)
             gatt.writeCharacteristic(
@@ -87,7 +86,6 @@ class GcxBleManager(
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun enableReceiver(): Result<Boolean> = runCatching {
-            Log.d(TAG, "enableReceiver: ")
             val characteristic = checkNotNull(txCharacteristic)
             val gatt = checkNotNull(gatt)
             gatt.setCharacteristicNotification(characteristic, true)
