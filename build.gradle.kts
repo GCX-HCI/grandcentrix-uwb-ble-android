@@ -16,5 +16,6 @@ subprojects {
             reporter(ReporterType.JSON)
         }
         ignoreFailures.set(true)
+        relative = true
     }
 }
