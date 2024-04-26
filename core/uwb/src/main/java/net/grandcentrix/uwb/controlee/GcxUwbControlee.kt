@@ -1,16 +1,13 @@
 package net.grandcentrix.uwb.controlee
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.util.Log
 import androidx.core.uwb.UwbManager
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import net.grandcentrix.ble.manager.BleClient
 import net.grandcentrix.ble.manager.GcxBleManager
@@ -20,26 +17,23 @@ import net.grandcentrix.ble.protocol.OOBMessageProtocol
 private const val TAG = "GcxUwbControlee"
 
 interface UwbControlee {
-    fun requestConfigData(
-        data: ByteArray = byteArrayOf(OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command)
-    )
+    fun startRanging()
 }
 
 @SuppressLint("MissingPermission")
 class GcxUwbControlee(
-    context: Context,
     coroutineContext: CoroutineContext = Dispatchers.IO,
-    private val receiveChannel: Channel<BluetoothResult>,
+    private val uwbManager: UwbManager,
+    private val resultChannel: SharedFlow<BluetoothResult>,
     private val bleClient: BleClient
 ) : UwbControlee {
 
     private val scope = CoroutineScope(coroutineContext + SupervisorJob())
 
-    val uwbManager: UwbManager = UwbManager.createInstance(context)
-
-    override fun requestConfigData(data: ByteArray) {
+    override fun startRanging() {
+        bleClient.enableReceiver()
         scope.launch {
-            bleClient.send(data)
+            bleClient.send(byteArrayOf(OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command))
         }
     }
 

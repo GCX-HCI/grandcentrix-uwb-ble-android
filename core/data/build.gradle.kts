@@ -40,7 +40,9 @@ dependencies {
 
     implementation(libs.bundles.koin)
     implementation(libs.bundles.coroutines)
+    implementation(libs.uwb)
     implementation(project(":core:ble"))
+    implementation(project(":core:uwb"))
 
     testImplementation(libs.jupiter)
     testImplementation(libs.mockk)
