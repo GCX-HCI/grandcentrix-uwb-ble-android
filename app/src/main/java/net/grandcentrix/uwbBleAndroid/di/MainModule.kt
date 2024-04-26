@@ -1,13 +1,13 @@
 package net.grandcentrix.uwbBleAndroid.di
 
-import net.grandcentrix.uwbBleAndroid.MainActivityViewModel
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
+import net.grandcentrix.uwbBleAndroid.ui.ble.BleViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val mainModule = module {
     viewModel {
-        MainActivityViewModel(
+        BleViewModel(
             uwbBleManager = get(),
             permissionChecker = get()
         )
