@@ -39,7 +39,7 @@ class GcxUwbControlee(
 
     init {
         scope.launch {
-            receiveChannel.consumeAsFlow().collect {
+            resultChannel.collect {
                 if (it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC) {
                     it.data?.let { bytes ->
                         when (bytes.first()) {

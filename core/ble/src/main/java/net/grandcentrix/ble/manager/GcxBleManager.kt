@@ -8,16 +8,18 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.withTimeoutOrNull
 import net.grandcentrix.ble.exception.BluetoothException
 import net.grandcentrix.ble.model.BluetoothResult
@@ -36,6 +38,10 @@ interface BleManager {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
+
+    val resultChannel: SharedFlow<BluetoothResult>
+
+    val clientController: BleClient
 }
 
 interface BleClient {
@@ -51,17 +57,42 @@ class GcxBleManager(
     private val serviceUUID: UUID = UUID.fromString(UART_SERVICE),
     private val rxUUID: UUID = UUID.fromString(UART_RX_CHARACTERISTIC),
     private val txUUID: UUID = UUID.fromString(UART_TX_CHARACTERISTIC)
-) : BleManager, BleClient {
+) : BleManager {
 
     private val bluetoothAdapter: BluetoothAdapter
-
-    private val resultChannel = Channel<BluetoothResult>(Channel.CONFLATED)
-
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
 
     private var gatt: BluetoothGatt? = null
 
+    private val _resultChannel =
+        MutableSharedFlow<BluetoothResult>(
+            replay = 1
+        )
+    override val resultChannel = _resultChannel.asSharedFlow()
+
+    override val clientController: BleClient = object : BleClient {
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override suspend fun send(data: ByteArray): Result<BluetoothResult> = runCatching {
+            Log.d(TAG, "send: ")
+            val characteristic = checkNotNull(rxCharacteristic)
+            val gatt = checkNotNull(gatt)
+            gatt.writeCharacteristic(
+                characteristic,
+                data,
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+            )
+            waitForResult(characteristic.uuid)
+        }
+
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override fun enableReceiver(): Result<Boolean> = runCatching {
+            Log.d(TAG, "enableReceiver: ")
+            val characteristic = checkNotNull(txCharacteristic)
+            val gatt = checkNotNull(gatt)
+            gatt.setCharacteristicNotification(characteristic, true)
+        }
+    }
     override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
@@ -82,8 +113,7 @@ class GcxBleManager(
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     trySend(ConnectionState.SERVICES_DISCOVERED)
-                    if (isRequiredServiceSupported(gatt)) {
-                    } else {
+                    if (!isRequiredServiceSupported(gatt)) {
                         close(BluetoothException.ServiceNotSupportedException)
                         cleanUpGattStack(gatt)
                     }
@@ -99,7 +129,7 @@ class GcxBleManager(
                 value: ByteArray,
                 status: Int
             ) {
-                resultChannel.trySend(
+                _resultChannel.tryEmit(
                     BluetoothResult(
                         uuid = characteristic.uuid,
                         data = value,
@@ -113,7 +143,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                resultChannel.trySend(
+                _resultChannel.tryEmit(
                     BluetoothResult(
                         uuid = characteristic.uuid,
                         data = null,
@@ -127,8 +157,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                super.onCharacteristicChanged(gatt, characteristic, value)
-                resultChannel.trySend(
+                _resultChannel.tryEmit(
                     BluetoothResult(
                         uuid = characteristic.uuid,
                         data = value,
@@ -151,25 +180,6 @@ class GcxBleManager(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override suspend fun send(data: ByteArray): Result<BluetoothResult> = runCatching {
-        val characteristic = checkNotNull(rxCharacteristic)
-        val gatt = checkNotNull(gatt)
-        gatt.writeCharacteristic(
-            characteristic,
-            data,
-            BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-        )
-        waitForResult(characteristic.uuid)
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun enableReceiver(): Result<Boolean> = runCatching {
-        val characteristic = checkNotNull(txCharacteristic)
-        val gatt = checkNotNull(gatt)
-        gatt.setCharacteristicNotification(characteristic, true)
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun cleanUpGattStack(gatt: BluetoothGatt) {
         gatt.disconnect()
         gatt.close()
@@ -188,7 +198,7 @@ class GcxBleManager(
 
     private suspend fun waitForResult(uuid: UUID): BluetoothResult {
         return withTimeoutOrNull(TimeUnit.SECONDS.toMillis(BLE_READ_WRITE_TIMEOUT)) {
-            resultChannel.receiveAsFlow()
+            resultChannel
                 .filter { it.uuid == uuid }
                 .first()
         } ?: run {
