@@ -79,9 +79,7 @@ class MainActivityViewModelTest {
     @Test
     fun `Given an ble device, when connect to device, then ble device is connected`() = runTest {
         every {
-            uwbBleManager.connect(
-                bluetoothDevice
-            )
+            uwbBleManager.connect(bluetoothDevice)
         } returns flowOf(GcxBleConnectionState.CONNECTED)
 
         val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
@@ -120,9 +118,7 @@ class MainActivityViewModelTest {
     @Test
     fun `Given start scan, when found ble device, then ble device is disconnected`() = runTest {
         every {
-            uwbBleManager.connect(
-                bluetoothDevice
-            )
+            uwbBleManager.connect(bluetoothDevice)
         } returns flowOf(GcxBleConnectionState.CONNECTED)
 
         val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
