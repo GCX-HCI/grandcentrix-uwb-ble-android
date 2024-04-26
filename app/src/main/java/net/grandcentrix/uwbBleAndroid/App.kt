@@ -1,8 +1,8 @@
 package net.grandcentrix.uwbBleAndroid
 
 import android.app.Application
-import net.grandcentrix.ble.di.bleModule
-import net.grandcentrix.uwb.di.uwbModule
+import net.grandcentrix.data.di.dataModule
+import net.grandcentrix.data.di.provideSubModules
 import net.grandcentrix.uwbBleAndroid.di.mainModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -16,9 +16,8 @@ class App : Application() {
             modules(
                 listOf(
                     mainModule,
-                    bleModule,
-                    uwbModule
-                )
+                    dataModule
+                ) + provideSubModules
             )
         }
     }

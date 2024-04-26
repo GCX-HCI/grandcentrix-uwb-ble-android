@@ -17,6 +17,7 @@ rootProject.name = "grandcentrix-uwb-ble-android"
 include(
     ":app",
     ":core:ble",
-    ":core:test"
+    ":core:test",
+    ":core:data"
 )
 include(":core:uwb")
