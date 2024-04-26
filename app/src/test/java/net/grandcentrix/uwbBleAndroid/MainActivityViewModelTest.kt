@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,6 +33,7 @@ class MainActivityViewModelTest {
     private val uwbBleManager: UwbBleManager = mockk {
         every { startScan() } returns flowOf(scanResult)
         every { connect(bluetoothDevice) } returns flow { }
+        justRun { startRanging() }
     }
 
     private val permissionChecker: PermissionChecker = mockk {
