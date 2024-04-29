@@ -38,7 +38,7 @@ interface BleManager {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
 
-    val resultChannel: SharedFlow<BluetoothMessage>
+    val bleMessages: SharedFlow<BluetoothMessage>
 
     val clientController: BleClient
 }
@@ -64,11 +64,11 @@ class GcxBleManager(
 
     private var gatt: BluetoothGatt? = null
 
-    private val _resultChannel =
+    private val _bleMessages =
         MutableSharedFlow<BluetoothMessage>(
             replay = 1
         )
-    override val resultChannel = _resultChannel.asSharedFlow()
+    override val bleMessages = _bleMessages.asSharedFlow()
 
     override val clientController: BleClient = object : BleClient {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -126,7 +126,7 @@ class GcxBleManager(
                 value: ByteArray,
                 status: Int
             ) {
-                _resultChannel.tryEmit(
+                _bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
@@ -140,7 +140,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                _resultChannel.tryEmit(
+                _bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = null,
@@ -154,7 +154,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                _resultChannel.tryEmit(
+                _bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
@@ -195,7 +195,7 @@ class GcxBleManager(
 
     private suspend fun waitForResult(uuid: UUID): BluetoothMessage {
         return withTimeoutOrNull(TimeUnit.SECONDS.toMillis(BLE_READ_WRITE_TIMEOUT)) {
-            resultChannel
+            bleMessages
                 .filter { it.uuid == uuid }
                 .first()
         } ?: run {

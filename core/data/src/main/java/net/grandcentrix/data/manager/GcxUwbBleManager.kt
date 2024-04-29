@@ -31,7 +31,7 @@ class GcxUwbBleManager(
 
     private val gcxUwbControlee = GcxUwbControlee(
         uwbManager = uwbManager,
-        resultChannel = bleManager.resultChannel,
+        resultChannel = bleManager.bleMessages,
         bleClient = bleManager.clientController
     )
 
