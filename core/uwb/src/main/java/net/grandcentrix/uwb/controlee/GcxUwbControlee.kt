@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import net.grandcentrix.ble.manager.BleMessagingClient
 import net.grandcentrix.ble.manager.GcxBleManager
@@ -43,8 +44,9 @@ class GcxUwbControlee(
     }
 
     private suspend fun collectBleMessages() {
-        bleMessages.collect {
-            if (it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC) {
+        bleMessages
+            .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
+            .collect {
                 it.data?.let { bytes ->
                     when (bytes.first()) {
                         OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
@@ -57,6 +59,5 @@ class GcxUwbControlee(
                     }
                 }
             }
-        }
     }
 }
