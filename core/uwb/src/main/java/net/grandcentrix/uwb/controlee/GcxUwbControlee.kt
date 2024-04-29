@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import net.grandcentrix.ble.manager.BleClient
 import net.grandcentrix.ble.manager.GcxBleManager
-import net.grandcentrix.ble.model.BluetoothResult
+import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
 
 private const val TAG = "GcxUwbControlee"
@@ -24,7 +24,7 @@ interface UwbControlee {
 class GcxUwbControlee(
     coroutineContext: CoroutineContext = Dispatchers.IO,
     private val uwbManager: UwbManager,
-    private val resultChannel: SharedFlow<BluetoothResult>,
+    private val resultChannel: SharedFlow<BluetoothMessage>,
     private val bleClient: BleClient
 ) : UwbControlee {
 

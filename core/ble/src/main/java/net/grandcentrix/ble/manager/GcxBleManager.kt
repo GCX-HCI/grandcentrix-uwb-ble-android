@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -22,7 +21,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import net.grandcentrix.ble.exception.BluetoothException
-import net.grandcentrix.ble.model.BluetoothResult
+import net.grandcentrix.ble.model.BluetoothMessage
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
 private const val TAG = "BleManager"
@@ -39,14 +38,14 @@ interface BleManager {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
 
-    val resultChannel: SharedFlow<BluetoothResult>
+    val resultChannel: SharedFlow<BluetoothMessage>
 
     val clientController: BleClient
 }
 
 interface BleClient {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun send(data: ByteArray): Result<BluetoothResult>
+    suspend fun send(data: ByteArray): Result<BluetoothMessage>
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun enableReceiver(): Result<Boolean>
@@ -66,14 +65,14 @@ class GcxBleManager(
     private var gatt: BluetoothGatt? = null
 
     private val _resultChannel =
-        MutableSharedFlow<BluetoothResult>(
+        MutableSharedFlow<BluetoothMessage>(
             replay = 1
         )
     override val resultChannel = _resultChannel.asSharedFlow()
 
     override val clientController: BleClient = object : BleClient {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        override suspend fun send(data: ByteArray): Result<BluetoothResult> = runCatching {
+        override suspend fun send(data: ByteArray): Result<BluetoothMessage> = runCatching {
             val characteristic = checkNotNull(rxCharacteristic)
             val gatt = checkNotNull(gatt)
             gatt.writeCharacteristic(
@@ -128,7 +127,7 @@ class GcxBleManager(
                 status: Int
             ) {
                 _resultChannel.tryEmit(
-                    BluetoothResult(
+                    BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
                         status = status
@@ -142,7 +141,7 @@ class GcxBleManager(
                 status: Int
             ) {
                 _resultChannel.tryEmit(
-                    BluetoothResult(
+                    BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = null,
                         status = status
@@ -156,7 +155,7 @@ class GcxBleManager(
                 value: ByteArray
             ) {
                 _resultChannel.tryEmit(
-                    BluetoothResult(
+                    BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
                         status = BluetoothGatt.GATT_SUCCESS
@@ -194,7 +193,7 @@ class GcxBleManager(
         return rxCharacteristic != null && txCharacteristic != null
     }
 
-    private suspend fun waitForResult(uuid: UUID): BluetoothResult {
+    private suspend fun waitForResult(uuid: UUID): BluetoothMessage {
         return withTimeoutOrNull(TimeUnit.SECONDS.toMillis(BLE_READ_WRITE_TIMEOUT)) {
             resultChannel
                 .filter { it.uuid == uuid }
