@@ -31,9 +31,7 @@ class GcxUwbControlee(
                 collectBleMessages()
             }
 
-            launch {
-                bleMessagingClient.enableReceiver()
-            }
+            bleMessagingClient.enableReceiver()
 
             launch {
                 bleMessagingClient.send(
