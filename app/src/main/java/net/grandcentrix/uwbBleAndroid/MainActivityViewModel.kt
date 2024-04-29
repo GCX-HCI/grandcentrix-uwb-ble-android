@@ -62,15 +62,17 @@ class MainActivityViewModel(
                 uwbBleManager.connect(bleDevice)
                     .catch { Log.e(TAG, "connectToDevice failed", it) }
                     .collect { connectionState ->
-
-                        if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
-                            uwbBleManager.startRanging()
-                        }
                         _viewState.update {
                             it.updateDeviceConnectionState(
                                 bleDevice = bleDevice,
                                 connectionState = connectionState
                             )
+                        }
+
+                        viewModelScope.launch {
+                            if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                                uwbBleManager.startRanging()
+                            }
                         }
                     }
             }

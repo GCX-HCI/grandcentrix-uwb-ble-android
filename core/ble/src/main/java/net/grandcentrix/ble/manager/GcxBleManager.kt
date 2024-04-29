@@ -40,10 +40,10 @@ interface BleManager {
 
     val bleMessages: SharedFlow<BluetoothMessage>
 
-    val clientController: BleClient
+    val bleMessagingClient: BleMessagingClient
 }
 
-interface BleClient {
+interface BleMessagingClient {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun send(data: ByteArray): Result<BluetoothMessage>
 
@@ -70,7 +70,7 @@ class GcxBleManager(
         )
     override val bleMessages = _bleMessages.asSharedFlow()
 
-    override val clientController: BleClient = object : BleClient {
+    override val bleMessagingClient: BleMessagingClient = object : BleMessagingClient {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override suspend fun send(data: ByteArray): Result<BluetoothMessage> = runCatching {
             val characteristic = checkNotNull(rxCharacteristic)
