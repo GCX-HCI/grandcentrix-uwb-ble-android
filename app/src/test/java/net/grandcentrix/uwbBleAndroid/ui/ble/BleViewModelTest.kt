@@ -1,4 +1,4 @@
-package net.grandcentrix.uwbBleAndroid
+package net.grandcentrix.uwbBleAndroid.ui.ble
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
@@ -17,7 +17,6 @@ import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.test.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
-import net.grandcentrix.uwbBleAndroid.ui.ble.BleViewModel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
