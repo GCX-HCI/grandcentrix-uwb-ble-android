@@ -53,6 +53,8 @@ class BleViewModelTest {
 
         val viewState = viewModel.viewState.value
         assert(viewState.scanResults.isNotEmpty())
+
+        verify { uwbBleManager.startScan() }
     }
 
     @Test
@@ -67,6 +69,26 @@ class BleViewModelTest {
 
             val viewState = viewModel.viewState.value
             assert(viewState.scanResults.isEmpty())
+
+            verify { uwbBleManager.startScan() }
+        }
+
+    @Test
+    fun `Given a running ble device scan, when stopping ble scan, then ble scan is stopped`() =
+        runTest {
+            val viewModel = BleViewModel(uwbBleManager, permissionChecker)
+            // Given a running ble scan
+            viewModel.onToggleScanClicked()
+            advanceUntilIdle()
+            assertEquals(true, viewModel.viewState.value.isScanning)
+
+            // When stopping ble scan
+            viewModel.onToggleScanClicked()
+            advanceUntilIdle()
+
+            // Then scan is not running
+            assertEquals(false, viewModel.viewState.value.isScanning)
+
         }
 
     @Test
@@ -86,6 +108,8 @@ class BleViewModelTest {
             GcxBleConnectionState.CONNECTED,
             viewState.scanResults.first().connectionState
         )
+
+        verify { uwbBleManager.connect(bleDevice.bluetoothDevice) }
     }
 
     @Test
@@ -181,5 +205,41 @@ class BleViewModelTest {
             advanceUntilIdle()
 
             verify(exactly = 1) { uwbBleLibrary.connect(bluetoothDeviceMock) }
+        }
+
+
+    @Test
+    fun `Given scan permission is not granted when starting to scan, when granting the permission, then scan should start right after`() =
+        runTest {
+            every {
+                permissionChecker.hasPermissions(
+                    listOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    )
+                )
+            } returns false
+
+            val viewModel = BleViewModel(uwbBleManager, permissionChecker)
+            viewModel.onToggleScanClicked()
+
+            advanceUntilIdle()
+
+            verify(exactly = 0) { uwbBleManager.startScan() }
+
+            every {
+                permissionChecker.hasPermissions(
+                    listOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    )
+                )
+            } returns true
+
+            viewModel.onPermissionResult()
+
+            advanceUntilIdle()
+
+            verify(exactly = 1) { uwbBleManager.startScan() }
         }
 }
