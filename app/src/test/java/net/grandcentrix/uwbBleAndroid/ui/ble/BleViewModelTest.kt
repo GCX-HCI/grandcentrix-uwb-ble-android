@@ -109,7 +109,7 @@ class BleViewModelTest {
             viewState.scanResults.first().connectionState
         )
 
-        verify { uwbBleManager.connect(bleDevice.bluetoothDevice) }
+        verify { uwbBleManager.connect(bluetoothDeviceMock) }
     }
 
     @Test
