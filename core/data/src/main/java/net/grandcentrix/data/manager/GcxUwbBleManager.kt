@@ -29,7 +29,7 @@ class GcxUwbBleManager(
     private val bleScanner: BleScanner
 ) : UwbBleManager {
 
-    private val uwbBleManager = GcxUwbControlee(
+    private val gcxUwbControlee = GcxUwbControlee(
         uwbManager = uwbManager,
         resultChannel = bleManager.resultChannel,
         bleClient = bleManager.clientController
@@ -43,6 +43,6 @@ class GcxUwbBleManager(
         bleManager.connect(bleDevice).map { it.toGcxBleConnectionState() }
 
     override fun startRanging() {
-        uwbBleManager.startRanging()
+        gcxUwbControlee.startRanging()
     }
 }
