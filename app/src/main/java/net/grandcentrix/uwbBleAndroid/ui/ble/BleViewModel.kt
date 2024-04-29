@@ -107,7 +107,9 @@ class BleViewModel(
 
                                 addAll(
                                     it.scanResults
-                                        .filterNot { it.bluetoothDevice == device.bluetoothDevice }
+                                        .filterNot { scannedDevice ->
+                                            scannedDevice.bluetoothDevice == device.bluetoothDevice
+                                        }
                                 )
                             }
                             it.copy(scanResults = updatedResults)
