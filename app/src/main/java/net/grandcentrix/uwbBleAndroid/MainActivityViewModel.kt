@@ -11,10 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.grandcentrix.data.manager.UwbBleManager
+import net.grandcentrix.data.manager.UwbBleLibrary
 import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
@@ -29,7 +28,7 @@ private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 private const val TAG = "MainActivityViewModel"
 
 class MainActivityViewModel(
-    private val uwbBleManager: UwbBleManager,
+    private val uwbBleManager: UwbBleLibrary,
     private val permissionChecker: PermissionChecker
 ) : ViewModel() {
     private val _viewState = MutableStateFlow(MainActivityViewState())
