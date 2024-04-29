@@ -8,26 +8,20 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.grandcentrix.ble.exception.BluetoothException
-import net.grandcentrix.ble.model.BluetoothResult
-import net.grandcentrix.ble.protocol.OOBMessageProtocol
+import net.grandcentrix.ble.model.BluetoothMessage
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
 private const val TAG = "BleManager"
@@ -43,24 +37,59 @@ interface BleManager {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
+
+    val bleMessages: SharedFlow<BluetoothMessage>
+
+    val bleMessagingClient: BleMessagingClient
+}
+
+interface BleMessagingClient {
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun send(data: ByteArray): Result<BluetoothMessage>
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun enableReceiver(): Result<Boolean>
 }
 
 class GcxBleManager(
-    coroutineContext: CoroutineContext = Dispatchers.IO,
     private val context: Context,
     private val serviceUUID: UUID = UUID.fromString(UART_SERVICE),
     private val rxUUID: UUID = UUID.fromString(UART_RX_CHARACTERISTIC),
     private val txUUID: UUID = UUID.fromString(UART_TX_CHARACTERISTIC)
 ) : BleManager {
 
-    private val scope = CoroutineScope(coroutineContext + SupervisorJob())
     private val bluetoothAdapter: BluetoothAdapter
-
-    private val resultChannel = Channel<BluetoothResult>(Channel.CONFLATED)
-
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
 
+    private var gatt: BluetoothGatt? = null
+
+    private val _bleMessages =
+        MutableSharedFlow<BluetoothMessage>(
+            replay = 1
+        )
+    override val bleMessages = _bleMessages.asSharedFlow()
+
+    override val bleMessagingClient: BleMessagingClient = object : BleMessagingClient {
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override suspend fun send(data: ByteArray): Result<BluetoothMessage> = runCatching {
+            val characteristic = checkNotNull(rxCharacteristic)
+            val gatt = checkNotNull(gatt)
+            gatt.writeCharacteristic(
+                characteristic,
+                data,
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+            )
+            waitForResult(characteristic.uuid)
+        }
+
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        override fun enableReceiver(): Result<Boolean> = runCatching {
+            val characteristic = checkNotNull(txCharacteristic)
+            val gatt = checkNotNull(gatt)
+            gatt.setCharacteristicNotification(characteristic, true)
+        }
+    }
     override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
@@ -81,23 +110,7 @@ class GcxBleManager(
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     trySend(ConnectionState.SERVICES_DISCOVERED)
-                    if (isRequiredServiceSupported(gatt)) {
-                        observeTxCharacteristic(gatt)
-                            .onFailure {
-                                close(it)
-                                cleanUpGattStack(gatt)
-                            }
-
-                        scope.launch {
-                            writeRxCharacteristic(
-                                gatt = gatt,
-                                data = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-                            ).onFailure {
-                                close(it)
-                                cleanUpGattStack(gatt)
-                            }
-                        }
-                    } else {
+                    if (!isRequiredServiceSupported(gatt)) {
                         close(BluetoothException.ServiceNotSupportedException)
                         cleanUpGattStack(gatt)
                     }
@@ -113,8 +126,8 @@ class GcxBleManager(
                 value: ByteArray,
                 status: Int
             ) {
-                resultChannel.trySend(
-                    BluetoothResult(
+                _bleMessages.tryEmit(
+                    BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
                         status = status
@@ -127,8 +140,8 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                resultChannel.trySend(
-                    BluetoothResult(
+                _bleMessages.tryEmit(
+                    BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = null,
                         status = status
@@ -141,20 +154,22 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                super.onCharacteristicChanged(gatt, characteristic, value)
-                when (value.first()) {
-                    OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> Log.d(
-                        TAG,
-                        "onCharacteristicChanged: device config package ${value.contentToString()}"
+                _bleMessages.tryEmit(
+                    BluetoothMessage(
+                        uuid = characteristic.uuid,
+                        data = value,
+                        status = BluetoothGatt.GATT_SUCCESS
                     )
-                }
+                )
             }
         }
         try {
-            val gatt = bleDevice.connectGatt(context, false, gattCallback)
+            gatt = bleDevice.connectGatt(context, false, gattCallback)
 
             awaitClose {
-                cleanUpGattStack(gatt)
+                gatt?.let {
+                    cleanUpGattStack(it)
+                }
             }
         } catch (exception: SecurityException) {
             close(exception)
@@ -178,29 +193,9 @@ class GcxBleManager(
         return rxCharacteristic != null && txCharacteristic != null
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun writeRxCharacteristic(
-        gatt: BluetoothGatt,
-        data: ByteArray
-    ): Result<BluetoothResult> = runCatching {
-        val characteristic = checkNotNull(rxCharacteristic)
-        gatt.writeCharacteristic(
-            characteristic,
-            data,
-            BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-        )
-        waitForResult(characteristic.uuid)
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private fun observeTxCharacteristic(gatt: BluetoothGatt): Result<Boolean> = runCatching {
-        val characteristic = checkNotNull(txCharacteristic)
-        gatt.setCharacteristicNotification(characteristic, true)
-    }
-
-    private suspend fun waitForResult(uuid: UUID): BluetoothResult {
+    private suspend fun waitForResult(uuid: UUID): BluetoothMessage {
         return withTimeoutOrNull(TimeUnit.SECONDS.toMillis(BLE_READ_WRITE_TIMEOUT)) {
-            resultChannel.receiveAsFlow()
+            bleMessages
                 .filter { it.uuid == uuid }
                 .first()
         } ?: run {

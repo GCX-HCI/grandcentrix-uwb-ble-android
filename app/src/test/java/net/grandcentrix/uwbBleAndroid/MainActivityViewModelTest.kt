@@ -3,6 +3,7 @@ package net.grandcentrix.uwbBleAndroid
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
+import io.mockk.coJustRun
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -32,6 +33,7 @@ class MainActivityViewModelTest {
     private val uwbBleManager: UwbBleManager = mockk {
         every { startScan() } returns flowOf(scanResult)
         every { connect(bluetoothDevice) } returns flow { }
+        coJustRun { startRanging() }
     }
 
     private val permissionChecker: PermissionChecker = mockk {

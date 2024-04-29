@@ -68,6 +68,12 @@ class MainActivityViewModel(
                                 connectionState = connectionState
                             )
                         }
+
+                        viewModelScope.launch {
+                            if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                                uwbBleManager.startRanging()
+                            }
+                        }
                     }
             }
         }
