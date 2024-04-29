@@ -124,8 +124,10 @@ class BleViewModel(
 
     fun onPermissionResult() {
         if (isScanPending) {
-            startScan()
+            return startScan()
         }
+
+        deviceConnectPending?.let { device -> onDeviceClicked(device) }
     }
 
     private fun checkScanPermission(): Boolean {
