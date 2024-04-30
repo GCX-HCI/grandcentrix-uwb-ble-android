@@ -64,10 +64,8 @@ class GcxBleManager(
 
     private var gatt: BluetoothGatt? = null
 
-    private val _bleMessages =
-        MutableSharedFlow<BluetoothMessage>(
-            replay = 1
-        )
+    private val _bleMessages = MutableSharedFlow<BluetoothMessage>(replay = 1)
+
     override val bleMessages = _bleMessages.asSharedFlow()
 
     override val bleMessagingClient: BleMessagingClient = object : BleMessagingClient {
