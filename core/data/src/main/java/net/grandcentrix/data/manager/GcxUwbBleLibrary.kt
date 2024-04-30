@@ -13,7 +13,7 @@ import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.data.model.toGcxBleConnectionState
 import net.grandcentrix.uwb.controlee.GcxUwbControlee
 
-interface UwbBleManager {
+interface UwbBleLibrary {
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     fun startScan(): Flow<ScanResult>
@@ -23,11 +23,11 @@ interface UwbBleManager {
 
     suspend fun startRanging()
 }
-class GcxUwbBleManager(
+class GcxUwbBleLibrary(
     uwbManager: UwbManager,
     private val bleManager: BleManager,
     private val bleScanner: BleScanner
-) : UwbBleManager {
+) : UwbBleLibrary {
 
     private val gcxUwbControlee = GcxUwbControlee(
         uwbManager = uwbManager,

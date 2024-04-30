@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import net.grandcentrix.data.manager.UwbBleManager
+import net.grandcentrix.data.manager.UwbBleLibrary
 import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.test.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
@@ -30,7 +30,7 @@ class MainActivityViewModelTest {
     private val scanResult: ScanResult = mockk {
         every { device } returns bluetoothDevice
     }
-    private val uwbBleManager: UwbBleManager = mockk {
+    private val uwbBleLibrary: UwbBleLibrary = mockk {
         every { startScan() } returns flowOf(scanResult)
         every { connect(bluetoothDevice) } returns flow { }
         coJustRun { startRanging() }
@@ -55,7 +55,7 @@ class MainActivityViewModelTest {
 
     @Test
     fun `Given a known ble device, when starting ble scan, then ble device is shown`() = runTest {
-        val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+        val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
         viewModel.scan()
 
         advanceUntilIdle()
@@ -67,9 +67,9 @@ class MainActivityViewModelTest {
     @Test
     fun `Given an unknown ble device, when starting ble scan, then ble device is not shown`() =
         runTest {
-            every { uwbBleManager.startScan() } returns flowOf()
+            every { uwbBleLibrary.startScan() } returns flowOf()
 
-            val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+            val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
             viewModel.scan()
 
             advanceUntilIdle()
@@ -81,10 +81,10 @@ class MainActivityViewModelTest {
     @Test
     fun `Given an ble device, when connect to device, then ble device is connected`() = runTest {
         every {
-            uwbBleManager.connect(bluetoothDevice)
+            uwbBleLibrary.connect(bluetoothDevice)
         } returns flowOf(GcxBleConnectionState.CONNECTED)
 
-        val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+        val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
         viewModel.scan()
         viewModel.connectToDevice(bluetoothDevice)
 
@@ -101,10 +101,10 @@ class MainActivityViewModelTest {
     fun `Given an ble device, when discover services, then connection state is Services_Discovered`() =
         runTest {
             every {
-                uwbBleManager.connect(bluetoothDevice)
+                uwbBleLibrary.connect(bluetoothDevice)
             } returns flowOf(GcxBleConnectionState.SERVICES_DISCOVERED)
 
-            val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+            val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
             viewModel.scan()
             viewModel.connectToDevice(bluetoothDevice)
 
@@ -120,10 +120,10 @@ class MainActivityViewModelTest {
     @Test
     fun `Given start scan, when found ble device, then ble device is disconnected`() = runTest {
         every {
-            uwbBleManager.connect(bluetoothDevice)
+            uwbBleLibrary.connect(bluetoothDevice)
         } returns flowOf(GcxBleConnectionState.CONNECTED)
 
-        val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+        val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
         viewModel.scan()
 
         advanceUntilIdle()
@@ -147,23 +147,23 @@ class MainActivityViewModelTest {
                 )
             } returns false
 
-            val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+            val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
             viewModel.scan()
 
             advanceUntilIdle()
 
-            verify(exactly = 0) { uwbBleManager.startScan() }
+            verify(exactly = 0) { uwbBleLibrary.startScan() }
         }
 
     @Test
     fun `Given scan permission is granted, when starting ble scan, then bleScanner startScan is called`() =
         runTest {
-            val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+            val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
             viewModel.scan()
 
             advanceUntilIdle()
 
-            verify(exactly = 1) { uwbBleManager.startScan() }
+            verify(exactly = 1) { uwbBleLibrary.startScan() }
         }
 
     @Test
@@ -173,22 +173,22 @@ class MainActivityViewModelTest {
                 permissionChecker.hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
             } returns false
 
-            val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+            val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
             viewModel.connectToDevice(bluetoothDevice)
 
             advanceUntilIdle()
 
-            verify(exactly = 0) { uwbBleManager.connect(bluetoothDevice) }
+            verify(exactly = 0) { uwbBleLibrary.connect(bluetoothDevice) }
         }
 
     @Test
     fun `Given connect permission is granted, when connect to device, then blemanager connect is called`() =
         runTest {
-            val viewModel = MainActivityViewModel(uwbBleManager, permissionChecker)
+            val viewModel = MainActivityViewModel(uwbBleLibrary, permissionChecker)
             viewModel.connectToDevice(bluetoothDevice)
 
             advanceUntilIdle()
 
-            verify(exactly = 1) { uwbBleManager.connect(bluetoothDevice) }
+            verify(exactly = 1) { uwbBleLibrary.connect(bluetoothDevice) }
         }
 }
