@@ -14,6 +14,8 @@ import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestPermissions(arrayOf(Manifest.permission.UWB_RANGING), 1001)
+
         setContent {
             GrandcentrixuwbbleandroidTheme {
                 // A surface container using the 'background' color from the theme
