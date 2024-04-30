@@ -8,7 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -17,6 +17,8 @@ import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.test.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
+import net.grandcentrix.uwbBleAndroid.ui.Navigator
+import net.grandcentrix.uwbBleAndroid.ui.Screen
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -36,7 +38,7 @@ class BleViewModelTest {
     }
     private val uwbBleLibrary: UwbBleLibrary = mockk {
         every { startScan() } returns flowOf(scanResult)
-        every { connect(bluetoothDeviceMock) } returns flow { }
+        every { connect(bluetoothDeviceMock) } returns emptyFlow()
         coJustRun { startRanging() }
     }
 
@@ -44,9 +46,11 @@ class BleViewModelTest {
         every { hasPermissions(any()) } returns true
     }
 
+    private val navigator: Navigator = mockk(relaxUnitFun = true)
+
     @Test
     fun `Given a known ble device, when starting ble scan, then ble device is shown`() = runTest {
-        val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+        val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
         viewModel.onToggleScanClicked()
 
         advanceUntilIdle()
@@ -62,7 +66,7 @@ class BleViewModelTest {
         runTest {
             every { uwbBleLibrary.startScan() } returns flowOf()
 
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onToggleScanClicked()
 
             advanceUntilIdle()
@@ -76,7 +80,7 @@ class BleViewModelTest {
     @Test
     fun `Given a running ble device scan, when stopping ble scan, then ble scan is stopped`() =
         runTest {
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             // Given a running ble scan
             viewModel.onToggleScanClicked()
             advanceUntilIdle()
@@ -88,7 +92,6 @@ class BleViewModelTest {
 
             // Then scan is not running
             assertEquals(false, viewModel.viewState.value.isScanning)
-
         }
 
     @Test
@@ -97,7 +100,7 @@ class BleViewModelTest {
             uwbBleLibrary.connect(bluetoothDeviceMock)
         } returns flowOf(GcxBleConnectionState.CONNECTED)
 
-        val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+        val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
         viewModel.onToggleScanClicked()
         viewModel.onDeviceClicked(bleDevice)
 
@@ -119,7 +122,7 @@ class BleViewModelTest {
                 uwbBleLibrary.connect(bluetoothDeviceMock)
             } returns flowOf(GcxBleConnectionState.SERVICES_DISCOVERED)
 
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onToggleScanClicked()
             viewModel.onDeviceClicked(bleDevice)
 
@@ -138,7 +141,7 @@ class BleViewModelTest {
             uwbBleLibrary.connect(bluetoothDeviceMock)
         } returns flowOf(GcxBleConnectionState.CONNECTED)
 
-        val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+        val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
         viewModel.onToggleScanClicked()
 
         advanceUntilIdle()
@@ -162,7 +165,7 @@ class BleViewModelTest {
                 )
             } returns false
 
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onToggleScanClicked()
 
             advanceUntilIdle()
@@ -173,7 +176,7 @@ class BleViewModelTest {
     @Test
     fun `Given scan permission is granted, when starting ble scan, then bleScanner startScan is called`() =
         runTest {
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onToggleScanClicked()
 
             advanceUntilIdle()
@@ -188,7 +191,7 @@ class BleViewModelTest {
                 permissionChecker.hasPermissions(listOf(Manifest.permission.BLUETOOTH_CONNECT))
             } returns false
 
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onDeviceClicked(bleDevice)
 
             advanceUntilIdle()
@@ -199,14 +202,13 @@ class BleViewModelTest {
     @Test
     fun `Given connect permission is granted, when connect to device, then blemanager connect is called`() =
         runTest {
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onDeviceClicked(bleDevice)
 
             advanceUntilIdle()
 
             verify(exactly = 1) { uwbBleLibrary.connect(bluetoothDeviceMock) }
         }
-
 
     @Test
     fun `Given scan permission is not granted when starting to scan, when granting the permission, then scan should start right after`() =
@@ -220,7 +222,7 @@ class BleViewModelTest {
                 )
             } returns false
 
-            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
             viewModel.onToggleScanClicked()
 
             advanceUntilIdle()
@@ -241,5 +243,23 @@ class BleViewModelTest {
             advanceUntilIdle()
 
             verify(exactly = 1) { uwbBleLibrary.startScan() }
+        }
+
+    @Test
+    fun `Given running attempt to connect to device, when connection succeeds, then navigate to RANGNING`() =
+        runTest {
+            every {
+                uwbBleLibrary.connect(bluetoothDeviceMock)
+            } returns flowOf(GcxBleConnectionState.SERVICES_DISCOVERED)
+
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
+
+            viewModel.onDeviceClicked(bleDevice)
+
+            advanceUntilIdle()
+
+            verify {
+                navigator.navigateTo(Screen.Ranging)
+            }
         }
 }
