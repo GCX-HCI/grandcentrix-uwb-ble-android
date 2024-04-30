@@ -102,7 +102,9 @@ class BleViewModel(
                     .collect { connectionState ->
                         updateConnectionState(device, connectionState)
 
-                        navigator.navigateTo(Screen.Ranging)
+                        if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                            navigator.navigateTo(Screen.Ranging)
+                        }
                     }
             }
         } else {
