@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.data.manager.UwbBleLibrary
+import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
@@ -96,23 +97,10 @@ class BleViewModel(
                 uwbBleLibrary.connect(device.bluetoothDevice)
                     .catch { Log.e(TAG, "Connection to $device failed", it) }
                     .collect { connectionState ->
-                        _viewState.update {
-                            val updatedResults = buildSet {
-                                add(
-                                    GcxBleDevice(
-                                        bluetoothDevice = device.bluetoothDevice,
-                                        connectionState = connectionState
-                                    )
-                                )
+                        updateConnectionState(device, connectionState)
 
-                                addAll(
-                                    it.scanResults
-                                        .filterNot { scannedDevice ->
-                                            scannedDevice.bluetoothDevice == device.bluetoothDevice
-                                        }
-                                )
-                            }
-                            it.copy(scanResults = updatedResults)
+                        if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                            uwbBleLibrary.startRanging()
                         }
                     }
             }
@@ -128,6 +116,30 @@ class BleViewModel(
         }
 
         deviceConnectPending?.let { device -> onDeviceClicked(device) }
+    }
+
+    private fun updateConnectionState(
+        device: GcxBleDevice,
+        connectionState: GcxBleConnectionState
+    ) {
+        _viewState.update {
+            val updatedResults = buildSet {
+                add(
+                    GcxBleDevice(
+                        bluetoothDevice = device.bluetoothDevice,
+                        connectionState = connectionState
+                    )
+                )
+
+                addAll(
+                    it.scanResults
+                        .filterNot { scannedDevice ->
+                            scannedDevice.bluetoothDevice == device.bluetoothDevice
+                        }
+                )
+            }
+            it.copy(scanResults = updatedResults)
+        }
     }
 
     private fun checkScanPermission(): Boolean {
