@@ -8,7 +8,7 @@ import org.koin.dsl.module
 val mainModule = module {
     viewModel {
         BleViewModel(
-            uwbBleManager = get(),
+            uwbBleLibrary = get(),
             permissionChecker = get()
         )
     }

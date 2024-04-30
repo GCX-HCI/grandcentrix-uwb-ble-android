@@ -54,7 +54,7 @@ class BleViewModelTest {
         val viewState = viewModel.viewState.value
         assert(viewState.scanResults.isNotEmpty())
 
-        verify { uwbBleManager.startScan() }
+        verify { uwbBleLibrary.startScan() }
     }
 
     @Test
@@ -70,13 +70,13 @@ class BleViewModelTest {
             val viewState = viewModel.viewState.value
             assert(viewState.scanResults.isEmpty())
 
-            verify { uwbBleManager.startScan() }
+            verify { uwbBleLibrary.startScan() }
         }
 
     @Test
     fun `Given a running ble device scan, when stopping ble scan, then ble scan is stopped`() =
         runTest {
-            val viewModel = BleViewModel(uwbBleManager, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
             // Given a running ble scan
             viewModel.onToggleScanClicked()
             advanceUntilIdle()
@@ -109,7 +109,7 @@ class BleViewModelTest {
             viewState.scanResults.first().connectionState
         )
 
-        verify { uwbBleManager.connect(bluetoothDeviceMock) }
+        verify { uwbBleLibrary.connect(bluetoothDeviceMock) }
     }
 
     @Test
@@ -220,12 +220,12 @@ class BleViewModelTest {
                 )
             } returns false
 
-            val viewModel = BleViewModel(uwbBleManager, permissionChecker)
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker)
             viewModel.onToggleScanClicked()
 
             advanceUntilIdle()
 
-            verify(exactly = 0) { uwbBleManager.startScan() }
+            verify(exactly = 0) { uwbBleLibrary.startScan() }
 
             every {
                 permissionChecker.hasPermissions(
@@ -240,6 +240,6 @@ class BleViewModelTest {
 
             advanceUntilIdle()
 
-            verify(exactly = 1) { uwbBleManager.startScan() }
+            verify(exactly = 1) { uwbBleLibrary.startScan() }
         }
 }

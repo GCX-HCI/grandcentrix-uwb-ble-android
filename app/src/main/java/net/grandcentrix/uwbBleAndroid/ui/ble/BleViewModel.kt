@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.grandcentrix.data.manager.UwbBleManager
+import net.grandcentrix.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
@@ -28,7 +28,7 @@ data class BleViewState(
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 
 class BleViewModel(
-    private val uwbBleManager: UwbBleManager,
+    private val uwbBleLibrary: UwbBleLibrary,
     private val permissionChecker: PermissionChecker
 ) : ViewModel() {
     companion object {
@@ -64,7 +64,7 @@ class BleViewModel(
             _viewState.update { it.copy(isScanning = true) }
             isScanPending = false
             scanJob = viewModelScope.launch {
-                uwbBleManager.startScan()
+                uwbBleLibrary.startScan()
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { scanResult ->
                         _viewState.update {
@@ -93,7 +93,7 @@ class BleViewModel(
             _viewState.update { it.copy(isConnecting = true) }
             deviceConnectPending = null
             viewModelScope.launch {
-                uwbBleManager.connect(device.bluetoothDevice)
+                uwbBleLibrary.connect(device.bluetoothDevice)
                     .catch { Log.e(TAG, "Connection to $device failed", it) }
                     .collect { connectionState ->
                         _viewState.update {
