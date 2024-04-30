@@ -29,7 +29,7 @@ fun ByteArray.toInt(): Int {
             (this[0].toInt() shl 24) + (this[1].toInt() and 0xFF shl 16) + (this[2].toInt() and 0xFF shl 8) + (this[3].toInt() and 0xFF)
         }
         else -> {
-            throw java.lang.IndexOutOfBoundsException()
+            throw IndexOutOfBoundsException()
         }
     }
 }
@@ -38,6 +38,6 @@ fun ByteArray.toByte(): Byte {
     return if (this.size == 1) {
         (this[0].toInt() and 0xFF).toByte()
     } else {
-        throw java.lang.IndexOutOfBoundsException()
+        throw IndexOutOfBoundsException()
     }
 }
