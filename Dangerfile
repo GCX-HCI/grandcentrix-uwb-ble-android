@@ -20,3 +20,9 @@ for test_report_file in Dir.glob("**/build/test-results/**/TEST-*.xml") do
     junit.headers = [:name, :classname]
     junit.report
 end
+
+for ktlint_report_file in Dir.glob("**/build/reports/ktlint/**/*.json") do
+    ktlint.skip_lint = true
+    ktlint.report_file = ktlint_report_file
+    ktlint.lint(inline_mode: true)
+end

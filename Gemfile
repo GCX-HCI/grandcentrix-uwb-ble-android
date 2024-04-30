@@ -8,3 +8,5 @@ source "https://rubygems.org"
  gem 'danger-android_lint'
  # Add-on to process junit result files
  gem 'danger-junit'
+ # Add-on to process ktlint result files
+ gem 'danger-ktlint'
