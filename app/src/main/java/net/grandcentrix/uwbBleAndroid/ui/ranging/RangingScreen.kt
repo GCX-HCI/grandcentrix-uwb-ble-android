@@ -72,6 +72,7 @@ private fun RangingView(uiState: RangingUiState, onBackClicked: () -> Unit) {
             Text(text = "Azimuth: ${uiState.azimuth?.roundToTwoDecimals()}")
             Text(text = "Distance: ${uiState.distance?.roundToTwoDecimals()} m")
             Text(text = "Elevation: ${uiState.elevation?.roundToTwoDecimals()}")
+            Text(text = "isRangingPeerConnected: ${uiState.isRangingPeerConnected}")
             PositionArrow(
                 uiState = uiState,
                 modifier = Modifier

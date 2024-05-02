@@ -23,7 +23,8 @@ import net.grandcentrix.uwbBleAndroid.ui.Screen
 internal data class RangingUiState(
     val distance: Float? = null,
     val azimuth: Float? = null,
-    val elevation: Float? = null
+    val elevation: Float? = null,
+    val isRangingPeerConnected: Boolean = false
 )
 
 internal class RangingViewModel(
@@ -41,7 +42,8 @@ internal class RangingViewModel(
     private var rangingJob: Job? = null
 
     fun onBackClicked() {
-        onStop()
+        stopRanging()
+        navigator.navigateTo(Screen.Connect)
     }
 
     fun onResume() {
@@ -49,7 +51,7 @@ internal class RangingViewModel(
     }
 
     fun onPause() {
-        rangingJob?.cancel()
+        stopRanging()
     }
 
     private fun collectUwbPositingResults() {
@@ -68,18 +70,20 @@ internal class RangingViewModel(
             it.copy(
                 distance = positionResult.position.distance?.value ?: it.distance,
                 azimuth = positionResult.position.azimuth?.value ?: it.azimuth,
-                elevation = positionResult.position.elevation?.value ?: it.elevation
+                elevation = positionResult.position.elevation?.value ?: it.elevation,
+                isRangingPeerConnected = true
             )
         }
     }
 
     private fun onDisconnected() {
         Log.d(TAG, "Ranging device disconnected!")
-        onStop()
+        _uiState.update { it.copy(isRangingPeerConnected = false) }
+        stopRanging()
     }
 
-    private fun onStop() {
+    private fun stopRanging() {
         rangingJob?.cancel()
-        navigator.navigateTo(Screen.Connect)
+        _uiState.update { it.copy(isRangingPeerConnected = false) }
     }
 }

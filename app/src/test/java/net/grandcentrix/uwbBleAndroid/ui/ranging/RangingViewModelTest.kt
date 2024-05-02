@@ -79,7 +79,12 @@ class RangingViewModelTest {
             advanceUntilIdle()
 
             assertEquals(
-                RangingUiState(distance = 1f, azimuth = 2f, elevation = 3f),
+                RangingUiState(
+                    distance = 1f,
+                    azimuth = 2f,
+                    elevation = 3f,
+                    isRangingPeerConnected = true
+                ),
                 viewModel.uiState.value
             )
 
@@ -107,7 +112,12 @@ class RangingViewModelTest {
             advanceUntilIdle()
 
             assertEquals(
-                RangingUiState(distance = 1f, azimuth = 2f, elevation = 3f),
+                RangingUiState(
+                    distance = 1f,
+                    azimuth = 2f,
+                    elevation = 3f,
+                    isRangingPeerConnected = true
+                ),
                 viewModel.uiState.value
             )
 
@@ -126,7 +136,12 @@ class RangingViewModelTest {
             advanceUntilIdle()
 
             assertEquals(
-                RangingUiState(distance = 1f, azimuth = 2f, elevation = 3f),
+                RangingUiState(
+                    distance = 1f,
+                    azimuth = 2f,
+                    elevation = 3f,
+                    isRangingPeerConnected = true
+                ),
                 viewModel.uiState.value
             )
 
