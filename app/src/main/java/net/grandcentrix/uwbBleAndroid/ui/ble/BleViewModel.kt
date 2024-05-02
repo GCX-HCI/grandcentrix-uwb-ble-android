@@ -20,6 +20,8 @@ import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
+import net.grandcentrix.uwbBleAndroid.ui.Navigator
+import net.grandcentrix.uwbBleAndroid.ui.Screen
 
 data class BleViewState(
     val requestScanPermissions: Boolean = false,
@@ -33,7 +35,8 @@ private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 
 class BleViewModel(
     private val uwbBleLibrary: UwbBleLibrary,
-    private val permissionChecker: PermissionChecker
+    private val permissionChecker: PermissionChecker,
+    private val navigator: Navigator
 ) : ViewModel() {
     companion object {
         private val TAG = BleViewModel::class.simpleName
@@ -103,6 +106,7 @@ class BleViewModel(
                         updateConnectionState(device, connectionState)
 
                         if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                            navigator.navigateTo(Screen.Ranging)
                             launch {
                                 uwbBleLibrary.startRanging().collect { rangingResult ->
                                     when (rangingResult) {
