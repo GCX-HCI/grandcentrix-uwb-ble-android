@@ -106,7 +106,6 @@ class BleViewModel(
                         updateConnectionState(device, connectionState)
 
                         if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
-                            navigator.navigateTo(Screen.Ranging)
                             launch {
                                 uwbBleLibrary.startRanging().collect { rangingResult ->
                                     when (rangingResult) {
