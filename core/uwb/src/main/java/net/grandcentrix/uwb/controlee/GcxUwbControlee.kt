@@ -104,7 +104,6 @@ class GcxUwbControlee(
         bleMessages
             .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
             .collect {
-                Log.d(TAG, "collectBleMessages: $it")
                 it.data?.let { bytes ->
                     when (bytes.first()) {
                         OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
