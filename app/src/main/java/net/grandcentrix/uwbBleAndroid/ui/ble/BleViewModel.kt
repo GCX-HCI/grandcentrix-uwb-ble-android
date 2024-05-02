@@ -105,7 +105,6 @@ class BleViewModel(
                         if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
                             launch {
                                 uwbBleLibrary.startRanging().collect { rangingResult ->
-                                    Log.d(TAG, "onDeviceClicked: $rangingResult")
                                     when (rangingResult) {
                                         is RangingResult.RangingResultPosition -> Log.d(
                                             TAG,
