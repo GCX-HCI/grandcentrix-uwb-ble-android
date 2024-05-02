@@ -8,13 +8,13 @@ import androidx.core.uwb.UwbComplexChannel
 import androidx.core.uwb.UwbControleeSessionScope
 import androidx.core.uwb.UwbDevice
 import androidx.core.uwb.UwbManager
+import kotlin.random.Random
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.grandcentrix.ble.manager.BleMessagingClient
 import net.grandcentrix.ble.manager.GcxBleManager
@@ -24,7 +24,6 @@ import net.grandcentrix.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwb.model.DeviceConfig
 import net.grandcentrix.uwb.model.MKDeviceConfig
 import net.grandcentrix.uwb.model.MKPhoneConfig
-import kotlin.random.Random
 
 private const val TAG = "GcxUwbControlee"
 
@@ -103,10 +102,6 @@ class GcxUwbControlee(
 
     private suspend fun collectBleMessages() {
         bleMessages
-            .map {
-                Log.d(TAG, "collectBleMessages before filter: $it")
-                it
-            }
             .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
             .collect {
                 Log.d(TAG, "collectBleMessages: $it")
