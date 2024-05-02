@@ -18,6 +18,7 @@ import net.grandcentrix.test.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
+import net.grandcentrix.uwbBleAndroid.ui.Screen
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -31,6 +32,7 @@ class BleViewModelTest {
     }
     private val bleDevice: GcxBleDevice = mockk {
         every { bluetoothDevice } returns bluetoothDeviceMock
+        every { connectionState } returns GcxBleConnectionState.DISCONNECTED
     }
     private val scanResult: ScanResult = mockk {
         every { device } returns bluetoothDeviceMock
@@ -244,22 +246,21 @@ class BleViewModelTest {
             verify(exactly = 1) { uwbBleLibrary.startScan() }
         }
 
-    // TODO: Insert this back, when we move the ranging methods to the RangingScreen
-//    @Test
-//    fun `Given running attempt to connect to device, when connection succeeds, then navigate to RANGNING`() =
-//        runTest {
-//            every {
-//                uwbBleLibrary.connect(bluetoothDeviceMock)
-//            } returns flowOf(GcxBleConnectionState.SERVICES_DISCOVERED)
-//
-//            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
-//
-//            viewModel.onDeviceClicked(bleDevice)
-//
-//            advanceUntilIdle()
-//
-//            verify {
-//                navigator.navigateTo(Screen.Ranging)
-//            }
-//        }
+    @Test
+    fun `Given running attempt to connect to device, when connection succeeds, then navigate to RANGNING`() =
+        runTest {
+            every {
+                uwbBleLibrary.connect(bluetoothDeviceMock)
+            } returns flowOf(GcxBleConnectionState.SERVICES_DISCOVERED)
+
+            val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator)
+
+            viewModel.onDeviceClicked(bleDevice)
+
+            advanceUntilIdle()
+
+            verify {
+                navigator.navigateTo(Screen.Ranging)
+            }
+        }
 }
