@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.data.manager.UwbBleLibrary
@@ -21,7 +19,6 @@ import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
-import net.grandcentrix.uwbBleAndroid.ui.Screen
 
 data class BleViewState(
     val requestScanPermissions: Boolean = false,
@@ -106,6 +103,8 @@ class BleViewModel(
                         updateConnectionState(device, connectionState)
 
                         if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                            // TODO: Insert this back, when we move the ranging methods to the RangingScreen
+                            // navigator.navigateTo(Screen.Ranging)
                             launch {
                                 uwbBleLibrary.startRanging().collect { rangingResult ->
                                     when (rangingResult) {
