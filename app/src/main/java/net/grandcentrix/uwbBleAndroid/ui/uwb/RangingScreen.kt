@@ -23,12 +23,21 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 internal fun RangingScreen(viewModel: RangingViewModel = koinViewModel()) {
     BackHandler { viewModel.onBackClicked() }
+
+    LifecycleResumeEffect {
+        viewModel.onResume()
+
+        onPauseOrDispose {
+            viewModel.onPause()
+        }
+    }
 
     val uiState by viewModel.uiState.collectAsState()
     RangingView(

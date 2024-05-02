@@ -35,12 +35,16 @@ internal class RangingViewModel(
     // Only needed as the view model is not cleared due to very basic navigation implementation
     private var rangingJob: Job? = null
 
-    init {
+    fun onBackClicked() {
+        onStop()
+    }
+
+    fun onResume() {
         collectUwbPositingResults()
     }
 
-    fun onBackClicked() {
-        onStop()
+    fun onPause() {
+        rangingJob?.cancel()
     }
 
     private fun collectUwbPositingResults() {
