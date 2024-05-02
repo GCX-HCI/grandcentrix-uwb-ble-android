@@ -1,7 +1,7 @@
 package net.grandcentrix.uwbBleAndroid.ui.ble
 
 import android.util.Log
-import androidx.core.uwb.RangingResult
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -19,6 +19,7 @@ import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
+import net.grandcentrix.uwbBleAndroid.ui.Screen
 
 data class BleViewState(
     val requestScanPermissions: Boolean = false,
@@ -93,35 +94,15 @@ class BleViewModel(
 
     fun onDeviceClicked(device: GcxBleDevice) {
         stopScan()
+        if (device.connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+            // No need to connect again if already connected
+            return navigateToRangingScreen()
+        }
+
         if (checkConnectPermission() && !viewState.value.isConnecting) {
             _viewState.update { it.copy(isConnecting = true) }
             deviceConnectPending = null
-            viewModelScope.launch {
-                uwbBleLibrary.connect(device.bluetoothDevice)
-                    .catch { Log.e(TAG, "Connection to $device failed", it) }
-                    .collect { connectionState ->
-                        updateConnectionState(device, connectionState)
-
-                        if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
-                            // TODO: Insert this back, when we move the ranging methods to the RangingScreen
-                            // navigator.navigateTo(Screen.Ranging)
-                            launch {
-                                uwbBleLibrary.startRanging().collect { rangingResult ->
-                                    when (rangingResult) {
-                                        is RangingResult.RangingResultPosition -> Log.d(
-                                            TAG,
-                                            "Position: ${rangingResult.position.distance}"
-                                        )
-                                        is RangingResult.RangingResultPeerDisconnected -> Log.e(
-                                            TAG,
-                                            "Peer disconnected ${rangingResult.device.address.address.contentToString()}"
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-            }
+            connectToDevice(device)
         } else {
             deviceConnectPending = device
             _viewState.update { it.copy(requestConnectPermissions = true) }
@@ -134,6 +115,22 @@ class BleViewModel(
         }
 
         deviceConnectPending?.let { device -> onDeviceClicked(device) }
+    }
+
+    @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
+    private fun connectToDevice(device: GcxBleDevice) {
+        viewModelScope.launch {
+            uwbBleLibrary.connect(device.bluetoothDevice)
+                .catch { Log.e(TAG, "Connection to $device failed", it) }
+                .collect { connectionState ->
+                    updateConnectionState(device, connectionState)
+
+                    if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                        _viewState.update { it.copy(isConnecting = false) }
+                        navigateToRangingScreen()
+                    }
+                }
+        }
     }
 
     private fun updateConnectionState(
@@ -166,5 +163,9 @@ class BleViewModel(
 
     private fun checkConnectPermission(): Boolean {
         return permissionChecker.hasPermissions(AppPermissions.bleConnectPermissions)
+    }
+
+    private fun navigateToRangingScreen() {
+        navigator.navigateTo(Screen.Ranging)
     }
 }
