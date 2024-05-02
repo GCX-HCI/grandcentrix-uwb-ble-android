@@ -1,4 +1,4 @@
-package net.grandcentrix.uwbBleAndroid.ui.uwb
+package net.grandcentrix.uwbBleAndroid.ui.ranging
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column

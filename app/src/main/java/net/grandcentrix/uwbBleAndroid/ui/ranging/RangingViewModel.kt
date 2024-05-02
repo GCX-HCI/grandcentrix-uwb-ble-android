@@ -1,4 +1,4 @@
-package net.grandcentrix.uwbBleAndroid.ui.uwb
+package net.grandcentrix.uwbBleAndroid.ui.ranging
 
 import android.util.Log
 import androidx.core.uwb.RangingResult

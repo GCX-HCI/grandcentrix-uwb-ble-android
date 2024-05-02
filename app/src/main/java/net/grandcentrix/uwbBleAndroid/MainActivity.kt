@@ -14,7 +14,7 @@ import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 import net.grandcentrix.uwbBleAndroid.ui.ble.BleScreen
 import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
-import net.grandcentrix.uwbBleAndroid.ui.uwb.RangingScreen
+import net.grandcentrix.uwbBleAndroid.ui.ranging.RangingScreen
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
