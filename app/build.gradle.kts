@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.bundles.koin)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
     implementation(libs.uwb)

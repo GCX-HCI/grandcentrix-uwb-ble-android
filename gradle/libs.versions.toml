@@ -43,7 +43,7 @@ googleServices = { module = "com.google.gms:google-services", version.ref = "goo
 kotlin_stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 
 androidx_appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx_appcompat" }
-androidx_lifecycle_viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx_lifecycle" }
+androidx_lifecycle_compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx_lifecycle" }
 androidx_activity_compose = { module = "androidx.activity:activity-compose", version.ref = "androidx_activity_compose" }
 androidx_navigation_compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx_navigation_compose" }
 
