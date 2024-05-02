@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
+    implementation(libs.uwb)
 
     testImplementation(project(":core:test"))
     testImplementation(libs.jupiter)

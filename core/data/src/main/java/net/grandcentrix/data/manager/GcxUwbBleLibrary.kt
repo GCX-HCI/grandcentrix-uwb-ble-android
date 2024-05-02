@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 import androidx.annotation.RequiresPermission
+import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -21,7 +22,7 @@ interface UwbBleLibrary {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<GcxBleConnectionState>
 
-    suspend fun startRanging()
+    fun startRanging(): Flow<RangingResult>
 }
 class GcxUwbBleLibrary(
     uwbManager: UwbManager,
@@ -42,7 +43,5 @@ class GcxUwbBleLibrary(
     override fun connect(bleDevice: BluetoothDevice): Flow<GcxBleConnectionState> =
         bleManager.connect(bleDevice).map { it.toGcxBleConnectionState() }
 
-    override suspend fun startRanging() {
-        gcxUwbControlee.startRanging()
-    }
+    override fun startRanging(): Flow<RangingResult> = gcxUwbControlee.startRanging()
 }

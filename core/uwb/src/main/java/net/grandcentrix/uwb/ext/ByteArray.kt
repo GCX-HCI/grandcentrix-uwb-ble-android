@@ -41,3 +41,16 @@ fun ByteArray.toByte(): Byte {
         throw IndexOutOfBoundsException()
     }
 }
+
+fun ByteArray.toHexString(): String {
+    val hexChars = "0123456789ABCDEF"
+    val hexString = StringBuilder(this.size * 2)
+
+    for (byte in this) {
+        val intValue = byte.toInt() and 0xFF
+        hexString.append(hexChars[intValue shr 4 and 0x0F])
+        hexString.append(hexChars[intValue and 0x0F])
+    }
+
+    return hexString.toString()
+}
