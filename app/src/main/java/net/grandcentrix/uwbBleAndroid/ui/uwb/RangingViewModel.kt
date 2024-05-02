@@ -1,5 +1,6 @@
 package net.grandcentrix.uwbBleAndroid.ui.uwb
 
+import android.util.Log
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.RangingResult.RangingResultPosition
 import androidx.lifecycle.ViewModel
@@ -29,6 +30,10 @@ internal class RangingViewModel(
     private val uwbBleLibrary: UwbBleLibrary,
     private val navigator: Navigator
 ) : ViewModel() {
+    companion object {
+        private val TAG = RangingViewModel::class.java.simpleName
+    }
+
     private val _uiState = MutableStateFlow(RangingUiState())
     val uiState: StateFlow<RangingUiState> = _uiState.asStateFlow()
 
@@ -52,7 +57,7 @@ internal class RangingViewModel(
             uwbBleLibrary.startRanging().collect { rangingResult ->
                 when (rangingResult) {
                     is RangingResultPosition -> updatePositionData(rangingResult)
-                    is RangingResult.RangingResultPeerDisconnected -> onStop()
+                    is RangingResult.RangingResultPeerDisconnected -> onDisconnected()
                 }
             }
         }
@@ -66,6 +71,11 @@ internal class RangingViewModel(
                 elevation = positionResult.position.elevation?.value ?: it.elevation
             )
         }
+    }
+
+    private fun onDisconnected() {
+        Log.d(TAG, "Ranging device disconnected!")
+        onStop()
     }
 
     private fun onStop() {
