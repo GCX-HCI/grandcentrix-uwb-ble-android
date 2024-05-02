@@ -58,7 +58,7 @@ class GcxUwbControlee(
         sessionFlow.collect { send(it) }
     }
 
-    private suspend fun transmitPhoneData() {
+    private suspend fun transmitPhoneData(): Result<BluetoothMessage> {
         uwbControleeSession = uwbManager.controleeSessionScope()
         val localAddress = uwbControleeSession.localAddress
 
@@ -73,7 +73,7 @@ class GcxUwbControlee(
             phoneAddress = localAddress.address
         )
 
-        bleMessagingClient.send(
+        return bleMessagingClient.send(
             byteArrayOf(
                 OOBMessageProtocol.UWB_PHONE_CONFIG_DATA.command
             ) + phoneConfig.toByteArray()
@@ -109,7 +109,9 @@ class GcxUwbControlee(
                         OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
                             val deviceConfig = MKDeviceConfig.fromByteArray(bytes)
                             transmitPhoneData()
-                            startSession(deviceConfig = deviceConfig)
+                                .onSuccess {
+                                    startSession(deviceConfig = deviceConfig)
+                                }
                         }
 
                         OOBMessageProtocol.UWB_DID_START.command -> {
