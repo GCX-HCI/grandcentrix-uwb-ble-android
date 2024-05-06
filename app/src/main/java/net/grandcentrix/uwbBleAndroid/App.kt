@@ -1,8 +1,6 @@
 package net.grandcentrix.uwbBleAndroid
 
 import android.app.Application
-import net.grandcentrix.data.di.dataModule
-import net.grandcentrix.data.di.provideSubModules
 import net.grandcentrix.uwbBleAndroid.di.mainModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -15,9 +13,8 @@ class App : Application() {
 
             modules(
                 listOf(
-                    mainModule,
-                    dataModule
-                ) + provideSubModules
+                    mainModule
+                )
             )
         }
     }
