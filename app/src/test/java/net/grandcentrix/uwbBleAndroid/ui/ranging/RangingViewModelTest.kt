@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.data.manager.UwbBleLibrary
-import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
+import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 import org.junit.jupiter.api.Assertions.assertEquals
