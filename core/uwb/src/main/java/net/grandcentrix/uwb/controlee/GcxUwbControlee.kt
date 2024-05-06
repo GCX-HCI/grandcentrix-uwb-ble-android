@@ -1,7 +1,9 @@
 package net.grandcentrix.uwb.controlee
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingParameters
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbComplexChannel
@@ -28,6 +30,7 @@ import net.grandcentrix.uwb.model.MKPhoneConfig
 private const val TAG = "GcxUwbControlee"
 
 interface UwbControlee {
+    @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
 }
 
@@ -44,6 +47,7 @@ class GcxUwbControlee(
 
     private val uwbComplexChannel = UwbComplexChannel(channel = 9, preambleIndex = 10)
 
+    @RequiresPermission(Manifest.permission.UWB_RANGING)
     override fun startRanging(): Flow<RangingResult> = channelFlow {
         launch { collectBleMessages() }
 
