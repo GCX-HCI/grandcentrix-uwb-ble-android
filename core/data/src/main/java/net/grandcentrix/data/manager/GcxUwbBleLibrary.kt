@@ -16,6 +16,7 @@ import net.grandcentrix.ble.scanner.GcxBleScanner
 import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.data.model.toGcxBleConnectionState
 import net.grandcentrix.uwb.controlee.GcxUwbControlee
+import net.grandcentrix.uwb.controlee.UwbControlee
 
 interface UwbBleLibrary {
 
@@ -35,7 +36,7 @@ class GcxUwbBleLibrary(
     private val bleScanner: BleScanner = GcxBleScanner(bleManager)
     private val uwbManager: UwbManager = UwbManager.createInstance(context)
 
-    private val gcxUwbControlee = GcxUwbControlee(
+    private val ubwControlee: UwbControlee = GcxUwbControlee(
         uwbManager = uwbManager,
         bleMessages = bleManager.bleMessages,
         bleMessagingClient = bleManager.bleMessagingClient
@@ -48,5 +49,5 @@ class GcxUwbBleLibrary(
     override fun connect(bleDevice: BluetoothDevice): Flow<GcxBleConnectionState> =
         bleManager.connect(bleDevice).map { it.toGcxBleConnectionState() }
 
-    override fun startRanging(): Flow<RangingResult> = gcxUwbControlee.startRanging()
+    override fun startRanging(): Flow<RangingResult> = ubwControlee.startRanging()
 }
