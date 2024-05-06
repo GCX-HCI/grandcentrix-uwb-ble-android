@@ -1,12 +1,10 @@
 package net.grandcentrix.ble.manager
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothManager
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import java.util.UUID
@@ -34,7 +32,6 @@ enum class ConnectionState {
 }
 
 interface BleManager {
-    fun bluetoothAdapter(): BluetoothAdapter
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
@@ -57,7 +54,6 @@ class GcxBleManager(
     private val uuidProvider: UUIDProvider
 ) : BleManager {
 
-    private val bluetoothAdapter: BluetoothAdapter
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
 
@@ -87,7 +83,6 @@ class GcxBleManager(
             gatt.setCharacteristicNotification(characteristic, true)
         }
     }
-    override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
         val gattCallback = object : BluetoothGattCallback() {
@@ -198,11 +193,6 @@ class GcxBleManager(
         } ?: run {
             throw BluetoothException.BluetoothTimeoutException
         }
-    }
-
-    init {
-        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = manager.adapter
     }
 
     companion object {
