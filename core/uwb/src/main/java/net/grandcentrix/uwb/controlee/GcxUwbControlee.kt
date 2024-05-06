@@ -94,7 +94,9 @@ class GcxUwbControlee(
             sessionKeyInfo = sessionKey,
             complexChannel = uwbComplexChannel,
             peerDevices = listOf(uwbDevice),
-            updateRateType = RangingParameters.RANGING_UPDATE_RATE_FREQUENT
+            updateRateType = RangingParameters.RANGING_UPDATE_RATE_FREQUENT,
+            subSessionId = 0,
+            subSessionKeyInfo = null
         )
 
         sessionFlow.emitAll(uwbControleeSession.prepareSession(partnerParameters))
