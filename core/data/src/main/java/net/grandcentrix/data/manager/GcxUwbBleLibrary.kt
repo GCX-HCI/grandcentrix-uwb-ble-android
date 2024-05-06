@@ -3,13 +3,16 @@ package net.grandcentrix.data.manager
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
+import android.content.Context
 import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import net.grandcentrix.ble.manager.BleManager
+import net.grandcentrix.ble.manager.GcxBleManager
 import net.grandcentrix.ble.scanner.BleScanner
+import net.grandcentrix.ble.scanner.GcxBleScanner
 import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.data.model.toGcxBleConnectionState
 import net.grandcentrix.uwb.controlee.GcxUwbControlee
@@ -25,10 +28,12 @@ interface UwbBleLibrary {
     fun startRanging(): Flow<RangingResult>
 }
 class GcxUwbBleLibrary(
-    uwbManager: UwbManager,
-    private val bleManager: BleManager,
-    private val bleScanner: BleScanner
+    context: Context
 ) : UwbBleLibrary {
+
+    private val bleManager: BleManager = GcxBleManager(context)
+    private val bleScanner: BleScanner = GcxBleScanner(bleManager)
+    private val uwbManager: UwbManager = UwbManager.createInstance(context)
 
     private val gcxUwbControlee = GcxUwbControlee(
         uwbManager = uwbManager,
