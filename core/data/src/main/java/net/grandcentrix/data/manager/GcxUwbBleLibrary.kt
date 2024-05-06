@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import net.grandcentrix.ble.manager.BleManager
 import net.grandcentrix.ble.manager.GcxBleManager
+import net.grandcentrix.ble.provider.UUIDProvider
 import net.grandcentrix.ble.scanner.BleScanner
 import net.grandcentrix.ble.scanner.GcxBleScanner
 import net.grandcentrix.data.model.GcxBleConnectionState
@@ -28,11 +29,13 @@ interface UwbBleLibrary {
 
     fun startRanging(): Flow<RangingResult>
 }
+
 class GcxUwbBleLibrary(
-    context: Context
+    context: Context,
+    uuidProvider: UUIDProvider = UUIDProvider()
 ) : UwbBleLibrary {
 
-    private val bleManager: BleManager = GcxBleManager(context)
+    private val bleManager: BleManager = GcxBleManager(context, uuidProvider)
     private val bleScanner: BleScanner = GcxBleScanner(bleManager)
     private val uwbManager: UwbManager = UwbManager.createInstance(context)
 
