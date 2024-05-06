@@ -1,5 +1,6 @@
 package net.grandcentrix.uwbBleAndroid.ui.ranging
 
+import android.Manifest
 import androidx.core.uwb.RangingMeasurement
 import androidx.core.uwb.RangingPosition
 import androidx.core.uwb.RangingResult
@@ -35,7 +36,7 @@ class RangingViewModelTest {
     private val navigator: Navigator = mockk(relaxUnitFun = true)
 
     private val permissionChecker: PermissionChecker = mockk {
-        every { hasPermission(any()) } returns true
+        every { hasPermissions(any()) } returns true
     }
 
     @Test
@@ -152,5 +153,18 @@ class RangingViewModelTest {
             )
 
             verify { uwbBleLibrary.startRanging() }
+        }
+
+    @Test
+    fun `Given uwb permission not granted, when opening ranging screen, then uwbControlee startRanging is not called`() =
+        runTest {
+            every {
+                permissionChecker.hasPermissions(listOf(Manifest.permission.UWB_RANGING))
+            } returns false
+            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            viewModel.onResume()
+            advanceUntilIdle()
+
+            verify(exactly = 0) { uwbBleLibrary.startRanging() }
         }
 }
