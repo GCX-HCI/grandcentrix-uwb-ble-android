@@ -1,4 +1,4 @@
-package net.grandcentrix.uwbBleAndroid
+package net.grandcentrix.uwbBleAndroid.permission
 
 import android.Manifest
 import android.content.Context
