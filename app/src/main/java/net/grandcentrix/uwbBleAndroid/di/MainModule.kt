@@ -32,6 +32,12 @@ val mainModule = module {
         )
     }
 
+    single<UwbBleLibrary> {
+        GcxUwbBleLibrary(
+            context = get()
+        )
+    }
+
     single { PermissionChecker(context = get()) }
     single { Navigator() }
 }
