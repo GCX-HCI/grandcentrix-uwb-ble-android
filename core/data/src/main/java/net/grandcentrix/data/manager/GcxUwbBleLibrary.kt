@@ -25,6 +25,7 @@ interface UwbBleLibrary {
     @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
 }
+
 class GcxUwbBleLibrary(
     uwbManager: UwbManager,
     private val bleManager: BleManager,
