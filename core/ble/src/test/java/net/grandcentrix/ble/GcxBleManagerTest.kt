@@ -57,7 +57,11 @@ class GcxBleManagerTest {
         every { bluetoothManager.adapter } returns bluetoothAdapter
     }
 
-    private val uuidProvider: UUIDProvider = mockk()
+    private val uuidProvider: UUIDProvider = mockk {
+        every { serviceUUID } returns UUID.randomUUID()
+        every { txUUID } returns UUID.randomUUID()
+        every { rxUUID } returns UUID.randomUUID()
+    }
 
     @Test
     fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() =
