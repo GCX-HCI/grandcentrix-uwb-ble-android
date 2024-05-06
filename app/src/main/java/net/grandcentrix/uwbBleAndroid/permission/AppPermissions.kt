@@ -4,6 +4,8 @@ import android.Manifest
 
 object AppPermissions {
     val uwbRangingPermissions = listOf(
+        // Bluetooth connect permission is needed for sending messages via BLE
+        Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.UWB_RANGING
     )
 

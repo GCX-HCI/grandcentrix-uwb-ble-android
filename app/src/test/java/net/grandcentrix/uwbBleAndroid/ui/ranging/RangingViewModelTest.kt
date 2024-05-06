@@ -159,7 +159,12 @@ class RangingViewModelTest {
     fun `Given uwb permission not granted, when opening ranging screen, then uwbControlee startRanging is not called`() =
         runTest {
             every {
-                permissionChecker.hasPermissions(listOf(Manifest.permission.UWB_RANGING))
+                permissionChecker.hasPermissions(
+                    listOf(
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.UWB_RANGING
+                    )
+                )
             } returns false
             val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
             viewModel.onResume()
