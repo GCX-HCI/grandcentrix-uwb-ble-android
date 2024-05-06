@@ -37,10 +37,9 @@ class GcxUwbBleLibrary(
 
     private val bleManager: BleManager = GcxBleManager(context, uuidProvider)
     private val bleScanner: BleScanner = GcxBleScanner(context)
-    private val uwbManager: UwbManager = UwbManager.createInstance(context)
 
     private val ubwControlee: UwbControlee = GcxUwbControlee(
-        uwbManager = uwbManager,
+        uwbManager = UwbManager.createInstance(context),
         bleMessages = bleManager.bleMessages,
         bleMessagingClient = bleManager.bleMessagingClient
     )
