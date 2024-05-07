@@ -23,11 +23,11 @@ import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwb.model.DeviceConfig
-import net.grandcentrix.uwb.model.MKDeviceConfig
 import net.grandcentrix.uwb.model.MKPhoneConfig
 
 private const val TAG = "GcxUwbControlee"
 
+typealias DeviceConfigInterceptor = (ByteArray) -> DeviceConfig
 interface UwbControlee {
     @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
@@ -36,7 +36,8 @@ interface UwbControlee {
 class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessages: SharedFlow<BluetoothMessage>,
-    private val bleMessagingClient: BleMessagingClient
+    private val bleMessagingClient: BleMessagingClient,
+    private val deviceConfigInterceptor: DeviceConfigInterceptor
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope
@@ -115,7 +116,7 @@ class GcxUwbControlee(
                 it.data?.let { bytes ->
                     when (bytes.first()) {
                         OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
-                            val deviceConfig = MKDeviceConfig.fromByteArray(bytes)
+                            val deviceConfig = deviceConfigInterceptor(bytes)
                             transmitPhoneData()
                                 .onSuccess {
                                     startSession(deviceConfig = deviceConfig)
