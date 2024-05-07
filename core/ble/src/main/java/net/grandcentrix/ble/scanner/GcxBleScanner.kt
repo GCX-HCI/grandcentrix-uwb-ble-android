@@ -26,8 +26,14 @@ interface BleScanner {
 class GcxBleScanner(
     context: Context
 ) : BleScanner {
-    private val bluetoothAdapter: BluetoothAdapter
-    private val bluetoothLeScanner: BluetoothLeScanner
+
+    private val bluetoothAdapter: BluetoothAdapter by lazy {
+        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        manager.adapter
+    }
+    private val bluetoothLeScanner: BluetoothLeScanner by lazy {
+        bluetoothAdapter.bluetoothLeScanner
+    }
 
     override fun startScan(): Flow<ScanResult> = callbackFlow {
         if (!bluetoothAdapter.isEnabled) {
@@ -64,11 +70,5 @@ class GcxBleScanner(
                 Log.e(TAG, "stop scan failed", exception)
             }
         }
-    }
-
-    init {
-        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = manager.adapter
-        bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
     }
 }
