@@ -1,5 +1,6 @@
 package net.grandcentrix.uwbBleAndroid.ui.ranging
 
+import android.Manifest
 import androidx.core.uwb.RangingMeasurement
 import androidx.core.uwb.RangingPosition
 import androidx.core.uwb.RangingResult
@@ -16,7 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.data.manager.UwbBleLibrary
-import net.grandcentrix.test.CoroutineTestExtension
+import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
+import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,12 +32,17 @@ class RangingViewModelTest {
     private val uwbBleLibrary: UwbBleLibrary = mockk {
         every { startRanging() } returns emptyFlow()
     }
+
     private val navigator: Navigator = mockk(relaxUnitFun = true)
+
+    private val permissionChecker: PermissionChecker = mockk {
+        every { hasPermissions(any()) } returns true
+    }
 
     @Test
     fun `Given connected ranging device, when opening ranging screen, then collection of ranging events starts`() =
         runTest {
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator)
+            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
@@ -45,7 +52,7 @@ class RangingViewModelTest {
     @Test
     fun `Given connected ranging device and ranging events are collected, when closing view, then navigate to Connect screen`() =
         runTest {
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator)
+            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
             viewModel.onBackClicked()
@@ -74,7 +81,7 @@ class RangingViewModelTest {
                 )
             )
 
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator)
+            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
@@ -107,7 +114,7 @@ class RangingViewModelTest {
             )
             every { uwbBleLibrary.startRanging() } returns rangingFlow
 
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator)
+            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
@@ -146,5 +153,23 @@ class RangingViewModelTest {
             )
 
             verify { uwbBleLibrary.startRanging() }
+        }
+
+    @Test
+    fun `Given uwb permission not granted, when opening ranging screen, then uwbControlee startRanging is not called`() =
+        runTest {
+            every {
+                permissionChecker.hasPermissions(
+                    listOf(
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.UWB_RANGING
+                    )
+                )
+            } returns false
+            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            viewModel.onResume()
+            advanceUntilIdle()
+
+            verify(exactly = 0) { uwbBleLibrary.startRanging() }
         }
 }

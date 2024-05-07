@@ -1,7 +1,8 @@
 package net.grandcentrix.uwb.controlee
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingParameters
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbComplexChannel
@@ -28,10 +29,10 @@ import net.grandcentrix.uwb.model.MKPhoneConfig
 private const val TAG = "GcxUwbControlee"
 
 interface UwbControlee {
+    @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
 }
 
-@SuppressLint("MissingPermission")
 class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessages: SharedFlow<BluetoothMessage>,
@@ -44,6 +45,9 @@ class GcxUwbControlee(
 
     private val uwbComplexChannel = UwbComplexChannel(channel = 9, preambleIndex = 10)
 
+    @RequiresPermission(
+        allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
+    )
     override fun startRanging(): Flow<RangingResult> = channelFlow {
         launch { collectBleMessages() }
 
@@ -58,6 +62,7 @@ class GcxUwbControlee(
         sessionFlow.collect { send(it) }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun transmitPhoneData(): Result<BluetoothMessage> {
         uwbControleeSession = uwbManager.controleeSessionScope()
         val localAddress = uwbControleeSession.localAddress
@@ -102,6 +107,7 @@ class GcxUwbControlee(
         sessionFlow.emitAll(uwbControleeSession.prepareSession(partnerParameters))
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun collectBleMessages() {
         bleMessages
             .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }

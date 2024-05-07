@@ -21,7 +21,8 @@ val mainModule = module {
     viewModel {
         RangingViewModel(
             uwbBleLibrary = get(),
-            navigator = get()
+            navigator = get(),
+            permissionChecker = get()
         )
     }
 

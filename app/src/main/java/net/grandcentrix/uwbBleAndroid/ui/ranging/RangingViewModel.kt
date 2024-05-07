@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.data.manager.UwbBleLibrary
+import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
+import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 
@@ -24,12 +26,14 @@ internal data class RangingUiState(
     val distance: Float? = null,
     val azimuth: Float? = null,
     val elevation: Float? = null,
-    val isRangingPeerConnected: Boolean = false
+    val isRangingPeerConnected: Boolean = false,
+    val requestUwbRangingPermission: Boolean = false
 )
 
 internal class RangingViewModel(
     private val uwbBleLibrary: UwbBleLibrary,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val permissionChecker: PermissionChecker
 ) : ViewModel() {
     companion object {
         private val TAG = RangingViewModel::class.java.simpleName
@@ -37,6 +41,8 @@ internal class RangingViewModel(
 
     private val _uiState = MutableStateFlow(RangingUiState())
     val uiState: StateFlow<RangingUiState> = _uiState.asStateFlow()
+
+    private var isUwbSessionPending: Boolean = false
 
     // Only needed as the view model is not cleared due to very basic navigation implementation
     private var rangingJob: Job? = null
@@ -47,21 +53,39 @@ internal class RangingViewModel(
     }
 
     fun onResume() {
-        collectUwbPositingResults()
+        if (rangingJob?.isActive != true) {
+            collectUwbPositingResults()
+        }
     }
 
     fun onPause() {
         stopRanging()
     }
 
+    fun onPermissionResult() {
+        if (isUwbSessionPending) {
+            collectUwbPositingResults()
+        }
+    }
+
+    fun onUwbRangingPermissionRequested() {
+        _uiState.update { it.copy(requestUwbRangingPermission = false) }
+    }
+
     private fun collectUwbPositingResults() {
-        rangingJob = viewModelScope.launch {
-            uwbBleLibrary.startRanging().collect { rangingResult ->
-                when (rangingResult) {
-                    is RangingResultPosition -> updatePositionData(rangingResult)
-                    is RangingResult.RangingResultPeerDisconnected -> onDisconnected()
+        if (checkUwbRangingPermission()) {
+            isUwbSessionPending = false
+            rangingJob = viewModelScope.launch {
+                uwbBleLibrary.startRanging().collect { rangingResult ->
+                    when (rangingResult) {
+                        is RangingResultPosition -> updatePositionData(rangingResult)
+                        is RangingResult.RangingResultPeerDisconnected -> onDisconnected()
+                    }
                 }
             }
+        } else {
+            isUwbSessionPending = true
+            _uiState.update { it.copy(requestUwbRangingPermission = true) }
         }
     }
 
@@ -85,5 +109,9 @@ internal class RangingViewModel(
     private fun stopRanging() {
         rangingJob?.cancel()
         _uiState.update { it.copy(isRangingPeerConnected = false) }
+    }
+
+    private fun checkUwbRangingPermission(): Boolean {
+        return permissionChecker.hasPermissions(AppPermissions.uwbRangingPermissions)
     }
 }

@@ -1,6 +1,5 @@
 package net.grandcentrix.uwbBleAndroid
 
-import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,8 +12,8 @@ import androidx.compose.ui.Modifier
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 import net.grandcentrix.uwbBleAndroid.ui.ble.BleScreen
-import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
 import net.grandcentrix.uwbBleAndroid.ui.ranging.RangingScreen
+import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -23,10 +22,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestPermissions(arrayOf(Manifest.permission.UWB_RANGING), 1001)
 
         setContent {
-            GrandcentrixuwbbleandroidTheme {
+            AppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),

@@ -64,7 +64,6 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.uwb)
 
-    testImplementation(project(":core:test"))
     testImplementation(libs.jupiter)
     testImplementation(libs.androidx.junit)
     testImplementation(libs.mockk)
