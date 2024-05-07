@@ -13,7 +13,7 @@ import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 import net.grandcentrix.uwbBleAndroid.ui.ble.BleScreen
 import net.grandcentrix.uwbBleAndroid.ui.ranging.RangingScreen
-import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
+import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            GrandcentrixuwbbleandroidTheme {
+            AppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),

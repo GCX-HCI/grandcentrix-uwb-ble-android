@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
-import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
+import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -116,7 +116,7 @@ private fun Float.roundToTwoDecimals(): String {
 @Preview
 @Composable
 private fun RangingPreview() {
-    GrandcentrixuwbbleandroidTheme {
+    AppTheme {
         RangingView(
             uiState = RangingUiState(
                 distance = 0.5f,
