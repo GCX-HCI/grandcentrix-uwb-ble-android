@@ -22,8 +22,12 @@ interface UwbBleLibrary {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<GcxBleConnectionState>
 
+    @RequiresPermission(
+        allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
+    )
     fun startRanging(): Flow<RangingResult>
 }
+
 class GcxUwbBleLibrary(
     uwbManager: UwbManager,
     private val bleManager: BleManager,
@@ -43,5 +47,8 @@ class GcxUwbBleLibrary(
     override fun connect(bleDevice: BluetoothDevice): Flow<GcxBleConnectionState> =
         bleManager.connect(bleDevice).map { it.toGcxBleConnectionState() }
 
+    @RequiresPermission(
+        allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
+    )
     override fun startRanging(): Flow<RangingResult> = gcxUwbControlee.startRanging()
 }

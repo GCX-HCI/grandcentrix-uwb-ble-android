@@ -1,6 +1,8 @@
 package net.grandcentrix.uwbBleAndroid.ui.ranging
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,12 +26,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.GrandcentrixuwbbleandroidTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 internal fun RangingScreen(viewModel: RangingViewModel = koinViewModel()) {
     BackHandler { viewModel.onBackClicked() }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { viewModel.onPermissionResult() }
+    )
 
     LifecycleResumeEffect {
         viewModel.onResume()
@@ -44,6 +51,11 @@ internal fun RangingScreen(viewModel: RangingViewModel = koinViewModel()) {
         uiState = uiState,
         onBackClicked = viewModel::onBackClicked
     )
+
+    if (uiState.requestUwbRangingPermission) {
+        viewModel.onUwbRangingPermissionRequested()
+        permissionLauncher.launch(AppPermissions.uwbRangingPermissions.toTypedArray())
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
