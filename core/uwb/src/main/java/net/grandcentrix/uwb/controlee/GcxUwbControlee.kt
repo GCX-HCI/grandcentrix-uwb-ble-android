@@ -23,7 +23,6 @@ import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwb.model.DeviceConfig
-import net.grandcentrix.uwb.model.MKPhoneConfig
 
 private const val TAG = "GcxUwbControlee"
 
