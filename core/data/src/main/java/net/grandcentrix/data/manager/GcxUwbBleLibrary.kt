@@ -41,7 +41,7 @@ class GcxUwbBleLibrary(
     private val bleManager: BleManager = GcxBleManager(context, uuidProvider)
     private val bleScanner: BleScanner = GcxBleScanner(context)
 
-    private val ubwControlee: UwbControlee = GcxUwbControlee(
+    private val uwbControlee: UwbControlee = GcxUwbControlee(
         uwbManager = UwbManager.createInstance(context),
         bleMessages = bleManager.bleMessages,
         bleMessagingClient = bleManager.bleMessagingClient
@@ -57,5 +57,5 @@ class GcxUwbBleLibrary(
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
-    override fun startRanging(): Flow<RangingResult> = gcxUwbControlee.startRanging()
+    override fun startRanging(): Flow<RangingResult> = uwbControlee.startRanging()
 }
