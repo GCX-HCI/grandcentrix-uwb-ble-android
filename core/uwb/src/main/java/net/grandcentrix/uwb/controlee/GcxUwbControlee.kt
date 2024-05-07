@@ -46,6 +46,12 @@ interface DeviceConfigInterceptor {
     fun intercept(byteArray: ByteArray): DeviceConfig
 }
 
+typealias PhoneConfigInterceptor = (
+    sessionId: Int,
+    complexChannel: UwbComplexChannel,
+    phoneAddress: ByteArray
+) -> ByteArray
+
 interface UwbControlee {
     @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
@@ -55,7 +61,8 @@ class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessages: SharedFlow<BluetoothMessage>,
     private val bleMessagingClient: BleMessagingClient,
-    private val deviceConfigInterceptor: DeviceConfigInterceptor
+    private val deviceConfigInterceptor: DeviceConfigInterceptor,
+    private val phoneConfigInterceptor: PhoneConfigInterceptor
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope
@@ -86,21 +93,14 @@ class GcxUwbControlee(
         uwbControleeSession = uwbManager.controleeSessionScope()
         val localAddress = uwbControleeSession.localAddress
 
-        val phoneConfig = MKPhoneConfig(
-            specVerMajor = 0x0100.toShort(),
-            specVerMinor = 0x0000.toShort(),
-            sessionId = sessionId,
-            preambleIndex = uwbComplexChannel.preambleIndex.toByte(),
-            channel = uwbComplexChannel.channel.toByte(),
-            profileId = RangingParameters.CONFIG_UNICAST_DS_TWR.toByte(),
-            deviceRangingRole = 0x01.toByte(),
-            phoneAddress = localAddress.address
-        )
-
         return bleMessagingClient.send(
             byteArrayOf(
                 OOBMessageProtocol.UWB_PHONE_CONFIG_DATA.command
-            ) + phoneConfig.toByteArray()
+            ) + phoneConfigInterceptor(
+                sessionId,
+                uwbComplexChannel,
+                localAddress.address
+            )
         )
     }
 

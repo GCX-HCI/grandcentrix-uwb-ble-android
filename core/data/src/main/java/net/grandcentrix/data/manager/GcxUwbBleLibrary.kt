@@ -18,6 +18,7 @@ import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.data.model.toGcxBleConnectionState
 import net.grandcentrix.uwb.controlee.DeviceConfigInterceptor
 import net.grandcentrix.uwb.controlee.GcxUwbControlee
+import net.grandcentrix.uwb.controlee.PhoneConfigInterceptor
 import net.grandcentrix.uwb.controlee.UwbControlee
 
 interface UwbBleLibrary {
@@ -37,7 +38,8 @@ interface UwbBleLibrary {
 class GcxUwbBleLibrary(
     context: Context,
     uuidProvider: UUIDProvider = UUIDProvider(),
-    deviceConfigInterceptor: DeviceConfigInterceptor
+    deviceConfigInterceptor: DeviceConfigInterceptor,
+    phoneConfigInterceptor: PhoneConfigInterceptor
 ) : UwbBleLibrary {
 
     private val bleManager: BleManager = GcxBleManager(context, uuidProvider)
@@ -47,7 +49,8 @@ class GcxUwbBleLibrary(
         uwbManager = UwbManager.createInstance(context),
         bleMessages = bleManager.bleMessages,
         bleMessagingClient = bleManager.bleMessagingClient,
-        deviceConfigInterceptor = deviceConfigInterceptor
+        deviceConfigInterceptor = deviceConfigInterceptor,
+        phoneConfigInterceptor = phoneConfigInterceptor
     )
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
