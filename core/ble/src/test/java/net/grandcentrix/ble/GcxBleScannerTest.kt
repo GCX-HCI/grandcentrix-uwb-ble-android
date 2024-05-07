@@ -73,7 +73,7 @@ class GcxBleScannerTest {
             mockkStatic(Log::class)
 
             every { leScanner.startScan(any()) } throws SecurityException()
-            every { Log.e(any(), any()) } returns 0
+            every { Log.e(any(), any(), any()) } returns 0
 
             val gcxBleScanner =
                 GcxBleScanner(
