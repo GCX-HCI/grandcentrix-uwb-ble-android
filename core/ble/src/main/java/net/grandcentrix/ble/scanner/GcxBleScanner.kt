@@ -2,9 +2,11 @@ package net.grandcentrix.ble.scanner
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
@@ -12,7 +14,6 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.ble.exception.BluetoothException
-import net.grandcentrix.ble.manager.BleManager
 
 private const val TAG = "BleScanner"
 
@@ -23,10 +24,16 @@ interface BleScanner {
 }
 
 class GcxBleScanner(
-    bleManager: BleManager
+    context: Context
 ) : BleScanner {
-    private val bluetoothAdapter: BluetoothAdapter = bleManager.bluetoothAdapter()
-    private val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+
+    private val bluetoothAdapter: BluetoothAdapter by lazy {
+        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        manager.adapter
+    }
+    private val bluetoothLeScanner: BluetoothLeScanner by lazy {
+        bluetoothAdapter.bluetoothLeScanner
+    }
 
     override fun startScan(): Flow<ScanResult> = callbackFlow {
         if (!bluetoothAdapter.isEnabled) {

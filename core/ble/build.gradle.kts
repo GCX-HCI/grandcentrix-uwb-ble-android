@@ -37,8 +37,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.bundles.koin)
     implementation(libs.bundles.coroutines)
+    implementation(libs.androidx.annotation)
 
     testImplementation(libs.jupiter)
     testImplementation(libs.mockk)

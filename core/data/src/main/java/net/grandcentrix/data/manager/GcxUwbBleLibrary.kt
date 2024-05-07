@@ -3,16 +3,21 @@ package net.grandcentrix.data.manager
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
+import android.content.Context
 import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import net.grandcentrix.ble.manager.BleManager
+import net.grandcentrix.ble.manager.GcxBleManager
+import net.grandcentrix.ble.provider.UUIDProvider
 import net.grandcentrix.ble.scanner.BleScanner
+import net.grandcentrix.ble.scanner.GcxBleScanner
 import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.data.model.toGcxBleConnectionState
 import net.grandcentrix.uwb.controlee.GcxUwbControlee
+import net.grandcentrix.uwb.controlee.UwbControlee
 
 interface UwbBleLibrary {
 
@@ -29,13 +34,15 @@ interface UwbBleLibrary {
 }
 
 class GcxUwbBleLibrary(
-    uwbManager: UwbManager,
-    private val bleManager: BleManager,
-    private val bleScanner: BleScanner
+    context: Context,
+    uuidProvider: UUIDProvider = UUIDProvider()
 ) : UwbBleLibrary {
 
-    private val gcxUwbControlee = GcxUwbControlee(
-        uwbManager = uwbManager,
+    private val bleManager: BleManager = GcxBleManager(context, uuidProvider)
+    private val bleScanner: BleScanner = GcxBleScanner(context)
+
+    private val uwbControlee: UwbControlee = GcxUwbControlee(
+        uwbManager = UwbManager.createInstance(context),
         bleMessages = bleManager.bleMessages,
         bleMessagingClient = bleManager.bleMessagingClient
     )
@@ -50,5 +57,5 @@ class GcxUwbBleLibrary(
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
-    override fun startRanging(): Flow<RangingResult> = gcxUwbControlee.startRanging()
+    override fun startRanging(): Flow<RangingResult> = uwbControlee.startRanging()
 }

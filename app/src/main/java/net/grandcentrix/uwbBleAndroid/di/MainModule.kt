@@ -1,5 +1,7 @@
 package net.grandcentrix.uwbBleAndroid.di
 
+import net.grandcentrix.data.manager.GcxUwbBleLibrary
+import net.grandcentrix.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.ble.BleViewModel
@@ -21,6 +23,12 @@ val mainModule = module {
             uwbBleLibrary = get(),
             navigator = get(),
             permissionChecker = get()
+        )
+    }
+
+    single<UwbBleLibrary> {
+        GcxUwbBleLibrary(
+            context = get()
         )
     }
 

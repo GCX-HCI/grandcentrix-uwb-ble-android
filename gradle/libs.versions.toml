@@ -33,6 +33,7 @@ uwb = "1.0.0-alpha08"
 jupiter = "5.10.2"
 androidx_junit = "1.1.5"
 androidx_espresso = "3.5.0"
+androidx_annotation = "1.7.1"
 mockk = "1.13.10"
 
 [libraries]
@@ -63,6 +64,8 @@ koin = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin_compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 
 arrow = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+
+androidx_annotation = { module = "androidx.annotation:annotation", version.ref = "androidx_annotation"}
 
 # test dependencies
 jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jupiter" }

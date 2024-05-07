@@ -1,12 +1,10 @@
 package net.grandcentrix.ble.manager
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothManager
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import java.util.UUID
@@ -22,6 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import net.grandcentrix.ble.exception.BluetoothException
 import net.grandcentrix.ble.model.BluetoothMessage
+import net.grandcentrix.ble.provider.UUIDProvider
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
 private const val TAG = "BleManager"
@@ -33,7 +32,6 @@ enum class ConnectionState {
 }
 
 interface BleManager {
-    fun bluetoothAdapter(): BluetoothAdapter
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
@@ -53,12 +51,9 @@ interface BleMessagingClient {
 
 class GcxBleManager(
     private val context: Context,
-    private val serviceUUID: UUID = UUID.fromString(UART_SERVICE),
-    private val rxUUID: UUID = UUID.fromString(UART_RX_CHARACTERISTIC),
-    private val txUUID: UUID = UUID.fromString(UART_TX_CHARACTERISTIC)
+    private val uuidProvider: UUIDProvider
 ) : BleManager {
 
-    private val bluetoothAdapter: BluetoothAdapter
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
 
@@ -88,7 +83,6 @@ class GcxBleManager(
             gatt.setCharacteristicNotification(characteristic, true)
         }
     }
-    override fun bluetoothAdapter(): BluetoothAdapter = bluetoothAdapter
 
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
         val gattCallback = object : BluetoothGattCallback() {
@@ -181,11 +175,11 @@ class GcxBleManager(
     }
 
     private fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
-        val service = gatt.getService(serviceUUID)
+        val service = gatt.getService(uuidProvider.serviceUUID)
 
         if (service != null) {
-            rxCharacteristic = service.getCharacteristic(rxUUID)
-            txCharacteristic = service.getCharacteristic(txUUID)
+            rxCharacteristic = service.getCharacteristic(uuidProvider.rxUUID)
+            txCharacteristic = service.getCharacteristic(uuidProvider.txUUID)
         }
 
         return rxCharacteristic != null && txCharacteristic != null
@@ -199,11 +193,6 @@ class GcxBleManager(
         } ?: run {
             throw BluetoothException.BluetoothTimeoutException
         }
-    }
-
-    init {
-        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = manager.adapter
     }
 
     companion object {
