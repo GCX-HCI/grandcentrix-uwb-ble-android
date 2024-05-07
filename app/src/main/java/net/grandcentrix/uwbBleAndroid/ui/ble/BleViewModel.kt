@@ -53,7 +53,7 @@ class BleViewModel(
     }
 
     fun onConnectPermissionsRequested() {
-        _viewState.update { it.copy(requestScanPermissions = false) }
+        _viewState.update { it.copy(requestConnectPermissions = false) }
     }
 
     fun onToggleScanClicked() {
