@@ -104,7 +104,6 @@ class BleViewModel(
             return navigateToRangingScreen()
         }
 
-            _viewState.update { it.copy(isConnecting = true) }
         if (checkConnectPermission()) {
             deviceConnectPending = null
             connectToDevice(device)
@@ -141,7 +140,6 @@ class BleViewModel(
                     updateConnectionState(device, connectionState)
 
                     if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
-                        _viewState.update { it.copy(isConnecting = false) }
                         navigateToRangingScreen()
                     }
                 }
