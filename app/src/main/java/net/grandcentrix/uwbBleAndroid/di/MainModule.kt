@@ -30,7 +30,7 @@ val mainModule = module {
     single<UwbBleLibrary> {
         GcxUwbBleLibrary(
             context = get(),
-            deviceConfigInterceptor = MKDeviceConfigInterceptor.intercept()
+            deviceConfigInterceptor = MKDeviceConfigInterceptor
         )
     }
 

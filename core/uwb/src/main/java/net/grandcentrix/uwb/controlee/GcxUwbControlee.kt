@@ -27,7 +27,26 @@ import net.grandcentrix.uwb.model.MKPhoneConfig
 
 private const val TAG = "GcxUwbControlee"
 
-typealias DeviceConfigInterceptor = (ByteArray) -> DeviceConfig
+/**
+ * Interface for intercepting and interpreting device configuration data received from the controller device.
+ *
+ * This interface allows developers to create custom interceptors to handle byte data received as device configuration
+ * and map it to their own data model.
+ */
+interface DeviceConfigInterceptor {
+
+    /**
+     * Intercepts and interprets the byte array representing device configuration data.
+     *
+     * This method is called when device configuration data is received. Developers can implement their
+     * own logic to parse and interpret the byte array into a custom [DeviceConfig] model.
+     *
+     * @param byteArray The byte array representing the device configuration data received from the controller device.
+     * @return A [DeviceConfig] object representing the interpreted device configuration data.
+     */
+    fun intercept(byteArray: ByteArray): DeviceConfig
+}
+
 interface UwbControlee {
     @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
@@ -116,7 +135,7 @@ class GcxUwbControlee(
                 it.data?.let { bytes ->
                     when (bytes.first()) {
                         OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
-                            val deviceConfig = deviceConfigInterceptor(bytes)
+                            val deviceConfig = deviceConfigInterceptor.intercept(bytes)
                             transmitPhoneData()
                                 .onSuccess {
                                     startSession(deviceConfig = deviceConfig)
