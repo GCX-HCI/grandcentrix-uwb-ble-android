@@ -32,7 +32,7 @@ val mainModule = module {
         GcxUwbBleLibrary(
             context = get(),
             deviceConfigInterceptor = MKDeviceConfigInterceptor,
-            phoneConfigInterceptor = MKPhoneConfigInterceptor.intercept()
+            phoneConfigInterceptor = MKPhoneConfigInterceptor
         )
     }
 

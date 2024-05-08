@@ -46,11 +46,32 @@ interface DeviceConfigInterceptor {
     fun intercept(byteArray: ByteArray): DeviceConfig
 }
 
-typealias PhoneConfigInterceptor = (
-    sessionId: Int,
-    complexChannel: UwbComplexChannel,
-    phoneAddress: ByteArray
-) -> ByteArray
+/**
+ * Interface for intercepting and customizing phone configuration data generated on the controlee side.
+ *
+ * This interface provides a mechanism for developers to intercept and modify the phone configuration data
+ * before it is sent. Developers can add extra parameters to the byte array as needed while ensuring that
+ * the required variables for a UWB session are already declared by the interface.
+ */
+interface PhoneConfigInterceptor {
+
+    /**
+     * Intercepts and customizes the phone configuration data before transmission.
+     *
+     * This method is called when generating phone configuration data on the controlee side. Developers
+     * can implement their own logic to customize the configuration data based on the provided parameters.
+     *
+     * @param sessionId The session ID associated with the UWB session.
+     * @param complexChannel The UWB complex channel used for communication.
+     * @param phoneAddress The byte array representing the address of the phone.
+     * @return A modified byte array representing the customized phone configuration data.
+     */
+    fun intercept(
+        sessionId: Int,
+        complexChannel: UwbComplexChannel,
+        phoneAddress: ByteArray
+    ): ByteArray
+}
 
 interface UwbControlee {
     @RequiresPermission(Manifest.permission.UWB_RANGING)
@@ -96,10 +117,10 @@ class GcxUwbControlee(
         return bleMessagingClient.send(
             byteArrayOf(
                 OOBMessageProtocol.UWB_PHONE_CONFIG_DATA.command
-            ) + phoneConfigInterceptor(
-                sessionId,
-                uwbComplexChannel,
-                localAddress.address
+            ) + phoneConfigInterceptor.intercept(
+                sessionId = sessionId,
+                complexChannel = uwbComplexChannel,
+                phoneAddress = localAddress.address
             )
         )
     }
