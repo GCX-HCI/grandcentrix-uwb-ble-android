@@ -47,6 +47,11 @@ class BleViewModel(
     private var deviceConnectPending: GcxBleDevice? = null
 
     private var scanJob: Job? = null
+    private var connectJob: Job? = null
+        private set(value) {
+            _viewState.update { it.copy(isConnecting = value != null) }
+            field = value
+        }
 
     fun onScanPermissionsRequested() {
         _viewState.update { it.copy(requestScanPermissions = false) }
@@ -109,6 +114,11 @@ class BleViewModel(
         }
     }
 
+    fun onDisconnectClicked() {
+        connectJob?.cancel()
+        connectJob = null
+    }
+
     fun onPermissionResult() {
         if (isScanPending) {
             return startScan()
@@ -119,7 +129,8 @@ class BleViewModel(
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     private fun connectToDevice(device: GcxBleDevice) {
-        viewModelScope.launch {
+        connectJob?.cancel()
+        connectJob = viewModelScope.launch {
             uwbBleLibrary.connect(device.bluetoothDevice)
                 .catch { Log.e(TAG, "Connection to $device failed", it) }
                 .collect { connectionState ->
