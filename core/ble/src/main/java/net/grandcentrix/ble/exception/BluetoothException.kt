@@ -10,7 +10,7 @@ sealed class BluetoothException(override val message: String?) : Exception() {
     data object ServiceNotSupportedException :
         BluetoothException("The given service is not supported")
 
-    data class BluetoothNullPointerException(
-        val className: String
-    ) : BluetoothException("$className is null")
+    data class ConnectionFailure(
+        val reason: Int
+    ) : BluetoothException("Connection failure with reason $reason")
 }
