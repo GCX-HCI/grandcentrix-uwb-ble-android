@@ -104,8 +104,8 @@ class BleViewModel(
             return navigateToRangingScreen()
         }
 
-        if (checkConnectPermission() && !viewState.value.isConnecting) {
             _viewState.update { it.copy(isConnecting = true) }
+        if (checkConnectPermission()) {
             deviceConnectPending = null
             connectToDevice(device)
         } else {
