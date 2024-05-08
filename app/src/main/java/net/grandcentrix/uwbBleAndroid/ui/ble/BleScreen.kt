@@ -2,6 +2,7 @@ package net.grandcentrix.uwbBleAndroid.ui.ble
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,7 @@ fun BleScreen(viewModel: BleViewModel = koinViewModel()) {
         onToggleScanClicked = viewModel::onToggleScanClicked,
         onDeviceClicked = viewModel::onDeviceClicked,
         onDisconnectClicked = viewModel::onDisconnectClicked,
+        onResetBleScanResults = viewModel::onResetBleScanResults
     )
 
     if (viewState.requestScanPermissions) {
@@ -65,6 +67,7 @@ fun BleView(
     onToggleScanClicked: () -> Unit,
     onDeviceClicked: (GcxBleDevice) -> Unit,
     onDisconnectClicked: () -> Unit,
+    onResetBleScanResults: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -102,11 +105,16 @@ fun BleView(
                     }
                 }
             }
-            Button(
-                onClick = onToggleScanClicked,
-                modifier = Modifier.padding(vertical = 16.dp)
+            Row(
+                modifier = Modifier.padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(text = if (viewState.isScanning) "Stop scan" else "Start scan")
+                Button(onClick = onToggleScanClicked) {
+                    Text(text = if (viewState.isScanning) "Stop scan" else "Start scan")
+                }
+                Button(onClick = onResetBleScanResults) {
+                    Text(text = "Reset Ble results")
+                }
             }
         }
     }
@@ -146,6 +154,7 @@ private fun BleScreenPreview() {
             onToggleScanClicked = {},
             onDeviceClicked = {},
             onDisconnectClicked = {},
+            onResetBleScanResults = {}
         )
     }
 }

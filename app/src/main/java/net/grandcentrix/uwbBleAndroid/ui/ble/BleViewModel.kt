@@ -119,6 +119,10 @@ class BleViewModel(
         connectJob = null
     }
 
+    fun onResetBleScanResults() {
+        _viewState.update { it.copy(scanResults = emptySet()) }
+    }
+
     fun onPermissionResult() {
         if (isScanPending) {
             return startScan()
