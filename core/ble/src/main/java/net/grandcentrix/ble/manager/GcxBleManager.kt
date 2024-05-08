@@ -84,6 +84,7 @@ class GcxBleManager(
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
         val gattCallback = object : BluetoothGattCallback() {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -157,14 +158,12 @@ class GcxBleManager(
         }
         try {
             gatt = bleDevice.connectGatt(context, false, gattCallback)
-
-            awaitClose {
-                gatt?.let {
-                    cleanUpGattStack(it)
-                }
-            }
         } catch (exception: SecurityException) {
             close(exception)
+        }
+
+        awaitClose {
+            gatt?.let { cleanUpGattStack(it) }
         }
     }
 
