@@ -110,7 +110,7 @@ class BleViewModelTest {
         val viewState = viewModel.viewState.value
         assertEquals(
             GcxBleConnectionState.CONNECTED,
-            viewState.scanResults.first().connectionState
+            viewState.connectingDevice?.connectionState
         )
 
         verify { uwbBleLibrary.connect(bluetoothDeviceMock) }
@@ -132,7 +132,7 @@ class BleViewModelTest {
             val viewState = viewModel.viewState.value
             assertEquals(
                 GcxBleConnectionState.SERVICES_DISCOVERED,
-                viewState.scanResults.first().connectionState
+                viewState.connectingDevice?.connectionState
             )
         }
 
@@ -247,7 +247,7 @@ class BleViewModelTest {
         }
 
     @Test
-    fun `Given running attempt to connect to device, when connection succeeds, then navigate to RANGNING`() =
+    fun `Given connection to device succeeded, when user starts ranging, then navigate to RANGNING`() =
         runTest {
             every {
                 uwbBleLibrary.connect(bluetoothDeviceMock)
@@ -258,6 +258,8 @@ class BleViewModelTest {
             viewModel.onDeviceClicked(bleDevice)
 
             advanceUntilIdle()
+
+            viewModel.onStartRangingClicked()
 
             verify {
                 navigator.navigateTo(Screen.Ranging)

@@ -2,6 +2,7 @@ package net.grandcentrix.uwbBleAndroid.ui.ble
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -46,7 +44,7 @@ fun BleScreen(viewModel: BleViewModel = koinViewModel()) {
         onToggleScanClicked = viewModel::onToggleScanClicked,
         onDeviceClicked = viewModel::onDeviceClicked,
         onDisconnectClicked = viewModel::onDisconnectClicked,
-        onResetBleScanResults = viewModel::onResetBleScanResults
+        onStartRangingClicked = viewModel::onStartRangingClicked
     )
 
     if (viewState.requestScanPermissions) {
@@ -67,64 +65,85 @@ fun BleView(
     onToggleScanClicked: () -> Unit,
     onDeviceClicked: (GcxBleDevice) -> Unit,
     onDisconnectClicked: () -> Unit,
-    onResetBleScanResults: () -> Unit,
+    onStartRangingClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(text = "Connect to device") }) },
         modifier = modifier
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(it)
-                .fillMaxWidth()
-        ) {
-            if (viewState.scanResults.isEmpty()) {
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    Text(text = "No devices found yet.")
-                }
+    ) { innerPadding ->
+        Crossfade(
+            targetState = viewState.connectingDevice,
+            label = "Cross fade between scan and connect",
+            modifier = Modifier.padding(innerPadding)
+        ) { connectingDevice ->
+            if (connectingDevice == null) {
+                ScanResultsView(
+                    viewState.scanResults,
+                    viewState.isScanning,
+                    onDeviceClicked,
+                    onToggleScanClicked
+                )
             } else {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    viewState.scanResults.forEach { device ->
-                        DeviceItem(
-                            device = device,
-                            onDeviceClicked = onDeviceClicked,
-                            onDisconnectClicked = onDisconnectClicked,
-                            modifier = Modifier
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                                .fillMaxWidth()
-                        )
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier.padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(onClick = onToggleScanClicked) {
-                    Text(text = if (viewState.isScanning) "Stop scan" else "Start scan")
-                }
-                Button(onClick = onResetBleScanResults) {
-                    Text(text = "Reset Ble results")
-                }
+                ConnectionView(
+                    connectingDevice,
+                    onDisconnectClicked,
+                    onStartRangingClicked
+                )
             }
         }
     }
 }
 
 @Composable
-fun DeviceItem(
+private fun ScanResultsView(
+    scanResults: Set<GcxBleDevice>,
+    isScanning: Boolean,
+    onDeviceClicked: (GcxBleDevice) -> Unit,
+    onToggleScanClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        if (scanResults.isEmpty()) {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Text(text = "No devices found yet.")
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                scanResults.forEach { device ->
+                    ScanResultItem(
+                        device = device,
+                        onDeviceClicked = onDeviceClicked,
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                    )
+                }
+            }
+        }
+        Row(
+            modifier = Modifier.padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(onClick = onToggleScanClicked) {
+                Text(text = if (isScanning) "Stop scan" else "Start scan")
+            }
+        }
+    }
+}
+
+@Composable
+fun ScanResultItem(
     device: GcxBleDevice,
     onDeviceClicked: (GcxBleDevice) -> Unit,
-    onDisconnectClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     OutlinedButton(
@@ -136,9 +155,41 @@ fun DeviceItem(
                 Text(text = "Address: ${device.bluetoothDevice.address}")
                 Text(text = "Connection state: ${device.connectionState}")
             }
-            if (device.connectionState != GcxBleConnectionState.DISCONNECTED) {
-                IconButton(onClick = onDisconnectClicked) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = null)
+        }
+    }
+}
+
+@Composable
+private fun ConnectionView(
+    device: GcxBleDevice,
+    onDisconnectClicked: () -> Unit,
+    onStartRangingClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        ScanResultItem(device = device, onDeviceClicked = {})
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(vertical = 16.dp)
+        ) {
+            OutlinedButton(onClick = onDisconnectClicked) {
+                Text(text = "Disconnect")
+            }
+
+            Crossfade(
+                targetState = device.connectionState,
+                label = "Cross fade between loading and established connection"
+            ) { connectionState ->
+                if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                    Button(onClick = onStartRangingClicked) {
+                        Text(text = "Start ranging")
+                    }
+                } else {
+                    CircularProgressIndicator()
                 }
             }
         }
@@ -154,7 +205,7 @@ private fun BleScreenPreview() {
             onToggleScanClicked = {},
             onDeviceClicked = {},
             onDisconnectClicked = {},
-            onResetBleScanResults = {}
+            onStartRangingClicked = {}
         )
     }
 }
