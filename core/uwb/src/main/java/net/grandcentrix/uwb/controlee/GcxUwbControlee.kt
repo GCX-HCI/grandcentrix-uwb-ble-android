@@ -14,7 +14,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
@@ -83,7 +82,6 @@ interface UwbControlee {
 
 class GcxUwbControlee(
     private val uwbManager: UwbManager,
-    private val bleMessages: SharedFlow<BluetoothMessage>,
     private val bleMessagingClient: BleMessagingClient,
     private val deviceConfigInterceptor: DeviceConfigInterceptor,
     private val phoneConfigInterceptor: PhoneConfigInterceptor
@@ -157,7 +155,7 @@ class GcxUwbControlee(
     private suspend fun collectBleMessages() {
         coroutineScope {
             launch {
-                bleMessages
+                bleMessagingClient.messages
                     .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
                     .collect {
                         it.data?.let { bytes ->

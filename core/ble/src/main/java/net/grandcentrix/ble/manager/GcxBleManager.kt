@@ -32,12 +32,12 @@ interface BleManager {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
 
-    val bleMessages: SharedFlow<BluetoothMessage>
-
     val bleMessagingClient: BleMessagingClient
 }
 
 interface BleMessagingClient {
+    val messages: SharedFlow<BluetoothMessage>
+
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun send(data: ByteArray): Result<Unit>
 
@@ -55,15 +55,14 @@ class GcxBleManager(
 
     private var gatt: BluetoothGatt? = null
 
-    private val _bleMessages =
-        MutableSharedFlow<BluetoothMessage>(
-            extraBufferCapacity = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST
-        )
-
-    override val bleMessages = _bleMessages.asSharedFlow()
+    private val bleMessages = MutableSharedFlow<BluetoothMessage>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     override val bleMessagingClient: BleMessagingClient = object : BleMessagingClient {
+        override val messages = bleMessages.asSharedFlow()
+
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override suspend fun send(data: ByteArray): Result<Unit> = runCatching {
             val characteristic = checkNotNull(rxCharacteristic)
@@ -122,7 +121,7 @@ class GcxBleManager(
                 value: ByteArray,
                 status: Int
             ) {
-                _bleMessages.tryEmit(
+                bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
@@ -136,7 +135,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                _bleMessages.tryEmit(
+                bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = null,
@@ -150,7 +149,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                _bleMessages.tryEmit(
+                bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
                         data = value,
