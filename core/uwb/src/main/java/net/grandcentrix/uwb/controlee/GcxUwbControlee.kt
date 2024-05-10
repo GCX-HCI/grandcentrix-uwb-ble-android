@@ -23,7 +23,6 @@ import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwb.model.DeviceConfig
-import net.grandcentrix.uwb.model.MKPhoneConfig
 
 private const val TAG = "GcxUwbControlee"
 
@@ -47,6 +46,33 @@ interface DeviceConfigInterceptor {
     fun intercept(byteArray: ByteArray): DeviceConfig
 }
 
+/**
+ * Interface for intercepting and customizing phone configuration data generated on the controlee side.
+ *
+ * This interface provides a mechanism for developers to intercept and modify the phone configuration data
+ * before it is sent. Developers can add extra parameters to the byte array as needed while ensuring that
+ * the required variables for a UWB session are already declared by the interface.
+ */
+interface PhoneConfigInterceptor {
+
+    /**
+     * Intercepts and customizes the phone configuration data before transmission.
+     *
+     * This method is called when generating phone configuration data on the controlee side. Developers
+     * can implement their own logic to customize the configuration data based on the provided parameters.
+     *
+     * @param sessionId The session ID associated with the UWB session.
+     * @param complexChannel The UWB complex channel used for communication.
+     * @param phoneAddress The byte array representing the address of the phone.
+     * @return A modified byte array representing the customized phone configuration data.
+     */
+    fun intercept(
+        sessionId: Int,
+        complexChannel: UwbComplexChannel,
+        phoneAddress: ByteArray
+    ): ByteArray
+}
+
 interface UwbControlee {
     @RequiresPermission(Manifest.permission.UWB_RANGING)
     fun startRanging(): Flow<RangingResult>
@@ -56,7 +82,8 @@ class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessages: SharedFlow<BluetoothMessage>,
     private val bleMessagingClient: BleMessagingClient,
-    private val deviceConfigInterceptor: DeviceConfigInterceptor
+    private val deviceConfigInterceptor: DeviceConfigInterceptor,
+    private val phoneConfigInterceptor: PhoneConfigInterceptor
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope
@@ -87,21 +114,14 @@ class GcxUwbControlee(
         uwbControleeSession = uwbManager.controleeSessionScope()
         val localAddress = uwbControleeSession.localAddress
 
-        val phoneConfig = MKPhoneConfig(
-            specVerMajor = 0x0100.toShort(),
-            specVerMinor = 0x0000.toShort(),
-            sessionId = sessionId,
-            preambleIndex = uwbComplexChannel.preambleIndex.toByte(),
-            channel = uwbComplexChannel.channel.toByte(),
-            profileId = RangingParameters.CONFIG_UNICAST_DS_TWR.toByte(),
-            deviceRangingRole = 0x01.toByte(),
-            phoneAddress = localAddress.address
-        )
-
         return bleMessagingClient.send(
             byteArrayOf(
                 OOBMessageProtocol.UWB_PHONE_CONFIG_DATA.command
-            ) + phoneConfig.toByteArray()
+            ) + phoneConfigInterceptor.intercept(
+                sessionId = sessionId,
+                complexChannel = uwbComplexChannel,
+                phoneAddress = localAddress.address
+            )
         )
     }
 
