@@ -9,6 +9,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.data.manager.UwbBleLibrary
@@ -76,12 +77,14 @@ internal class RangingViewModel(
         if (checkUwbRangingPermission()) {
             isUwbSessionPending = false
             rangingJob = viewModelScope.launch {
-                uwbBleLibrary.startRanging().collect { rangingResult ->
-                    when (rangingResult) {
-                        is RangingResultPosition -> updatePositionData(rangingResult)
-                        is RangingResult.RangingResultPeerDisconnected -> onDisconnected()
+                uwbBleLibrary.startRanging()
+                    .catch { Log.e(TAG, "Failed to run uwb ranging", it) }
+                    .collect { rangingResult ->
+                        when (rangingResult) {
+                            is RangingResultPosition -> updatePositionData(rangingResult)
+                            is RangingResult.RangingResultPeerDisconnected -> onDisconnected()
+                        }
                     }
-                }
             }
         } else {
             isUwbSessionPending = true
