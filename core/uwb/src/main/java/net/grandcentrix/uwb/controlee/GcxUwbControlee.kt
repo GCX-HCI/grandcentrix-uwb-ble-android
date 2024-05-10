@@ -10,6 +10,8 @@ import androidx.core.uwb.UwbControleeSessionScope
 import androidx.core.uwb.UwbDevice
 import androidx.core.uwb.UwbManager
 import kotlin.random.Random
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -106,13 +108,16 @@ class GcxUwbControlee(
                 .onFailure { close(UwbException.InitialisationFailure) }
         }
 
-        launch {
-            sessionFlow.collect { send(it) }
+        launch { sessionFlow.collect { send(it) } }
+
+        awaitClose {
+            // TODO: send stop ranging command
+            Log.d(TAG, "close ranging")
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun transmitPhoneData(): Result<BluetoothMessage> {
+    private suspend fun transmitPhoneData(): Result<Unit> {
         uwbControleeSession = uwbManager.controleeSessionScope()
         val localAddress = uwbControleeSession.localAddress
 
@@ -145,34 +150,39 @@ class GcxUwbControlee(
             subSessionId = 0,
             subSessionKeyInfo = null
         )
-
         sessionFlow.emitAll(uwbControleeSession.prepareSession(partnerParameters))
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun collectBleMessages() {
-        bleMessages
-            .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
-            .collect {
-                it.data?.let { bytes ->
-                    when (bytes.first()) {
-                        OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
-                            val deviceConfig = deviceConfigInterceptor.intercept(bytes)
-                            transmitPhoneData()
-                                .onSuccess {
-                                    startSession(deviceConfig = deviceConfig)
+        coroutineScope {
+            launch {
+                bleMessages
+                    .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
+                    .collect {
+                        it.data?.let { bytes ->
+                            when (bytes.first()) {
+                                OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command -> {
+                                    val deviceConfig = deviceConfigInterceptor.intercept(bytes)
+                                    transmitPhoneData()
+                                        .onSuccess {
+                                            launch {
+                                                startSession(deviceConfig = deviceConfig)
+                                            }
+                                        }
                                 }
-                        }
 
-                        OOBMessageProtocol.UWB_DID_START.command -> {
-                            Log.d(TAG, "UWB started")
-                        }
+                                OOBMessageProtocol.UWB_DID_START.command -> {
+                                    Log.d(TAG, "UWB started")
+                                }
 
-                        else -> {
-                            Log.e(TAG, "Unknown message id")
+                                else -> {
+                                    Log.e(TAG, "Unknown message id")
+                                }
+                            }
                         }
                     }
-                }
             }
+        }
     }
 }
