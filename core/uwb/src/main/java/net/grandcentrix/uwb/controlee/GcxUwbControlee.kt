@@ -106,7 +106,9 @@ class GcxUwbControlee(
             )
         }
 
-        sessionFlow.collect { send(it) }
+        launch {
+            sessionFlow.collect { send(it) }
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
