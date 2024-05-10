@@ -45,21 +45,19 @@ class GcxBleScanner(
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
                 trySend(result)
-                    .onFailure {
-                        Log.d(TAG, "trySend throws failure $it")
-                    }
+                    .onFailure { Log.d(TAG, "Failed to send scan result", it) }
             }
 
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
-                close()
+                close(BluetoothException.ScanFailure(errorCode))
             }
         }
 
         try {
             bluetoothLeScanner.startScan(scanCallback)
         } catch (exception: SecurityException) {
-            Log.e(TAG, "scan failed with $exception")
+            Log.e(TAG, "Failed to start scan", exception)
             close(exception)
         }
 
@@ -67,7 +65,7 @@ class GcxBleScanner(
             try {
                 bluetoothLeScanner.stopScan(scanCallback)
             } catch (exception: SecurityException) {
-                Log.e(TAG, "stop scan failed", exception)
+                Log.e(TAG, "Failed to stop scan", exception)
             }
         }
     }

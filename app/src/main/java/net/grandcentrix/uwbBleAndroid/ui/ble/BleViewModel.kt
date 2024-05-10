@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.data.manager.UwbBleLibrary
-import net.grandcentrix.data.model.GcxBleConnectionState
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
@@ -26,7 +25,7 @@ data class BleViewState(
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
     val scanResults: Set<GcxBleDevice> = emptySet(),
-    val isConnecting: Boolean = false
+    val connectingDevice: GcxBleDevice? = null
 )
 
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
@@ -44,9 +43,9 @@ class BleViewModel(
     val viewState: StateFlow<BleViewState> = _viewState.asStateFlow()
 
     private var isScanPending: Boolean = false
-    private var deviceConnectPending: GcxBleDevice? = null
 
     private var scanJob: Job? = null
+    private var connectJob: Job? = null
 
     fun onScanPermissionsRequested() {
         _viewState.update { it.copy(requestScanPermissions = false) }
@@ -94,66 +93,53 @@ class BleViewModel(
 
     fun onDeviceClicked(device: GcxBleDevice) {
         stopScan()
-        if (device.connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
-            // No need to connect again if already connected
-            return navigateToRangingScreen()
-        }
-
-        if (checkConnectPermission() && !viewState.value.isConnecting) {
-            _viewState.update { it.copy(isConnecting = true) }
-            deviceConnectPending = null
+        _viewState.update { it.copy(connectingDevice = device) }
+        if (checkConnectPermission()) {
             connectToDevice(device)
         } else {
-            deviceConnectPending = device
             _viewState.update { it.copy(requestConnectPermissions = true) }
         }
     }
 
-    fun onPermissionResult() {
-        if (isScanPending) {
-            return startScan()
-        }
+    fun onDisconnectClicked() {
+        connectJob?.cancel()
+        connectJob = null
 
-        deviceConnectPending?.let { device -> onDeviceClicked(device) }
+        _viewState.update {
+            it.copy(
+                // Reset scan results to force re-scan
+                scanResults = emptySet(),
+                connectingDevice = null
+            )
+        }
+    }
+
+    fun onStartRangingClicked() {
+        navigateToRangingScreen()
+    }
+
+    fun onPermissionResult() {
+        if (isScanPending) return startScan()
+
+        viewState.value.connectingDevice?.let { onDeviceClicked(it) }
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     private fun connectToDevice(device: GcxBleDevice) {
-        viewModelScope.launch {
+        connectJob?.cancel()
+        connectJob = viewModelScope.launch {
             uwbBleLibrary.connect(device.bluetoothDevice)
-                .catch { Log.e(TAG, "Connection to $device failed", it) }
+                .catch {
+                    Log.e(TAG, "Connection to $device failed", it)
+                    // TODO: React on failed connection.
+                }
                 .collect { connectionState ->
-                    updateConnectionState(device, connectionState)
-
-                    if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
-                        _viewState.update { it.copy(isConnecting = false) }
-                        navigateToRangingScreen()
+                    _viewState.update {
+                        it.copy(
+                            connectingDevice = GcxBleDevice(device.bluetoothDevice, connectionState)
+                        )
                     }
                 }
-        }
-    }
-
-    private fun updateConnectionState(
-        device: GcxBleDevice,
-        connectionState: GcxBleConnectionState
-    ) {
-        _viewState.update {
-            val updatedResults = buildSet {
-                add(
-                    GcxBleDevice(
-                        bluetoothDevice = device.bluetoothDevice,
-                        connectionState = connectionState
-                    )
-                )
-
-                addAll(
-                    it.scanResults
-                        .filterNot { scannedDevice ->
-                            scannedDevice.bluetoothDevice == device.bluetoothDevice
-                        }
-                )
-            }
-            it.copy(scanResults = updatedResults)
         }
     }
 
