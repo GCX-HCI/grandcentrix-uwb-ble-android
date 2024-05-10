@@ -7,17 +7,13 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import java.util.UUID
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeoutOrNull
 import net.grandcentrix.ble.exception.BluetoothException
 import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.provider.UUIDProvider
@@ -43,7 +39,7 @@ interface BleManager {
 
 interface BleMessagingClient {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun send(data: ByteArray): Result<BluetoothMessage>
+    suspend fun send(data: ByteArray): Result<Unit>
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun enableReceiver(): Result<Boolean>
@@ -59,13 +55,17 @@ class GcxBleManager(
 
     private var gatt: BluetoothGatt? = null
 
-    private val _bleMessages = MutableSharedFlow<BluetoothMessage>(replay = 1)
+    private val _bleMessages =
+        MutableSharedFlow<BluetoothMessage>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
 
     override val bleMessages = _bleMessages.asSharedFlow()
 
     override val bleMessagingClient: BleMessagingClient = object : BleMessagingClient {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        override suspend fun send(data: ByteArray): Result<BluetoothMessage> = runCatching {
+        override suspend fun send(data: ByteArray): Result<Unit> = runCatching {
             val characteristic = checkNotNull(rxCharacteristic)
             val gatt = checkNotNull(gatt)
             gatt.writeCharacteristic(
@@ -73,7 +73,6 @@ class GcxBleManager(
                 data,
                 BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
             )
-            waitForResult(characteristic.uuid)
         }
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -186,16 +185,6 @@ class GcxBleManager(
         }
 
         return rxCharacteristic != null && txCharacteristic != null
-    }
-
-    private suspend fun waitForResult(uuid: UUID): BluetoothMessage {
-        return withTimeoutOrNull(TimeUnit.SECONDS.toMillis(BLE_READ_WRITE_TIMEOUT)) {
-            bleMessages
-                .filter { it.uuid == uuid }
-                .first()
-        } ?: run {
-            throw BluetoothException.BluetoothTimeoutException
-        }
     }
 
     companion object {
