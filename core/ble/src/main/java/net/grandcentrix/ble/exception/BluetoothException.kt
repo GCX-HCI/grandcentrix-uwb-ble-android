@@ -3,6 +3,10 @@ package net.grandcentrix.ble.exception
 sealed class BluetoothException(override val message: String?) : Exception() {
     data object BluetoothDisabledException : BluetoothException("BLE Adapter is not enabled")
 
+    data class ScanFailure(
+        val reason: Int
+    ) : BluetoothException("Bluetooth scan failure with reason: $reason")
+
     data object ServiceDiscoveryFailedException : BluetoothException("Service discovery failed")
 
     data object BluetoothTimeoutException : BluetoothException("BLE action timeout")

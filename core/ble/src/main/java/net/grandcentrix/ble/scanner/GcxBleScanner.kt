@@ -50,7 +50,7 @@ class GcxBleScanner(
 
             override fun onScanFailed(errorCode: Int) {
                 super.onScanFailed(errorCode)
-                close()
+                close(BluetoothException.ScanFailure(errorCode))
             }
         }
 
