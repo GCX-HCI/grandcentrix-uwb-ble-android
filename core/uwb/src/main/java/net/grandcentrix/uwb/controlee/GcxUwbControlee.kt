@@ -21,6 +21,7 @@ import net.grandcentrix.ble.manager.BleMessagingClient
 import net.grandcentrix.ble.manager.GcxBleManager
 import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
+import net.grandcentrix.uwb.exception.UwbException
 import net.grandcentrix.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwb.model.DeviceConfig
 
@@ -101,9 +102,8 @@ class GcxUwbControlee(
         bleMessagingClient.enableReceiver()
 
         launch {
-            bleMessagingClient.send(
-                byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-            )
+            bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.INITIALIZE.command))
+                .onFailure { close(UwbException.InitialisationFailure) }
         }
 
         launch {
