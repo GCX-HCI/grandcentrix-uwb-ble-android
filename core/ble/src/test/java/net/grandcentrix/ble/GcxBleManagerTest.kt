@@ -15,6 +15,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import java.util.UUID
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ import net.grandcentrix.ble.provider.UUIDProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class GcxBleManagerTest {
 
     private val txCharacteristic: BluetoothGattCharacteristic = mockk {
