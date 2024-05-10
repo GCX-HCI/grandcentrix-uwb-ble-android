@@ -47,7 +47,6 @@ class GcxUwbBleLibrary(
 
     private val uwbControlee: UwbControlee = GcxUwbControlee(
         uwbManager = UwbManager.createInstance(context),
-        bleMessages = bleManager.bleMessages,
         bleMessagingClient = bleManager.bleMessagingClient,
         deviceConfigInterceptor = deviceConfigInterceptor,
         phoneConfigInterceptor = phoneConfigInterceptor
