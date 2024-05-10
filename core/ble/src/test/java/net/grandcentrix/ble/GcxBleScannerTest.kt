@@ -54,10 +54,7 @@ class GcxBleScannerTest {
     fun `Given ble is disabled, when start ble scan, then a error should be thrown`() = runTest {
         every { bluetoothAdapter.isEnabled } returns false
 
-        val gcxBleScanner =
-            GcxBleScanner(
-                context = context
-            )
+        val gcxBleScanner = GcxBleScanner(context = context)
 
         var thrownError: Throwable? = null
         gcxBleScanner.startScan()
@@ -75,10 +72,7 @@ class GcxBleScannerTest {
             every { leScanner.startScan(any()) } throws SecurityException()
             every { Log.e(any(), any(), any()) } returns 0
 
-            val gcxBleScanner =
-                GcxBleScanner(
-                    context = context
-                )
+            val gcxBleScanner = GcxBleScanner(context = context)
 
             var thrownError: Throwable? = null
             gcxBleScanner.startScan()
@@ -91,10 +85,7 @@ class GcxBleScannerTest {
     @Test
     fun `Given ble is enabled, when start ble scan, then bluetoothLeScan should call startScan()`() =
         runTest {
-            val gcxBleScanner =
-                GcxBleScanner(
-                    context = context
-                )
+            val gcxBleScanner = GcxBleScanner(context = context)
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gcxBleScanner.startScan().collect()
@@ -118,10 +109,7 @@ class GcxBleScannerTest {
             val result = arg<ScanResult>(1)
             println("scan result: $result")
         }
-        val gcxBleScanner =
-            GcxBleScanner(
-                context = context
-            )
+        val gcxBleScanner = GcxBleScanner(context = context)
 
         triggerScanCallback(scanCallback)
 
