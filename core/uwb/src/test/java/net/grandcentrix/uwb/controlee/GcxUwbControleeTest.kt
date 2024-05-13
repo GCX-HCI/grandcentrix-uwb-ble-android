@@ -26,6 +26,7 @@ import net.grandcentrix.ble.model.BluetoothMessage
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.uwb.exception.UwbException
 import net.grandcentrix.uwb.model.DeviceConfig
+import net.grandcentrix.uwb.model.RangingConfig
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -64,6 +65,17 @@ class GcxUwbControleeTest {
         every { intercept(any(), any(), any()) } returns byteArrayOf()
     }
 
+    private val rangingConfig: RangingConfig = RangingConfig(
+        uwbConfigType = 0,
+        sessionId = 0,
+        subSessionId = 0,
+        sessionKey = null,
+        subSessionKey = null,
+        channel = 0,
+        preambleIndex = 0,
+        updateRateType = 0
+    )
+
     @BeforeEach
     fun setup() {
         mockkStatic(Log::class)
@@ -78,7 +90,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             val result = controlee.startRanging().first()
@@ -106,7 +119,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             var error: Throwable? = null
@@ -132,7 +146,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             var error: Throwable? = null
@@ -161,7 +176,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             var error: Throwable? = null
@@ -191,7 +207,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             var error: Throwable? = null
@@ -220,7 +237,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             val result = controlee.startRanging().first()

@@ -2,6 +2,8 @@ package net.grandcentrix.uwbBleAndroid.di
 
 import net.grandcentrix.data.manager.GcxUwbBleLibrary
 import net.grandcentrix.data.manager.UwbBleLibrary
+import net.grandcentrix.uwb.model.RangingConfig
+import net.grandcentrix.uwbBleAndroid.App
 import net.grandcentrix.uwbBleAndroid.interceptor.MKDeviceConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.interceptor.MKPhoneConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
@@ -32,7 +34,8 @@ val mainModule = module {
         GcxUwbBleLibrary(
             context = get(),
             deviceConfigInterceptor = MKDeviceConfigInterceptor,
-            phoneConfigInterceptor = MKPhoneConfigInterceptor
+            phoneConfigInterceptor = MKPhoneConfigInterceptor,
+            rangingConfig = RangingConfig(sessionKey = App.MK_UWB_SESSION_KEY)
         )
     }
 
