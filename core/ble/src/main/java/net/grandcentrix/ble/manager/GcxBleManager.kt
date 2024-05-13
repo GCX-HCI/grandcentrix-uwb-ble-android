@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
@@ -134,6 +135,12 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
+                Log.d(
+                    TAG,
+                    "onCharacteristicWrite ->\n" +
+                        "uuid: ${characteristic.uuid}\n" +
+                        "status: $status"
+                )
                 bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,
@@ -148,6 +155,12 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
+                Log.d(
+                    TAG,
+                    "onCharacteristicChanged ->\n" +
+                        "uuid: ${characteristic.uuid}\n" +
+                        "value: ${value.contentToString()}"
+                )
                 bleMessages.tryEmit(
                     BluetoothMessage(
                         uuid = characteristic.uuid,

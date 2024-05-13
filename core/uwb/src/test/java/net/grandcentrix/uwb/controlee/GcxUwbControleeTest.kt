@@ -8,6 +8,7 @@ import androidx.core.uwb.UwbControleeSessionScope
 import androidx.core.uwb.UwbDevice
 import androidx.core.uwb.UwbManager
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
@@ -209,6 +210,26 @@ class GcxUwbControleeTest {
                 uwbManager.controleeSessionScope()
                 controleeSessionScope.localAddress
                 phoneConfigInterceptor.intercept(any(), any(), any())
+            }
+        }
+
+    @Test
+    fun `Given start session to uwb device, when stop ranging, then stop ranging command is send`() =
+        runTest {
+            val controlee = GcxUwbControlee(
+                uwbManager,
+                bleMessagingClient,
+                deviceConfigInterceptor,
+                phoneConfigInterceptor
+            )
+
+            val result = controlee.startRanging().first()
+            assertInstanceOf(RangingResult.RangingResultPosition::class.java, result)
+
+            coVerify {
+                bleMessagingClient.send(
+                    byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command)
+                )
             }
         }
 }
