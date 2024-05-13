@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "net.grandcentrix.data"
+    namespace = "net.grandcentrix.api"
     compileSdk = libs.versions.compileSdk.get().toInt()
     buildToolsVersion = libs.versions.buildTools.get()
 
@@ -40,9 +40,6 @@ dependencies {
 
     implementation(libs.bundles.coroutines)
     implementation(libs.uwb)
-    implementation(project(":core:ble"))
-    implementation(project(":core:uwb"))
-
     testImplementation(libs.jupiter)
     testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
