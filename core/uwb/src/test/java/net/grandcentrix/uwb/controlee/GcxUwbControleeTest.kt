@@ -237,7 +237,8 @@ class GcxUwbControleeTest {
                 uwbManager,
                 bleMessagingClient,
                 deviceConfigInterceptor,
-                phoneConfigInterceptor
+                phoneConfigInterceptor,
+                rangingConfig
             )
 
             val result = controlee.startRanging().first()
