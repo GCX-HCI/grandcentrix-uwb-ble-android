@@ -3,13 +3,11 @@ package net.grandcentrix.uwb.controlee
 import android.Manifest
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import androidx.core.uwb.RangingParameters
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbComplexChannel
 import androidx.core.uwb.UwbControleeSessionScope
 import androidx.core.uwb.UwbDevice
 import androidx.core.uwb.UwbManager
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -26,9 +24,10 @@ import net.grandcentrix.ble.manager.BleMessagingClient
 import net.grandcentrix.ble.manager.GcxBleManager
 import net.grandcentrix.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.uwb.exception.UwbException
-import net.grandcentrix.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwb.ext.toHexString
 import net.grandcentrix.uwb.model.DeviceConfig
+import net.grandcentrix.uwb.model.RangingConfig
+import net.grandcentrix.uwb.model.toRangingParameters
 
 private const val TAG = "GcxUwbControlee"
 
@@ -88,13 +87,12 @@ class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessagingClient: BleMessagingClient,
     private val deviceConfigInterceptor: DeviceConfigInterceptor,
-    private val phoneConfigInterceptor: PhoneConfigInterceptor
+    private val phoneConfigInterceptor: PhoneConfigInterceptor,
+    private val rangingConfig: RangingConfig
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope
-    private val sessionId = Random.Default.nextInt()
-
-    private val uwbComplexChannel = UwbComplexChannel(channel = 9, preambleIndex = 10)
+    private val sessionFlow: MutableSharedFlow<RangingResult> = MutableSharedFlow()
 
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
@@ -135,8 +133,11 @@ class GcxUwbControlee(
         val phoneConfigBytes = byteArrayOf(
             OOBMessageProtocol.UWB_PHONE_CONFIG_DATA.command
         ) + phoneConfigInterceptor.intercept(
-            sessionId = sessionId,
-            complexChannel = uwbComplexChannel,
+            sessionId = rangingConfig.sessionId,
+            complexChannel = UwbComplexChannel(
+                    channel = rangingConfig.channel,
+                    preambleIndex = rangingConfig.preambleIndex
+                ),
             phoneAddress = localAddress.address
         )
         Log.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
@@ -146,21 +147,7 @@ class GcxUwbControlee(
     private fun startSession(deviceConfig: DeviceConfig): Flow<RangingResult> {
         val uwbDevice = UwbDevice.createForAddress(deviceConfig.deviceMacAddress)
 
-        // https://developer.android.com/guide/topics/connectivity/uwb#known_issue_byte_order_reversed_for_mac_address_and_static_sts_vendor_id_fields
-        // GMS Core update is doing byte reverse as per UCI spec
-        // SessionKey is used to match Vendor ID in UWB Device firmware
-        val sessionKey: ByteArray = "0807010203040506".hexStringToByteArray()
-
-        val partnerParameters = RangingParameters(
-            uwbConfigType = RangingParameters.CONFIG_UNICAST_DS_TWR,
-            sessionId = sessionId,
-            sessionKeyInfo = sessionKey,
-            complexChannel = uwbComplexChannel,
-            peerDevices = listOf(uwbDevice),
-            updateRateType = RangingParameters.RANGING_UPDATE_RATE_FREQUENT,
-            subSessionId = 0,
-            subSessionKeyInfo = null
-        )
+        val partnerParameters = rangingConfig.toRangingParameters(uwbDevices = listOf(uwbDevice))
         return uwbControleeSession.prepareSession(partnerParameters)
     }
 
