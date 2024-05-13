@@ -11,7 +11,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.ble.exception.BluetoothException
@@ -36,7 +35,7 @@ interface BleManager {
 }
 
 interface BleMessagingClient {
-    val messages: SharedFlow<BluetoothMessage>
+    val messages: Flow<BluetoothMessage>
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun send(data: ByteArray): Result<Unit>
