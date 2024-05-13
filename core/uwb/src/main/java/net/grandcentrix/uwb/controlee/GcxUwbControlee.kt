@@ -92,7 +92,6 @@ class GcxUwbControlee(
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope
-    private val sessionFlow: MutableSharedFlow<RangingResult> = MutableSharedFlow()
 
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
@@ -135,9 +134,9 @@ class GcxUwbControlee(
         ) + phoneConfigInterceptor.intercept(
             sessionId = rangingConfig.sessionId,
             complexChannel = UwbComplexChannel(
-                    channel = rangingConfig.channel,
-                    preambleIndex = rangingConfig.preambleIndex
-                ),
+                channel = rangingConfig.channel,
+                preambleIndex = rangingConfig.preambleIndex
+            ),
             phoneAddress = localAddress.address
         )
         Log.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
