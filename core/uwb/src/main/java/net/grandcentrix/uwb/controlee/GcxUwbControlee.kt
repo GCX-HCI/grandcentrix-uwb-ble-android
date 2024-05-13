@@ -106,8 +106,8 @@ class GcxUwbControlee(
         transmitPhoneData().getOrThrow()
         emitAll(startSession(deviceConfig))
     }.onCompletion {
-        // TODO: send stop ranging command
-        Log.d(TAG, "Close UWB ranging")
+        Log.i(TAG, "Close UWB ranging")
+        bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command))
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

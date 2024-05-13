@@ -9,5 +9,7 @@ enum class OOBMessageProtocol(val command: Byte) {
     // Messages from the UWB controlee
     INITIALIZE(0xA5.toByte()),
 
-    UWB_PHONE_CONFIG_DATA(0x0B.toByte())
+    UWB_PHONE_CONFIG_DATA(0x0B.toByte()),
+
+    STOP_UWB_RANGING(0x0C.toByte())
 }
