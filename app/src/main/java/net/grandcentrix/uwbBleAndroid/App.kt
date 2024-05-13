@@ -21,6 +21,10 @@ class App : Application() {
     }
 
     companion object {
+        /**
+         * Represents the default session key for the MK UWB dev kit. SessionKey is used to match Vendor ID in UWB Device firmware
+         * The session key is represented as a hexadecimal string "0807010203040506" and converted to a byte array.
+         */
         val MK_UWB_SESSION_KEY = "0807010203040506".hexStringToByteArray()
     }
 }
