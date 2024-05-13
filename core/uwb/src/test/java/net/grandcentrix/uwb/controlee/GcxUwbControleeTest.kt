@@ -65,16 +65,16 @@ class GcxUwbControleeTest {
         every { intercept(any(), any(), any()) } returns byteArrayOf()
     }
 
-    private val rangingConfig: RangingConfig = mockk {
-        every { sessionId } returns 0
-        every { subSessionId } returns 0
-        every { channel } returns 0
-        every { preambleIndex } returns 0
-        every { uwbConfigType } returns 0
-        every { sessionKey } returns null
-        every { subSessionKey } returns null
-        every { updateRateType } returns 0
-    }
+    private val rangingConfig: RangingConfig = RangingConfig(
+        uwbConfigType = 0,
+        sessionId = 0,
+        subSessionId = 0,
+        sessionKey = null,
+        subSessionKey = null,
+        channel = 0,
+        preambleIndex = 0,
+        updateRateType = 0
+    )
 
     @BeforeEach
     fun setup() {
