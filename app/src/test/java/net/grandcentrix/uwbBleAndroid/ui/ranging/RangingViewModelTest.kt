@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import net.grandcentrix.api.data.manager.UwbBleLibrary
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(CoroutineTestExtension::class)
 class RangingViewModelTest {
 
-    private val uwbBleLibrary: UwbBleLibrary = mockk {
+    private val gcxUwbDevice: GcxUwbDevice = mockk {
         every { startRanging(any(), any(), any()) } returns emptyFlow()
     }
 
@@ -42,26 +42,26 @@ class RangingViewModelTest {
     @Test
     fun `Given connected ranging device, when opening ranging screen, then collection of ranging events starts`() =
         runTest {
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            val viewModel = RangingViewModel(gcxUwbDevice, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
             verify {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
             }
         }
 
     @Test
     fun `Given connected ranging device and ranging events are collected, when closing view, then navigate to Connect screen`() =
         runTest {
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            val viewModel = RangingViewModel(gcxUwbDevice, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
             viewModel.onBackClicked()
             advanceUntilIdle()
 
             verify(ordering = Ordering.ORDERED) {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
                 navigator.navigateTo(Screen.Connect)
             }
         }
@@ -77,7 +77,7 @@ class RangingViewModelTest {
             )
 
             every {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
             } returns flowOf(
                 RangingResult.RangingResultPosition(
                     mockk(),
@@ -85,7 +85,7 @@ class RangingViewModelTest {
                 )
             )
 
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            val viewModel = RangingViewModel(gcxUwbDevice, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
@@ -100,7 +100,7 @@ class RangingViewModelTest {
             )
 
             verify {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
             }
         }
 
@@ -119,10 +119,10 @@ class RangingViewModelTest {
                 RangingResult.RangingResultPosition(uwbDevice, position)
             )
             every {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
             } returns rangingFlow
 
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            val viewModel = RangingViewModel(gcxUwbDevice, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
@@ -161,7 +161,7 @@ class RangingViewModelTest {
             )
 
             verify {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
             }
         }
 
@@ -176,12 +176,12 @@ class RangingViewModelTest {
                     )
                 )
             } returns false
-            val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
+            val viewModel = RangingViewModel(gcxUwbDevice, navigator, permissionChecker)
             viewModel.onResume()
             advanceUntilIdle()
 
             verify(exactly = 0) {
-                uwbBleLibrary.startRanging(any(), any(), any())
+                gcxUwbDevice.startRanging(any(), any(), any())
             }
         }
 }

@@ -82,13 +82,14 @@ class GcxUwbControleeTest {
             val controlee = GcxUwbControlee(
                 uwbManager,
                 bleMessagingClient,
-                deviceConfigInterceptor,
-                phoneConfigInterceptor,
-                rangingConfig,
                 gcxLogger
             )
 
-            val result = controlee.startRanging().first()
+            val result = controlee.startRanging(
+                deviceConfigInterceptor,
+                phoneConfigInterceptor,
+                rangingConfig
+            ).first()
             assertInstanceOf(RangingResult.RangingResultPosition::class.java, result)
 
             coVerifyOrder {
@@ -111,15 +112,16 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient,
+                bleMessagingClient
+            )
+
+            var error: Throwable? = null
+            controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
                 gcxLogger
             )
-
-            var error: Throwable? = null
-            controlee.startRanging()
                 .catch { error = it }
                 .collect {}
 
@@ -139,15 +141,16 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient,
+                bleMessagingClient
+            )
+
+            var error: Throwable? = null
+            controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
                 gcxLogger
             )
-
-            var error: Throwable? = null
-            controlee.startRanging()
                 .catch { error = it }
                 .collect {}
 
@@ -170,15 +173,16 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient,
+                bleMessagingClient
+            )
+
+            var error: Throwable? = null
+            controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
                 gcxLogger
             )
-
-            var error: Throwable? = null
-            controlee.startRanging()
                 .catch { error = it }
                 .collect {}
 
@@ -202,15 +206,16 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient,
+                bleMessagingClient
+            )
+
+            var error: Throwable? = null
+            controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
                 gcxLogger
             )
-
-            var error: Throwable? = null
-            controlee.startRanging()
                 .catch { error = it }
                 .collect {}
 
@@ -234,13 +239,14 @@ class GcxUwbControleeTest {
             val controlee = GcxUwbControlee(
                 uwbManager,
                 bleMessagingClient,
-                deviceConfigInterceptor,
-                phoneConfigInterceptor,
-                rangingConfig,
                 gcxLogger
             )
 
-            val result = controlee.startRanging().first()
+            val result = controlee.startRanging(
+                deviceConfigInterceptor,
+                phoneConfigInterceptor,
+                rangingConfig
+            ).first()
             assertInstanceOf(RangingResult.RangingResultPosition::class.java, result)
 
             coVerify {
