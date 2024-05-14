@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.api.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
@@ -46,7 +48,7 @@ class BleViewModel(
 
     private var scanJob: Job? = null
     private var connectJob: Job? = null
-
+    private var gcxUwbDevice: GcxUwbDevice? = null
     fun onScanPermissionsRequested() {
         _viewState.update { it.copy(requestScanPermissions = false) }
     }
@@ -104,7 +106,6 @@ class BleViewModel(
     fun onDisconnectClicked() {
         connectJob?.cancel()
         connectJob = null
-
         _viewState.update {
             it.copy(
                 // Reset scan results to force re-scan
@@ -134,9 +135,17 @@ class BleViewModel(
                     // TODO: React on failed connection.
                 }
                 .collect { connectionState ->
+                    gcxUwbDevice = (
+                        connectionState as?
+                            ConnectionState.ServicesDiscovered
+                        )?.gcxUwbDevice
+
                     _viewState.update {
                         it.copy(
-                            connectingDevice = GcxBleDevice(device.bluetoothDevice, connectionState)
+                            connectingDevice = GcxBleDevice(
+                                device.bluetoothDevice,
+                                connectionState
+                            )
                         )
                     }
                 }
@@ -152,6 +161,6 @@ class BleViewModel(
     }
 
     private fun navigateToRangingScreen() {
-        navigator.navigateTo(Screen.Ranging)
+        navigator.navigateTo(screen = Screen.Ranging, gcxUwbDevice = gcxUwbDevice)
     }
 }

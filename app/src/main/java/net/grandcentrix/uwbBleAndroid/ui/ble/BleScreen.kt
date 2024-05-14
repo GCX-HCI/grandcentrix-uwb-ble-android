@@ -25,7 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.grandcentrix.api.data.model.GcxBleConnectionState
+import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
@@ -184,7 +185,7 @@ private fun ConnectionView(
                 targetState = device.connectionState,
                 label = "Cross fade between loading and established connection"
             ) { connectionState ->
-                if (connectionState == GcxBleConnectionState.SERVICES_DISCOVERED) {
+                if (connectionState is ConnectionState.ServicesDiscovered) {
                     Button(onClick = onStartRangingClicked) {
                         Text(text = "Start ranging")
                     }

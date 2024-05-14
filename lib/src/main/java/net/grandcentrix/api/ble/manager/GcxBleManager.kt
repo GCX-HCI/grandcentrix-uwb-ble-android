@@ -15,17 +15,13 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.api.ble.exception.BluetoothException
 import net.grandcentrix.api.ble.model.BluetoothMessage
+import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.api.ble.provider.UUIDProvider
 import net.grandcentrix.api.logging.internal.GcxLogger
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
 private const val TAG = "BleManager"
-
-enum class ConnectionState {
-    CONNECTED,
-    DISCONNECTED,
-    SERVICES_DISCOVERED
-}
 
 interface BleManager {
 
@@ -89,10 +85,14 @@ internal class GcxBleManager(
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 if (newState == BluetoothGatt.STATE_CONNECTED) {
-                    trySend(ConnectionState.CONNECTED)
+                    trySend(
+                        ConnectionState.Connected
+                    )
                     gatt.discoverServices()
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                    trySend(ConnectionState.DISCONNECTED)
+                    trySend(
+                        ConnectionState.Disconnected
+                    )
                     gatt.close()
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         close()
@@ -105,7 +105,14 @@ internal class GcxBleManager(
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    trySend(ConnectionState.SERVICES_DISCOVERED)
+                    trySend(
+                        ConnectionState.ServicesDiscovered(
+                            gcxUwbDevice = GcxUwbDevice(
+                                context = context,
+                                bleMessagingClient = bleMessagingClient
+                            )
+                        )
+                    )
                     if (!isRequiredServiceSupported(gatt)) {
                         close(BluetoothException.ServiceNotSupportedException)
                         cleanUpGattStack(gatt)

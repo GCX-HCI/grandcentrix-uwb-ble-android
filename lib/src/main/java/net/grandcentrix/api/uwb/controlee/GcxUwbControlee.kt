@@ -79,16 +79,19 @@ interface PhoneConfigInterceptor {
 }
 
 interface UwbControlee {
-    @RequiresPermission(Manifest.permission.UWB_RANGING)
-    fun startRanging(): Flow<RangingResult>
+    @RequiresPermission(
+        allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
+    )
+    fun startRanging(
+        deviceConfigInterceptor: DeviceConfigInterceptor,
+        phoneConfigInterceptor: PhoneConfigInterceptor,
+        rangingConfig: RangingConfig
+    ): Flow<RangingResult>
 }
 
 internal class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessagingClient: BleMessagingClient,
-    private val deviceConfigInterceptor: DeviceConfigInterceptor,
-    private val phoneConfigInterceptor: PhoneConfigInterceptor,
-    private val rangingConfig: RangingConfig,
     private val logger: GcxLogger
 ) : UwbControlee {
 
@@ -97,20 +100,35 @@ internal class GcxUwbControlee(
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
-    override fun startRanging(): Flow<RangingResult> = flow {
+    override fun startRanging(
+        deviceConfigInterceptor: DeviceConfigInterceptor,
+        phoneConfigInterceptor: PhoneConfigInterceptor,
+        rangingConfig: RangingConfig
+    ): Flow<RangingResult> = flow {
         logger.i(TAG, "Start UWB ranging")
         bleMessagingClient.enableReceiver()
-        val deviceConfig = coroutineScope { requestDeviceConfig().await() }
-        transmitPhoneData().getOrThrow()
-        emitAll(startSession(deviceConfig))
+        val deviceConfig =
+            coroutineScope {
+                requestDeviceConfig(
+                    deviceConfigInterceptor = deviceConfigInterceptor
+                ).await()
+            }
+        transmitPhoneData(
+            phoneConfigInterceptor = phoneConfigInterceptor,
+            rangingConfig = rangingConfig
+        ).getOrThrow()
+        emitAll(startSession(deviceConfig = deviceConfig, rangingConfig = rangingConfig))
     }.onCompletion {
         logger.i(TAG, "Close UWB ranging")
         bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command))
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private fun CoroutineScope.requestDeviceConfig(): Deferred<DeviceConfig> {
-        val deviceConfigDeferred = async { getDeviceConfigDataOrNull() }
+    private fun CoroutineScope.requestDeviceConfig(
+        deviceConfigInterceptor: DeviceConfigInterceptor
+    ): Deferred<DeviceConfig> {
+        val deviceConfigDeferred =
+            async { getDeviceConfigDataOrNull(deviceConfigInterceptor = deviceConfigInterceptor) }
         launch { transmitInitializeCommand().getOrThrow() }
         return deviceConfigDeferred
     }
@@ -126,7 +144,10 @@ internal class GcxUwbControlee(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun transmitPhoneData(): Result<Unit> {
+    private suspend fun transmitPhoneData(
+        phoneConfigInterceptor: PhoneConfigInterceptor,
+        rangingConfig: RangingConfig
+    ): Result<Unit> {
         uwbControleeSession = uwbManager.controleeSessionScope()
         val localAddress = uwbControleeSession.localAddress
 
@@ -144,7 +165,10 @@ internal class GcxUwbControlee(
         return bleMessagingClient.send(phoneConfigBytes)
     }
 
-    private fun startSession(deviceConfig: DeviceConfig): Flow<RangingResult> {
+    private fun startSession(
+        deviceConfig: DeviceConfig,
+        rangingConfig: RangingConfig
+    ): Flow<RangingResult> {
         val uwbDevice = UwbDevice.createForAddress(deviceConfig.deviceMacAddress)
 
         val partnerParameters = rangingConfig.toRangingParameters(uwbDevices = listOf(uwbDevice))
@@ -152,7 +176,9 @@ internal class GcxUwbControlee(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun getDeviceConfigDataOrNull(): DeviceConfig {
+    private suspend fun getDeviceConfigDataOrNull(
+        deviceConfigInterceptor: DeviceConfigInterceptor
+    ): DeviceConfig {
         return bleMessagingClient.messages
             .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
             .filter { it.data?.first() == OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command }
