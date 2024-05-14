@@ -31,12 +31,7 @@ val mainModule = module {
     }
 
     single<UwbBleLibrary> {
-        GcxUwbBleLibrary(
-            context = get(),
-            deviceConfigInterceptor = MKDeviceConfigInterceptor,
-            phoneConfigInterceptor = MKPhoneConfigInterceptor,
-            rangingConfig = RangingConfig(sessionKey = App.MK_UWB_SESSION_KEY)
-        )
+        GcxUwbBleLibrary(context = get())
     }
 
     single { PermissionChecker(context = get()) }
