@@ -136,7 +136,7 @@ internal class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                logger.logD(
+                logger.logV(
                     TAG,
                     "onCharacteristicWrite ->\n" +
                         "uuid: ${characteristic.uuid}\n" +
@@ -156,7 +156,7 @@ internal class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                logger.logD(
+                logger.logV(
                     TAG,
                     "onCharacteristicChanged ->\n" +
                         "uuid: ${characteristic.uuid}\n" +
