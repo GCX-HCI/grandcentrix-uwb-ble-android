@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.api.ble.exception.BluetoothException
 import net.grandcentrix.api.ble.model.BluetoothMessage
 import net.grandcentrix.api.ble.provider.UUIDProvider
+import net.grandcentrix.api.logging.internal.UwbLogger
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
 private const val TAG = "BleManager"
@@ -45,9 +45,10 @@ interface BleMessagingClient {
     fun enableReceiver(): Result<Boolean>
 }
 
-class GcxBleManager(
+internal class GcxBleManager(
     private val context: Context,
-    private val uuidProvider: UUIDProvider
+    private val uuidProvider: UUIDProvider,
+    private val logger: UwbLogger
 ) : BleManager {
 
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
@@ -135,7 +136,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                Log.d(
+                logger.logD(
                     TAG,
                     "onCharacteristicWrite ->\n" +
                         "uuid: ${characteristic.uuid}\n" +
@@ -155,7 +156,7 @@ class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                Log.d(
+                logger.logD(
                     TAG,
                     "onCharacteristicChanged ->\n" +
                         "uuid: ${characteristic.uuid}\n" +

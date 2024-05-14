@@ -16,6 +16,9 @@ import net.grandcentrix.api.ble.scanner.BleScanner
 import net.grandcentrix.api.ble.scanner.GcxBleScanner
 import net.grandcentrix.api.data.model.GcxBleConnectionState
 import net.grandcentrix.api.data.model.toGcxBleConnectionState
+import net.grandcentrix.api.logging.DefaultLogConfig
+import net.grandcentrix.api.logging.LogConfig
+import net.grandcentrix.api.logging.internal.UwbLogger
 import net.grandcentrix.api.uwb.controlee.DeviceConfigInterceptor
 import net.grandcentrix.api.uwb.controlee.GcxUwbControlee
 import net.grandcentrix.api.uwb.controlee.PhoneConfigInterceptor
@@ -42,11 +45,13 @@ interface UwbBleLibrary {
 
 class GcxUwbBleLibrary(
     context: Context,
-    uuidProvider: UUIDProvider = UUIDProvider()
+    uuidProvider: UUIDProvider = UUIDProvider(),
+    logConfig: LogConfig = DefaultLogConfig()
 ) : UwbBleLibrary {
 
-    private val bleManager: BleManager by lazy { GcxBleManager(context, uuidProvider) }
-    private val bleScanner: BleScanner by lazy { GcxBleScanner(context) }
+    private val logger: UwbLogger by lazy { UwbLogger.initialize(logConfig) }
+    private val bleManager: BleManager by lazy { GcxBleManager(context, uuidProvider, logger) }
+    private val bleScanner: BleScanner by lazy { GcxBleScanner(context, logger) }
     private val uwbManager: UwbManager by lazy { UwbManager.createInstance(context) }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -69,7 +74,8 @@ class GcxUwbBleLibrary(
             bleMessagingClient = bleManager.bleMessagingClient,
             deviceConfigInterceptor = deviceConfigInterceptor,
             phoneConfigInterceptor = phoneConfigInterceptor,
-            rangingConfig = rangingConfig
+            rangingConfig = rangingConfig,
+            logger = logger
         )
         return uwbControlee.startRanging()
     }

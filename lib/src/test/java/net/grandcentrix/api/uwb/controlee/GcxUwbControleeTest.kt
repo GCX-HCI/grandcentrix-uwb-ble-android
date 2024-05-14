@@ -1,6 +1,5 @@
 package net.grandcentrix.api.uwb.controlee
 
-import android.util.Log
 import androidx.core.uwb.RangingPosition
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbAddress
@@ -12,7 +11,6 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
@@ -24,11 +22,11 @@ import net.grandcentrix.api.ble.manager.BleMessagingClient
 import net.grandcentrix.api.ble.manager.GcxBleManager
 import net.grandcentrix.api.ble.model.BluetoothMessage
 import net.grandcentrix.api.ble.protocol.OOBMessageProtocol
+import net.grandcentrix.api.logging.internal.UwbLogger
 import net.grandcentrix.api.uwb.exception.UwbException
 import net.grandcentrix.api.uwb.model.DeviceConfig
 import net.grandcentrix.api.uwb.model.RangingConfig
 import org.junit.jupiter.api.Assertions.assertInstanceOf
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -65,6 +63,8 @@ class GcxUwbControleeTest {
         every { intercept(any(), any(), any()) } returns byteArrayOf()
     }
 
+    private val uwbLogger: UwbLogger = mockk(relaxed = true)
+
     private val rangingConfig: RangingConfig = RangingConfig(
         uwbConfigType = 0,
         sessionId = 0,
@@ -76,13 +76,6 @@ class GcxUwbControleeTest {
         updateRateType = 0
     )
 
-    @BeforeEach
-    fun setup() {
-        mockkStatic(Log::class)
-        every { Log.i(any(), any()) } returns 0
-        every { Log.d(any(), any()) } returns 0
-    }
-
     @Test
     fun `Given connected uwb device, when start ranging, then position result is received`() =
         runTest {
@@ -91,7 +84,8 @@ class GcxUwbControleeTest {
                 bleMessagingClient,
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig
+                rangingConfig,
+                uwbLogger
             )
 
             val result = controlee.startRanging().first()
@@ -120,7 +114,8 @@ class GcxUwbControleeTest {
                 bleMessagingClient,
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig
+                rangingConfig,
+                uwbLogger
             )
 
             var error: Throwable? = null
@@ -147,7 +142,8 @@ class GcxUwbControleeTest {
                 bleMessagingClient,
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig
+                rangingConfig,
+                uwbLogger
             )
 
             var error: Throwable? = null
@@ -177,7 +173,8 @@ class GcxUwbControleeTest {
                 bleMessagingClient,
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig
+                rangingConfig,
+                uwbLogger
             )
 
             var error: Throwable? = null
@@ -208,7 +205,8 @@ class GcxUwbControleeTest {
                 bleMessagingClient,
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig
+                rangingConfig,
+                uwbLogger
             )
 
             var error: Throwable? = null
@@ -238,7 +236,8 @@ class GcxUwbControleeTest {
                 bleMessagingClient,
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig
+                rangingConfig,
+                uwbLogger
             )
 
             val result = controlee.startRanging().first()

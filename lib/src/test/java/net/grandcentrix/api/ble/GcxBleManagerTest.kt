@@ -26,6 +26,7 @@ import net.grandcentrix.api.ble.exception.BluetoothException
 import net.grandcentrix.api.ble.manager.ConnectionState
 import net.grandcentrix.api.ble.manager.GcxBleManager
 import net.grandcentrix.api.ble.provider.UUIDProvider
+import net.grandcentrix.api.logging.internal.UwbLogger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -65,6 +66,8 @@ class GcxBleManagerTest {
         every { rxUUID } returns UUID.randomUUID()
     }
 
+    private val uwbLogger: UwbLogger = mockk(relaxed = true)
+
     @Test
     fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() =
         runTest {
@@ -86,7 +89,11 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-            val gxcBleManager = GcxBleManager(context = context, uuidProvider = uuidProvider)
+            val gxcBleManager = GcxBleManager(
+                context = context,
+                uuidProvider = uuidProvider,
+                logger = uwbLogger
+            )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
@@ -117,7 +124,11 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-            val gxcBleManager = GcxBleManager(context = context, uuidProvider = uuidProvider)
+            val gxcBleManager = GcxBleManager(
+                context = context,
+                uuidProvider = uuidProvider,
+                logger = uwbLogger
+            )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
@@ -148,7 +159,11 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-            val gxcBleManager = GcxBleManager(context = context, uuidProvider = uuidProvider)
+            val gxcBleManager = GcxBleManager(
+                context = context,
+                uuidProvider = uuidProvider,
+                logger = uwbLogger
+            )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect()
@@ -179,7 +194,11 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-            val gxcBleManager = GcxBleManager(context = context, uuidProvider = uuidProvider)
+            val gxcBleManager = GcxBleManager(
+                context = context,
+                uuidProvider = uuidProvider,
+                logger = uwbLogger
+            )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
@@ -209,7 +228,11 @@ class GcxBleManagerTest {
                 bluetoothGatt
             }
 
-            val gxcBleManager = GcxBleManager(context = context, uuidProvider = uuidProvider)
+            val gxcBleManager = GcxBleManager(
+                context = context,
+                uuidProvider = uuidProvider,
+                logger = uwbLogger
+            )
 
             var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -245,7 +268,11 @@ class GcxBleManagerTest {
 
             every { bluetoothGatt.discoverServices() } returns true
 
-            val gxcBleManager = GcxBleManager(context = context, uuidProvider = uuidProvider)
+            val gxcBleManager = GcxBleManager(
+                context = context,
+                uuidProvider = uuidProvider,
+                logger = uwbLogger
+            )
 
             var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
