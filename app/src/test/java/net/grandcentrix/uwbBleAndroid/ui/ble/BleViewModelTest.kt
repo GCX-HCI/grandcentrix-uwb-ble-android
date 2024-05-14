@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import net.grandcentrix.data.manager.UwbBleLibrary
-import net.grandcentrix.data.model.GcxBleConnectionState
+import net.grandcentrix.api.data.manager.UwbBleLibrary
+import net.grandcentrix.api.data.model.GcxBleConnectionState
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension

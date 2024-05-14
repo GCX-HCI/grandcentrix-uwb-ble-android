@@ -1,7 +1,7 @@
 package net.grandcentrix.uwbBleAndroid.model
 
-import net.grandcentrix.uwb.ext.toByteArray
-import net.grandcentrix.uwb.model.PhoneConfig
+import net.grandcentrix.api.uwb.ext.toByteArray
+import net.grandcentrix.api.uwb.model.PhoneConfig
 
 class MKPhoneConfig(
     val specVerMajor: Short,
