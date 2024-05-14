@@ -1,7 +1,7 @@
 package net.grandcentrix.uwbBleAndroid
 
 import android.app.Application
-import net.grandcentrix.uwb.ext.hexStringToByteArray
+import net.grandcentrix.api.uwb.ext.hexStringToByteArray
 import net.grandcentrix.uwbBleAndroid.di.mainModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin

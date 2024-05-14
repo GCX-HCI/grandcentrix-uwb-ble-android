@@ -2,7 +2,7 @@ package net.grandcentrix.uwbBleAndroid.interceptor
 
 import androidx.core.uwb.RangingParameters
 import androidx.core.uwb.UwbComplexChannel
-import net.grandcentrix.uwb.controlee.PhoneConfigInterceptor
+import net.grandcentrix.api.uwb.controlee.PhoneConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.model.MKPhoneConfig
 
 object MKPhoneConfigInterceptor : PhoneConfigInterceptor {

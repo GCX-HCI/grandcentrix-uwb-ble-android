@@ -1,8 +1,8 @@
 package net.grandcentrix.uwbBleAndroid.di
 
-import net.grandcentrix.data.manager.GcxUwbBleLibrary
-import net.grandcentrix.data.manager.UwbBleLibrary
-import net.grandcentrix.uwb.model.RangingConfig
+import net.grandcentrix.api.data.manager.GcxUwbBleLibrary
+import net.grandcentrix.api.data.manager.UwbBleLibrary
+import net.grandcentrix.api.uwb.model.RangingConfig
 import net.grandcentrix.uwbBleAndroid.App
 import net.grandcentrix.uwbBleAndroid.interceptor.MKDeviceConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.interceptor.MKPhoneConfigInterceptor

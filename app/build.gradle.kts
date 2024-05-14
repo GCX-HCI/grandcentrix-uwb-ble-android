@@ -54,7 +54,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":api"))
+    implementation(project(":lib"))
     implementation(libs.bundles.koin)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
