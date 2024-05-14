@@ -44,11 +44,12 @@ class GcxUwbBleLibrary(
     rangingConfig: RangingConfig
 ) : UwbBleLibrary {
 
-    private val bleManager: BleManager = GcxBleManager(context, uuidProvider)
-    private val bleScanner: BleScanner = GcxBleScanner(context)
+    private val bleManager: BleManager by lazy { GcxBleManager(context, uuidProvider) }
+    private val bleScanner: BleScanner by lazy { GcxBleScanner(context) }
+    private val uwbManager: UwbManager by lazy { UwbManager.createInstance(context) }
 
     private val uwbControlee: UwbControlee = GcxUwbControlee(
-        uwbManager = UwbManager.createInstance(context),
+        uwbManager = uwbManager,
         bleMessagingClient = bleManager.bleMessagingClient,
         deviceConfigInterceptor = deviceConfigInterceptor,
         phoneConfigInterceptor = phoneConfigInterceptor,
