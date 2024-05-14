@@ -13,8 +13,11 @@ import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
 import net.grandcentrix.uwbBleAndroid.ui.ble.BleScreen
 import net.grandcentrix.uwbBleAndroid.ui.ranging.RangingScreen
+import net.grandcentrix.uwbBleAndroid.ui.ranging.RangingViewModel
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.android.ext.android.inject
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 class MainActivity : ComponentActivity() {
 
@@ -33,9 +36,13 @@ class MainActivity : ComponentActivity() {
                     // Very basic navigation implementation
                     val currentScreen by navigator.currentScreen.collectAsState()
 
-                    when (currentScreen) {
+                    when (currentScreen.first) {
                         Screen.Connect -> BleScreen()
-                        Screen.Ranging -> RangingScreen()
+                        Screen.Ranging -> {
+                            val viewModel: RangingViewModel =
+                                koinViewModel(parameters = { parametersOf(currentScreen.second) })
+                            RangingScreen(viewModel = viewModel)
+                        }
                     }
                 }
             }
