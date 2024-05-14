@@ -33,28 +33,21 @@ interface UwbBleLibrary {
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
-    fun startRanging(): Flow<RangingResult>
+    fun startRanging(
+        deviceConfigInterceptor: DeviceConfigInterceptor,
+        phoneConfigInterceptor: PhoneConfigInterceptor,
+        rangingConfig: RangingConfig = RangingConfig()
+    ): Flow<RangingResult>
 }
 
 class GcxUwbBleLibrary(
     context: Context,
-    uuidProvider: UUIDProvider = UUIDProvider(),
-    deviceConfigInterceptor: DeviceConfigInterceptor,
-    phoneConfigInterceptor: PhoneConfigInterceptor,
-    rangingConfig: RangingConfig
+    uuidProvider: UUIDProvider = UUIDProvider()
 ) : UwbBleLibrary {
 
     private val bleManager: BleManager by lazy { GcxBleManager(context, uuidProvider) }
     private val bleScanner: BleScanner by lazy { GcxBleScanner(context) }
     private val uwbManager: UwbManager by lazy { UwbManager.createInstance(context) }
-
-    private val uwbControlee: UwbControlee = GcxUwbControlee(
-        uwbManager = uwbManager,
-        bleMessagingClient = bleManager.bleMessagingClient,
-        deviceConfigInterceptor = deviceConfigInterceptor,
-        phoneConfigInterceptor = phoneConfigInterceptor,
-        rangingConfig = rangingConfig
-    )
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     override fun startScan(): Flow<ScanResult> = bleScanner.startScan()
@@ -66,5 +59,18 @@ class GcxUwbBleLibrary(
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
-    override fun startRanging(): Flow<RangingResult> = uwbControlee.startRanging()
+    override fun startRanging(
+        deviceConfigInterceptor: DeviceConfigInterceptor,
+        phoneConfigInterceptor: PhoneConfigInterceptor,
+        rangingConfig: RangingConfig
+    ): Flow<RangingResult> {
+        val uwbControlee: UwbControlee = GcxUwbControlee(
+            uwbManager = uwbManager,
+            bleMessagingClient = bleManager.bleMessagingClient,
+            deviceConfigInterceptor = deviceConfigInterceptor,
+            phoneConfigInterceptor = phoneConfigInterceptor,
+            rangingConfig = rangingConfig
+        )
+        return uwbControlee.startRanging()
+    }
 }
