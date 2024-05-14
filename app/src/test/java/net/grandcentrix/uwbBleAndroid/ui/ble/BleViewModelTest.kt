@@ -40,7 +40,7 @@ class BleViewModelTest {
     private val uwbBleLibrary: UwbBleLibrary = mockk {
         every { startScan() } returns flowOf(scanResult)
         every { connect(bluetoothDeviceMock) } returns emptyFlow()
-        coEvery { startRanging() } returns emptyFlow()
+        coEvery { startRanging(any(), any(), any()) } returns emptyFlow()
     }
 
     private val permissionChecker: PermissionChecker = mockk {

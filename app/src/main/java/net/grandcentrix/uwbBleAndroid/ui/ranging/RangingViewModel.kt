@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.api.data.manager.UwbBleLibrary
+import net.grandcentrix.api.uwb.model.RangingConfig
+import net.grandcentrix.uwbBleAndroid.App
+import net.grandcentrix.uwbBleAndroid.interceptor.MKDeviceConfigInterceptor
+import net.grandcentrix.uwbBleAndroid.interceptor.MKPhoneConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
@@ -77,7 +81,11 @@ internal class RangingViewModel(
         if (checkUwbRangingPermission()) {
             isUwbSessionPending = false
             rangingJob = viewModelScope.launch {
-                uwbBleLibrary.startRanging()
+                uwbBleLibrary.startRanging(
+                    deviceConfigInterceptor = MKDeviceConfigInterceptor,
+                    phoneConfigInterceptor = MKPhoneConfigInterceptor,
+                    rangingConfig = RangingConfig(sessionKey = App.MK_UWB_SESSION_KEY)
+                )
                     .catch { Log.e(TAG, "Failed to run uwb ranging", it) }
                     .collect { rangingResult ->
                         when (rangingResult) {

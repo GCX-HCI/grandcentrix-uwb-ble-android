@@ -30,7 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class RangingViewModelTest {
 
     private val uwbBleLibrary: UwbBleLibrary = mockk {
-        every { startRanging() } returns emptyFlow()
+        every { startRanging(any(), any(), any()) } returns emptyFlow()
     }
 
     private val navigator: Navigator = mockk(relaxUnitFun = true)
@@ -46,7 +46,9 @@ class RangingViewModelTest {
             viewModel.onResume()
             advanceUntilIdle()
 
-            verify { uwbBleLibrary.startRanging() }
+            verify {
+                uwbBleLibrary.startRanging(any(), any(), any())
+            }
         }
 
     @Test
@@ -59,7 +61,7 @@ class RangingViewModelTest {
             advanceUntilIdle()
 
             verify(ordering = Ordering.ORDERED) {
-                uwbBleLibrary.startRanging()
+                uwbBleLibrary.startRanging(any(), any(), any())
                 navigator.navigateTo(Screen.Connect)
             }
         }
@@ -74,7 +76,9 @@ class RangingViewModelTest {
                 elapsedRealtimeNanos = 0L
             )
 
-            every { uwbBleLibrary.startRanging() } returns flowOf(
+            every {
+                uwbBleLibrary.startRanging(any(), any(), any())
+            } returns flowOf(
                 RangingResult.RangingResultPosition(
                     mockk(),
                     position
@@ -95,7 +99,9 @@ class RangingViewModelTest {
                 viewModel.uiState.value
             )
 
-            verify { uwbBleLibrary.startRanging() }
+            verify {
+                uwbBleLibrary.startRanging(any(), any(), any())
+            }
         }
 
     @Test
@@ -112,7 +118,9 @@ class RangingViewModelTest {
             val rangingFlow = MutableStateFlow(
                 RangingResult.RangingResultPosition(uwbDevice, position)
             )
-            every { uwbBleLibrary.startRanging() } returns rangingFlow
+            every {
+                uwbBleLibrary.startRanging(any(), any(), any())
+            } returns rangingFlow
 
             val viewModel = RangingViewModel(uwbBleLibrary, navigator, permissionChecker)
             viewModel.onResume()
@@ -152,7 +160,9 @@ class RangingViewModelTest {
                 viewModel.uiState.value
             )
 
-            verify { uwbBleLibrary.startRanging() }
+            verify {
+                uwbBleLibrary.startRanging(any(), any(), any())
+            }
         }
 
     @Test
@@ -170,6 +180,8 @@ class RangingViewModelTest {
             viewModel.onResume()
             advanceUntilIdle()
 
-            verify(exactly = 0) { uwbBleLibrary.startRanging() }
+            verify(exactly = 0) {
+                uwbBleLibrary.startRanging(any(), any(), any())
+            }
         }
 }
