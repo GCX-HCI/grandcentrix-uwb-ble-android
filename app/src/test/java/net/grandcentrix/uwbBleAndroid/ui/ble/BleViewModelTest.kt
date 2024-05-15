@@ -260,7 +260,7 @@ class BleViewModelTest {
 
             advanceUntilIdle()
 
-            viewModel.onStartRangingClicked()
+            viewModel.onStartRangingClicked(gcxUwbDevice)
 
             verify {
                 navigator.navigateTo(Screen.Ranging(gcxUwbDevice))
