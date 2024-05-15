@@ -105,8 +105,7 @@ internal class GcxBleManager(
                         ConnectionState.ServicesDiscovered(
                             gcxUwbDevice = GcxUwbDevice(
                                 context = context,
-                                bleMessagingClient = bleMessagingClient,
-                                logger = logger
+                                bleMessagingClient = bleMessagingClient
                             )
                         )
                     )

@@ -7,7 +7,7 @@ import net.grandcentrix.api.logging.Logger
 /**
  * Internal logger class. Filters log output by [level].
  */
-class GcxLogger(
+internal class GcxLogger(
     private val level: LogLevel,
     private val logger: Logger
 ) {

@@ -7,7 +7,6 @@ import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.flow.Flow
 import net.grandcentrix.api.ble.manager.BleMessagingClient
-import net.grandcentrix.api.logging.internal.GcxLogger
 import net.grandcentrix.api.uwb.controlee.DeviceConfigInterceptor
 import net.grandcentrix.api.uwb.controlee.GcxUwbControlee
 import net.grandcentrix.api.uwb.controlee.PhoneConfigInterceptor
@@ -16,8 +15,7 @@ import net.grandcentrix.api.uwb.model.RangingConfig
 
 class GcxUwbDevice(
     private val bleMessagingClient: BleMessagingClient,
-    private val context: Context,
-    private val logger: GcxLogger
+    private val context: Context
 ) {
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
@@ -29,8 +27,7 @@ class GcxUwbDevice(
     ): Flow<RangingResult> {
         val uwbControlee: UwbControlee = GcxUwbControlee(
             uwbManager = UwbManager.createInstance(context = context),
-            bleMessagingClient = bleMessagingClient,
-            logger = logger
+            bleMessagingClient = bleMessagingClient
         )
         return uwbControlee.startRanging(
             deviceConfigInterceptor = deviceConfigInterceptor,
