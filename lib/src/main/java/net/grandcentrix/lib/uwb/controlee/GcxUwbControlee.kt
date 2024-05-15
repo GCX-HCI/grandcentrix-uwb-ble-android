@@ -1,7 +1,6 @@
 package net.grandcentrix.lib.uwb.controlee
 
 import android.Manifest
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbComplexChannel
@@ -23,6 +22,7 @@ import kotlinx.coroutines.launch
 import net.grandcentrix.lib.ble.manager.BleMessagingClient
 import net.grandcentrix.lib.ble.manager.GcxBleManager
 import net.grandcentrix.lib.ble.protocol.OOBMessageProtocol
+import net.grandcentrix.lib.logging.internal.GcxLogger
 import net.grandcentrix.lib.uwb.exception.UwbException
 import net.grandcentrix.lib.uwb.ext.toHexString
 import net.grandcentrix.lib.uwb.model.DeviceConfig
@@ -104,7 +104,7 @@ internal class GcxUwbControlee(
         phoneConfigInterceptor: PhoneConfigInterceptor,
         rangingConfig: RangingConfig
     ): Flow<RangingResult> = flow {
-        Log.i(TAG, "Start UWB ranging")
+        GcxLogger.i(TAG, "Start UWB ranging")
         bleMessagingClient.enableReceiver()
         val deviceConfig =
             coroutineScope {
@@ -118,7 +118,7 @@ internal class GcxUwbControlee(
         ).getOrThrow()
         emitAll(startSession(deviceConfig = deviceConfig, rangingConfig = rangingConfig))
     }.onCompletion {
-        Log.i(TAG, "Close UWB ranging")
+        GcxLogger.i(TAG, "Close UWB ranging")
         bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command))
     }
 
@@ -135,7 +135,7 @@ internal class GcxUwbControlee(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun transmitInitializeCommand(): Result<Unit> {
         val initializeCommandBytes = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-        Log.i(
+        GcxLogger.i(
             TAG,
             "Sending initialize command to uwb device: ${initializeCommandBytes.toHexString()}"
         )
@@ -160,7 +160,7 @@ internal class GcxUwbControlee(
             ),
             phoneAddress = localAddress.address
         )
-        Log.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
+        GcxLogger.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
         return bleMessagingClient.send(phoneConfigBytes)
     }
 

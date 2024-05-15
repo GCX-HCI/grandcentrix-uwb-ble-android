@@ -31,9 +31,12 @@ class GcxUwbBleLibrary(
     logConfig: LogConfig = DefaultLogConfig()
 ) : UwbBleLibrary {
 
-    private val logger: GcxLogger by lazy { GcxLogger.initialize(logConfig) }
-    private val bleManager: BleManager by lazy { GcxBleManager(context, uuidProvider, logger) }
-    private val bleScanner: BleScanner by lazy { GcxBleScanner(context, logger) }
+    init {
+        GcxLogger.configure(logConfig)
+    }
+
+    private val bleManager: BleManager by lazy { GcxBleManager(context, uuidProvider) }
+    private val bleScanner: BleScanner by lazy { GcxBleScanner(context) }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     override fun startScan(): Flow<ScanResult> = bleScanner.startScan()

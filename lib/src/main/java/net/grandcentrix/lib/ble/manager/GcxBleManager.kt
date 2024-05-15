@@ -43,8 +43,7 @@ interface BleMessagingClient {
 
 internal class GcxBleManager(
     private val context: Context,
-    private val uuidProvider: UUIDProvider,
-    private val logger: GcxLogger
+    private val uuidProvider: UUIDProvider
 ) : BleManager {
 
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
@@ -139,7 +138,7 @@ internal class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                logger.v(
+                GcxLogger.v(
                     TAG,
                     "onCharacteristicWrite ->\n" +
                         "uuid: ${characteristic.uuid}\n" +
@@ -159,7 +158,7 @@ internal class GcxBleManager(
                 characteristic: BluetoothGattCharacteristic,
                 value: ByteArray
             ) {
-                logger.v(
+                GcxLogger.v(
                     TAG,
                     "onCharacteristicChanged ->\n" +
                         "uuid: ${characteristic.uuid}\n" +
