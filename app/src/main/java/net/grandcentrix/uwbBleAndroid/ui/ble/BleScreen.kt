@@ -25,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
@@ -65,7 +65,7 @@ fun BleView(
     onToggleScanClicked: () -> Unit,
     onDeviceClicked: (GcxBleDevice) -> Unit,
     onDisconnectClicked: () -> Unit,
-    onStartRangingClicked: () -> Unit,
+    onStartRangingClicked: (GcxUwbDevice) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -87,6 +87,7 @@ fun BleView(
             } else {
                 ConnectionView(
                     connectingDevice,
+                    viewState.gcxUwbDevice,
                     onDisconnectClicked,
                     onStartRangingClicked
                 )
@@ -162,8 +163,9 @@ fun ScanResultItem(
 @Composable
 private fun ConnectionView(
     device: GcxBleDevice,
+    uwbDevice: GcxUwbDevice?,
     onDisconnectClicked: () -> Unit,
-    onStartRangingClicked: () -> Unit,
+    onStartRangingClicked: (GcxUwbDevice) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -181,11 +183,11 @@ private fun ConnectionView(
             }
 
             Crossfade(
-                targetState = device.connectionState,
+                targetState = uwbDevice,
                 label = "Cross fade between loading and established connection"
-            ) { connectionState ->
-                if (connectionState is ConnectionState.ServicesDiscovered) {
-                    Button(onClick = onStartRangingClicked) {
+            ) { rangingDevice ->
+                if (rangingDevice != null) {
+                    Button(onClick = { onStartRangingClicked(rangingDevice) }) {
                         Text(text = "Start ranging")
                     }
                 } else {

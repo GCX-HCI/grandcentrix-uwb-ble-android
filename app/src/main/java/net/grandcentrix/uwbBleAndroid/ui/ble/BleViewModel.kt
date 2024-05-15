@@ -42,12 +42,6 @@ class BleViewModel(
         private val TAG = BleViewModel::class.simpleName
     }
 
-    private val ConnectionState.rangingDeviceOrNull: GcxUwbDevice?
-        get() = when (this) {
-            is ConnectionState.ServicesDiscovered -> this.gcxUwbDevice
-            else -> null
-        }
-
     private val _viewState: MutableStateFlow<BleViewState> = MutableStateFlow(BleViewState())
     val viewState: StateFlow<BleViewState> = _viewState.asStateFlow()
 
@@ -122,8 +116,8 @@ class BleViewModel(
         }
     }
 
-    fun onStartRangingClicked() {
-        navigateToRangingScreen()
+    fun onStartRangingClicked(uwbDevice: GcxUwbDevice) {
+        navigateToRangingScreen(uwbDevice)
     }
 
     fun onPermissionResult() {
@@ -163,14 +157,13 @@ class BleViewModel(
         return permissionChecker.hasPermissions(AppPermissions.bleConnectPermissions)
     }
 
-    private fun navigateToRangingScreen() {
-        viewState.value.gcxUwbDevice?.let {
-            navigator.navigateTo(screen = Screen.Ranging(uwbDevice = it))
-        } ?: run {
-            // TODO: Show UI error
-            throw NullPointerException(
-                "You cannot navigate to ranging screen, whe uwb device is null"
-            )
+    private val ConnectionState.rangingDeviceOrNull: GcxUwbDevice?
+        get() = when (this) {
+            is ConnectionState.ServicesDiscovered -> this.gcxUwbDevice
+            else -> null
         }
+
+    private fun navigateToRangingScreen(uwbDevice: GcxUwbDevice) {
+        navigator.navigateTo(screen = Screen.Ranging(uwbDevice))
     }
 }
