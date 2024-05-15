@@ -42,6 +42,12 @@ class BleViewModel(
         private val TAG = BleViewModel::class.simpleName
     }
 
+    private val ConnectionState.rangingDeviceOrNull: GcxUwbDevice?
+        get() = when (this) {
+            is ConnectionState.ServicesDiscovered -> this.gcxUwbDevice
+            else -> null
+        }
+
     private val _viewState: MutableStateFlow<BleViewState> = MutableStateFlow(BleViewState())
     val viewState: StateFlow<BleViewState> = _viewState.asStateFlow()
 
@@ -142,7 +148,7 @@ class BleViewModel(
                                 device.bluetoothDevice,
                                 connectionState
                             ),
-                            gcxUwbDevice = (connectionState as? ConnectionState.ServicesDiscovered)?.gcxUwbDevice
+                            gcxUwbDevice = connectionState.rangingDeviceOrNull
                         )
                     }
                 }
