@@ -19,8 +19,7 @@ val mainModule = module {
         )
     }
 
-    viewModel {
-            (uwbDevice: GcxUwbDevice) ->
+    viewModel { (uwbDevice: GcxUwbDevice) ->
         RangingViewModel(
             gcxUwbDevice = uwbDevice,
             navigator = get(),
