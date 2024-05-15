@@ -36,11 +36,17 @@ class MainActivity : ComponentActivity() {
                     // Very basic navigation implementation
                     val currentScreen by navigator.currentScreen.collectAsState()
 
-                    when (currentScreen.first) {
+                    when (currentScreen) {
                         Screen.Connect -> BleScreen()
-                        Screen.Ranging -> {
+                        is Screen.Ranging -> {
                             val viewModel: RangingViewModel =
-                                koinViewModel(parameters = { parametersOf(currentScreen.second) })
+                                koinViewModel(
+                                    parameters = {
+                                        parametersOf(
+                                            (currentScreen as Screen.Ranging).uwbDevice
+                                        )
+                                    }
+                                )
                             RangingScreen(viewModel = viewModel)
                         }
                     }

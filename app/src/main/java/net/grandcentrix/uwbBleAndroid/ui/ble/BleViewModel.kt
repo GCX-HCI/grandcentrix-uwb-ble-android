@@ -27,7 +27,8 @@ data class BleViewState(
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
     val scanResults: Set<GcxBleDevice> = emptySet(),
-    val connectingDevice: GcxBleDevice? = null
+    val connectingDevice: GcxBleDevice? = null,
+    val gcxUwbDevice: GcxUwbDevice? = null
 )
 
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
@@ -48,7 +49,7 @@ class BleViewModel(
 
     private var scanJob: Job? = null
     private var connectJob: Job? = null
-    private var gcxUwbDevice: GcxUwbDevice? = null
+
     fun onScanPermissionsRequested() {
         _viewState.update { it.copy(requestScanPermissions = false) }
     }
@@ -135,17 +136,13 @@ class BleViewModel(
                     // TODO: React on failed connection.
                 }
                 .collect { connectionState ->
-                    gcxUwbDevice = (
-                        connectionState as?
-                            ConnectionState.ServicesDiscovered
-                        )?.gcxUwbDevice
-
                     _viewState.update {
                         it.copy(
                             connectingDevice = GcxBleDevice(
                                 device.bluetoothDevice,
                                 connectionState
-                            )
+                            ),
+                            gcxUwbDevice = (connectionState as? ConnectionState.ServicesDiscovered)?.gcxUwbDevice
                         )
                     }
                 }
@@ -161,6 +158,13 @@ class BleViewModel(
     }
 
     private fun navigateToRangingScreen() {
-        navigator.navigateTo(screen = Screen.Ranging, gcxUwbDevice = gcxUwbDevice)
+        viewState.value.gcxUwbDevice?.let {
+            navigator.navigateTo(screen = Screen.Ranging(uwbDevice = it))
+        } ?: run {
+            // TODO: Show UI error
+            throw NullPointerException(
+                "You cannot navigate to ranging screen, whe uwb device is null"
+            )
+        }
     }
 }
