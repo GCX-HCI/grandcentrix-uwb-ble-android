@@ -263,7 +263,7 @@ class BleViewModelTest {
             viewModel.onStartRangingClicked()
 
             verify {
-                navigator.navigateTo(Screen.Ranging, gcxUwbDevice)
+                navigator.navigateTo(Screen.Ranging(gcxUwbDevice))
             }
         }
 }
