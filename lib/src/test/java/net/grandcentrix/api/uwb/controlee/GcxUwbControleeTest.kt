@@ -112,15 +112,15 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient
+                bleMessagingClient,
+                gcxLogger
             )
 
             var error: Throwable? = null
             controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig,
-                gcxLogger
+                rangingConfig
             )
                 .catch { error = it }
                 .collect {}
@@ -141,15 +141,15 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient
+                bleMessagingClient,
+                gcxLogger
             )
 
             var error: Throwable? = null
             controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig,
-                gcxLogger
+                rangingConfig
             )
                 .catch { error = it }
                 .collect {}
@@ -173,15 +173,15 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient
+                bleMessagingClient,
+                gcxLogger
             )
 
             var error: Throwable? = null
             controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig,
-                gcxLogger
+                rangingConfig
             )
                 .catch { error = it }
                 .collect {}
@@ -206,15 +206,15 @@ class GcxUwbControleeTest {
 
             val controlee = GcxUwbControlee(
                 uwbManager,
-                bleMessagingClient
+                bleMessagingClient,
+                gcxLogger
             )
 
             var error: Throwable? = null
             controlee.startRanging(
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
-                rangingConfig,
-                gcxLogger
+                rangingConfig
             )
                 .catch { error = it }
                 .collect {}

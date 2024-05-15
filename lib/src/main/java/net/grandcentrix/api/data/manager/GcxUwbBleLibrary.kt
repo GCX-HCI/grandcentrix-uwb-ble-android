@@ -12,6 +12,9 @@ import net.grandcentrix.api.ble.model.ConnectionState
 import net.grandcentrix.api.ble.provider.UUIDProvider
 import net.grandcentrix.api.ble.scanner.BleScanner
 import net.grandcentrix.api.ble.scanner.GcxBleScanner
+import net.grandcentrix.api.logging.DefaultLogConfig
+import net.grandcentrix.api.logging.LogConfig
+import net.grandcentrix.api.logging.internal.GcxLogger
 
 interface UwbBleLibrary {
 
