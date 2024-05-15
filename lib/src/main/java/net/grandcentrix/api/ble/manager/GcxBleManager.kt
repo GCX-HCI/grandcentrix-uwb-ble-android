@@ -85,14 +85,10 @@ internal class GcxBleManager(
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 if (newState == BluetoothGatt.STATE_CONNECTED) {
-                    trySend(
-                        ConnectionState.Connected
-                    )
+                    trySend(ConnectionState.Connected)
                     gatt.discoverServices()
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                    trySend(
-                        ConnectionState.Disconnected
-                    )
+                    trySend(ConnectionState.Disconnected)
                     gatt.close()
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         close()
