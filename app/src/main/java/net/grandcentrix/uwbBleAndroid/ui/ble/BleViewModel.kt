@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.api.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
@@ -25,7 +27,8 @@ data class BleViewState(
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
     val scanResults: Set<GcxBleDevice> = emptySet(),
-    val connectingDevice: GcxBleDevice? = null
+    val connectingDevice: GcxBleDevice? = null,
+    val gcxUwbDevice: GcxUwbDevice? = null
 )
 
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
@@ -104,7 +107,6 @@ class BleViewModel(
     fun onDisconnectClicked() {
         connectJob?.cancel()
         connectJob = null
-
         _viewState.update {
             it.copy(
                 // Reset scan results to force re-scan
@@ -114,8 +116,8 @@ class BleViewModel(
         }
     }
 
-    fun onStartRangingClicked() {
-        navigateToRangingScreen()
+    fun onStartRangingClicked(uwbDevice: GcxUwbDevice) {
+        navigateToRangingScreen(uwbDevice)
     }
 
     fun onPermissionResult() {
@@ -136,7 +138,11 @@ class BleViewModel(
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            connectingDevice = GcxBleDevice(device.bluetoothDevice, connectionState)
+                            connectingDevice = GcxBleDevice(
+                                device.bluetoothDevice,
+                                connectionState
+                            ),
+                            gcxUwbDevice = connectionState.rangingDeviceOrNull
                         )
                     }
                 }
@@ -151,7 +157,13 @@ class BleViewModel(
         return permissionChecker.hasPermissions(AppPermissions.bleConnectPermissions)
     }
 
-    private fun navigateToRangingScreen() {
-        navigator.navigateTo(Screen.Ranging)
+    private val ConnectionState.rangingDeviceOrNull: GcxUwbDevice?
+        get() = when (this) {
+            is ConnectionState.ServicesDiscovered -> this.gcxUwbDevice
+            else -> null
+        }
+
+    private fun navigateToRangingScreen(uwbDevice: GcxUwbDevice) {
+        navigator.navigateTo(screen = Screen.Ranging(uwbDevice))
     }
 }

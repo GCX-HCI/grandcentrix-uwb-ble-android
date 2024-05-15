@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.Screen
@@ -31,11 +30,13 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     // Very basic navigation implementation
-                    val currentScreen by navigator.currentScreen.collectAsState()
+                    val currentScreenState = navigator.currentScreen.collectAsState()
 
-                    when (currentScreen) {
+                    when (val currentScreen = currentScreenState.value) {
                         Screen.Connect -> BleScreen()
-                        Screen.Ranging -> RangingScreen()
+                        is Screen.Ranging -> {
+                            RangingScreen(uwbDevice = currentScreen.uwbDevice)
+                        }
                     }
                 }
             }

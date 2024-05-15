@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.grandcentrix.api.data.manager.UwbBleLibrary
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.api.uwb.model.RangingConfig
 import net.grandcentrix.uwbBleAndroid.App
 import net.grandcentrix.uwbBleAndroid.interceptor.MKDeviceConfigInterceptor
@@ -36,7 +36,7 @@ internal data class RangingUiState(
 )
 
 internal class RangingViewModel(
-    private val uwbBleLibrary: UwbBleLibrary,
+    private val gcxUwbDevice: GcxUwbDevice,
     private val navigator: Navigator,
     private val permissionChecker: PermissionChecker
 ) : ViewModel() {
@@ -81,7 +81,7 @@ internal class RangingViewModel(
         if (checkUwbRangingPermission()) {
             isUwbSessionPending = false
             rangingJob = viewModelScope.launch {
-                uwbBleLibrary.startRanging(
+                gcxUwbDevice.startRanging(
                     deviceConfigInterceptor = MKDeviceConfigInterceptor,
                     phoneConfigInterceptor = MKPhoneConfigInterceptor,
                     rangingConfig = RangingConfig(sessionKey = App.MK_UWB_SESSION_KEY)

@@ -26,12 +26,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-internal fun RangingScreen(viewModel: RangingViewModel = koinViewModel()) {
+internal fun RangingScreen(
+    uwbDevice: GcxUwbDevice,
+    viewModel: RangingViewModel = koinViewModel(parameters = { parametersOf(uwbDevice) })
+) {
     BackHandler { viewModel.onBackClicked() }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),

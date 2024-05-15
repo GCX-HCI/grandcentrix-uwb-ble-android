@@ -23,8 +23,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.api.ble.exception.BluetoothException
-import net.grandcentrix.api.ble.manager.ConnectionState
 import net.grandcentrix.api.ble.manager.GcxBleManager
+import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.api.ble.provider.UUIDProvider
 import net.grandcentrix.api.logging.internal.GcxLogger
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -66,6 +67,8 @@ class GcxBleManagerTest {
         every { rxUUID } returns UUID.randomUUID()
     }
 
+    private val gcxUwbDevice: GcxUwbDevice = mockk()
+
     private val gcxLogger: GcxLogger = mockk(relaxed = true)
 
     @Test
@@ -97,7 +100,7 @@ class GcxBleManagerTest {
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
-                    assertEquals(ConnectionState.CONNECTED, connectionState)
+                    assertEquals(ConnectionState.Connected, connectionState)
                 }
             }
             advanceUntilIdle()
@@ -132,7 +135,7 @@ class GcxBleManagerTest {
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
-                    assertEquals(ConnectionState.DISCONNECTED, connectionState)
+                    assertEquals(ConnectionState.Disconnected, connectionState)
                 }
             }
             advanceUntilIdle()
@@ -202,7 +205,7 @@ class GcxBleManagerTest {
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gxcBleManager.connect(bluetoothDevice).collect { connectionState ->
-                    assertEquals(ConnectionState.SERVICES_DISCOVERED, connectionState)
+                    assert(connectionState is ConnectionState.ServicesDiscovered)
                 }
             }
             advanceUntilIdle()
