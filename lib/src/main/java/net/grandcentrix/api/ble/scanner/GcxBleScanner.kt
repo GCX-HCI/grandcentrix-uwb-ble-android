@@ -45,9 +45,9 @@ internal class GcxBleScanner(
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                logger.logV(TAG, "Found ble device: ${result.device}")
+                logger.v(TAG, "Found ble device: ${result.device}")
                 trySend(result)
-                    .onFailure { logger.logD(TAG, "Failed to send scan result", it) }
+                    .onFailure { logger.d(TAG, "Failed to send scan result", it) }
             }
 
             override fun onScanFailed(errorCode: Int) {
@@ -59,7 +59,7 @@ internal class GcxBleScanner(
         try {
             bluetoothLeScanner.startScan(scanCallback)
         } catch (exception: SecurityException) {
-            logger.logE(TAG, "Failed to start scan", exception)
+            logger.e(TAG, "Failed to start scan", exception)
             close(exception)
         }
 
@@ -67,7 +67,7 @@ internal class GcxBleScanner(
             try {
                 bluetoothLeScanner.stopScan(scanCallback)
             } catch (exception: SecurityException) {
-                logger.logE(TAG, "Failed to stop scan", exception)
+                logger.e(TAG, "Failed to stop scan", exception)
             }
         }
     }

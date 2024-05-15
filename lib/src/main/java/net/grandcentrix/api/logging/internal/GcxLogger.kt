@@ -11,31 +11,31 @@ internal class GcxLogger(
     private val level: LogLevel,
     private val logger: Logger
 ) {
-    internal fun logV(tag: String, message: String, throwable: Throwable? = null) {
+    internal fun v(tag: String, message: String, throwable: Throwable? = null) {
         if (LogLevel.Verbose.ordinal >= level.ordinal) {
             logger.v(tag, message, throwable)
         }
     }
 
-    internal fun logD(tag: String, message: String, throwable: Throwable? = null) {
+    internal fun d(tag: String, message: String, throwable: Throwable? = null) {
         if (LogLevel.Debug.ordinal >= level.ordinal) {
             logger.d(tag, message, throwable)
         }
     }
 
-    internal fun logI(tag: String, message: String, throwable: Throwable? = null) {
+    internal fun i(tag: String, message: String, throwable: Throwable? = null) {
         if (LogLevel.Info.ordinal >= level.ordinal) {
             logger.i(tag, message, throwable)
         }
     }
 
-    internal fun logW(tag: String, message: String, throwable: Throwable? = null) {
+    internal fun w(tag: String, message: String, throwable: Throwable? = null) {
         if (LogLevel.Warning.ordinal >= level.ordinal) {
             logger.w(tag, message, throwable)
         }
     }
 
-    internal fun logE(tag: String, message: String, throwable: Throwable? = null) {
+    internal fun e(tag: String, message: String, throwable: Throwable? = null) {
         if (LogLevel.Error.ordinal >= level.ordinal) {
             logger.e(tag, message, throwable)
         }

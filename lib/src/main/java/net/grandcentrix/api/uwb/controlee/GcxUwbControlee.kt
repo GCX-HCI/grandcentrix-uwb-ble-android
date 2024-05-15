@@ -98,13 +98,13 @@ internal class GcxUwbControlee(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
     override fun startRanging(): Flow<RangingResult> = flow {
-        logger.logI(TAG, "Start UWB ranging")
+        logger.i(TAG, "Start UWB ranging")
         bleMessagingClient.enableReceiver()
         val deviceConfig = coroutineScope { requestDeviceConfig().await() }
         transmitPhoneData().getOrThrow()
         emitAll(startSession(deviceConfig))
     }.onCompletion {
-        logger.logI(TAG, "Close UWB ranging")
+        logger.i(TAG, "Close UWB ranging")
         bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command))
     }
 
@@ -118,7 +118,7 @@ internal class GcxUwbControlee(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun transmitInitializeCommand(): Result<Unit> {
         val initializeCommandBytes = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-        logger.logI(
+        logger.i(
             TAG,
             "Sending initialize command to uwb device: ${initializeCommandBytes.toHexString()}"
         )
@@ -140,7 +140,7 @@ internal class GcxUwbControlee(
             ),
             phoneAddress = localAddress.address
         )
-        logger.logI(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
+        logger.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
         return bleMessagingClient.send(phoneConfigBytes)
     }
 
