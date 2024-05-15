@@ -2,7 +2,7 @@ package net.grandcentrix.uwbBleAndroid.model
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
-import net.grandcentrix.api.ble.model.ConnectionState
+import net.grandcentrix.lib.ble.model.ConnectionState
 
 data class GcxBleDevice(
     val bluetoothDevice: BluetoothDevice,

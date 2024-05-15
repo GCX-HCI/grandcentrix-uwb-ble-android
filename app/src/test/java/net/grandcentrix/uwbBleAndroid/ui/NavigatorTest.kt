@@ -1,7 +1,7 @@
 package net.grandcentrix.uwbBleAndroid.ui
 
 import io.mockk.mockk
-import net.grandcentrix.api.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

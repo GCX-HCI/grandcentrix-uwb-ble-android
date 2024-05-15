@@ -1,7 +1,7 @@
 package net.grandcentrix.uwbBleAndroid.interceptor
 
-import net.grandcentrix.api.uwb.controlee.DeviceConfigInterceptor
-import net.grandcentrix.api.uwb.model.DeviceConfig
+import net.grandcentrix.lib.uwb.controlee.DeviceConfigInterceptor
+import net.grandcentrix.lib.uwb.model.DeviceConfig
 import net.grandcentrix.uwbBleAndroid.model.MKDeviceConfig
 
 object MKDeviceConfigInterceptor : DeviceConfigInterceptor {

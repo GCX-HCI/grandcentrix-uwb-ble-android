@@ -25,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.grandcentrix.api.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme

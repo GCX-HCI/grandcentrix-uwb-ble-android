@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import net.grandcentrix.api.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.ui.Navigator

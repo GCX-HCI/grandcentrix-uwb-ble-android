@@ -1,8 +1,8 @@
 package net.grandcentrix.uwbBleAndroid.di
 
-import net.grandcentrix.api.ble.model.GcxUwbDevice
-import net.grandcentrix.api.data.manager.GcxUwbBleLibrary
-import net.grandcentrix.api.data.manager.UwbBleLibrary
+import net.grandcentrix.lib.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.data.manager.GcxUwbBleLibrary
+import net.grandcentrix.lib.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
 import net.grandcentrix.uwbBleAndroid.ui.ble.BleViewModel
