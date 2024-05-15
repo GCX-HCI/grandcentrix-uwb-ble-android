@@ -9,11 +9,9 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.util.Log
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
@@ -24,6 +22,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.api.ble.exception.BluetoothException
 import net.grandcentrix.api.ble.scanner.GcxBleScanner
+import net.grandcentrix.api.logging.internal.GcxLogger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
@@ -48,13 +47,15 @@ class GcxBleScannerTest {
         every { bluetoothManager.adapter } returns bluetoothAdapter
     }
 
+    private val gcxLogger: GcxLogger = mockk(relaxed = true)
+
     private val scanResultMock: ScanResult = mockk()
 
     @Test
     fun `Given ble is disabled, when start ble scan, then a error should be thrown`() = runTest {
         every { bluetoothAdapter.isEnabled } returns false
 
-        val gcxBleScanner = GcxBleScanner(context = context)
+        val gcxBleScanner = GcxBleScanner(context = context, gcxLogger)
 
         var thrownError: Throwable? = null
         gcxBleScanner.startScan()
@@ -67,12 +68,9 @@ class GcxBleScannerTest {
     @Test
     fun `Given permission is denied, when start ble scan, then a error should be thrown`() =
         runTest {
-            mockkStatic(Log::class)
-
             every { leScanner.startScan(any()) } throws SecurityException()
-            every { Log.e(any(), any(), any()) } returns 0
 
-            val gcxBleScanner = GcxBleScanner(context = context)
+            val gcxBleScanner = GcxBleScanner(context = context, gcxLogger)
 
             var thrownError: Throwable? = null
             gcxBleScanner.startScan()
@@ -85,7 +83,7 @@ class GcxBleScannerTest {
     @Test
     fun `Given ble is enabled, when start ble scan, then bluetoothLeScan should call startScan()`() =
         runTest {
-            val gcxBleScanner = GcxBleScanner(context = context)
+            val gcxBleScanner = GcxBleScanner(context = context, gcxLogger)
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 gcxBleScanner.startScan().collect()
@@ -109,7 +107,7 @@ class GcxBleScannerTest {
             val result = arg<ScanResult>(1)
             println("scan result: $result")
         }
-        val gcxBleScanner = GcxBleScanner(context = context)
+        val gcxBleScanner = GcxBleScanner(context = context, gcxLogger)
 
         triggerScanCallback(scanCallback)
 

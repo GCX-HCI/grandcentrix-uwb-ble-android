@@ -1,7 +1,6 @@
 package net.grandcentrix.api.uwb.controlee
 
 import android.Manifest
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbComplexChannel
@@ -23,6 +22,7 @@ import kotlinx.coroutines.launch
 import net.grandcentrix.api.ble.manager.BleMessagingClient
 import net.grandcentrix.api.ble.manager.GcxBleManager
 import net.grandcentrix.api.ble.protocol.OOBMessageProtocol
+import net.grandcentrix.api.logging.internal.GcxLogger
 import net.grandcentrix.api.uwb.exception.UwbException
 import net.grandcentrix.api.uwb.ext.toHexString
 import net.grandcentrix.api.uwb.model.DeviceConfig
@@ -83,12 +83,13 @@ interface UwbControlee {
     fun startRanging(): Flow<RangingResult>
 }
 
-class GcxUwbControlee(
+internal class GcxUwbControlee(
     private val uwbManager: UwbManager,
     private val bleMessagingClient: BleMessagingClient,
     private val deviceConfigInterceptor: DeviceConfigInterceptor,
     private val phoneConfigInterceptor: PhoneConfigInterceptor,
-    private val rangingConfig: RangingConfig
+    private val rangingConfig: RangingConfig,
+    private val logger: GcxLogger
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope
@@ -97,13 +98,13 @@ class GcxUwbControlee(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
     override fun startRanging(): Flow<RangingResult> = flow {
-        Log.i(TAG, "Start UWB ranging")
+        logger.i(TAG, "Start UWB ranging")
         bleMessagingClient.enableReceiver()
         val deviceConfig = coroutineScope { requestDeviceConfig().await() }
         transmitPhoneData().getOrThrow()
         emitAll(startSession(deviceConfig))
     }.onCompletion {
-        Log.i(TAG, "Close UWB ranging")
+        logger.i(TAG, "Close UWB ranging")
         bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command))
     }
 
@@ -117,7 +118,7 @@ class GcxUwbControlee(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun transmitInitializeCommand(): Result<Unit> {
         val initializeCommandBytes = byteArrayOf(OOBMessageProtocol.INITIALIZE.command)
-        Log.i(
+        logger.i(
             TAG,
             "Sending initialize command to uwb device: ${initializeCommandBytes.toHexString()}"
         )
@@ -139,7 +140,7 @@ class GcxUwbControlee(
             ),
             phoneAddress = localAddress.address
         )
-        Log.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
+        logger.i(TAG, "Sending phone data to uwb device: ${phoneConfigBytes.toHexString()}")
         return bleMessagingClient.send(phoneConfigBytes)
     }
 
