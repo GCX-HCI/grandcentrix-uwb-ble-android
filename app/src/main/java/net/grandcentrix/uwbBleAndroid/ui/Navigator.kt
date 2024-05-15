@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.update
 
 class Navigator {
 
-    private val _currentScreen =
-        MutableStateFlow<Screen>(Screen.Connect)
+    private val _currentScreen = MutableStateFlow<Screen>(Screen.Connect)
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
 
     fun navigateTo(screen: Screen) {
