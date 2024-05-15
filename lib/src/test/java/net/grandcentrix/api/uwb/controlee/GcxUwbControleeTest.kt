@@ -22,7 +22,7 @@ import net.grandcentrix.api.ble.manager.BleMessagingClient
 import net.grandcentrix.api.ble.manager.GcxBleManager
 import net.grandcentrix.api.ble.model.BluetoothMessage
 import net.grandcentrix.api.ble.protocol.OOBMessageProtocol
-import net.grandcentrix.api.logging.internal.UwbLogger
+import net.grandcentrix.api.logging.internal.GcxLogger
 import net.grandcentrix.api.uwb.exception.UwbException
 import net.grandcentrix.api.uwb.model.DeviceConfig
 import net.grandcentrix.api.uwb.model.RangingConfig
@@ -63,7 +63,7 @@ class GcxUwbControleeTest {
         every { intercept(any(), any(), any()) } returns byteArrayOf()
     }
 
-    private val uwbLogger: UwbLogger = mockk(relaxed = true)
+    private val gcxLogger: GcxLogger = mockk(relaxed = true)
 
     private val rangingConfig: RangingConfig = RangingConfig(
         uwbConfigType = 0,
@@ -85,7 +85,7 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
-                uwbLogger
+                gcxLogger
             )
 
             val result = controlee.startRanging().first()
@@ -115,7 +115,7 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
-                uwbLogger
+                gcxLogger
             )
 
             var error: Throwable? = null
@@ -143,7 +143,7 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
-                uwbLogger
+                gcxLogger
             )
 
             var error: Throwable? = null
@@ -174,7 +174,7 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
-                uwbLogger
+                gcxLogger
             )
 
             var error: Throwable? = null
@@ -206,7 +206,7 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
-                uwbLogger
+                gcxLogger
             )
 
             var error: Throwable? = null
@@ -237,7 +237,7 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig,
-                uwbLogger
+                gcxLogger
             )
 
             val result = controlee.startRanging().first()

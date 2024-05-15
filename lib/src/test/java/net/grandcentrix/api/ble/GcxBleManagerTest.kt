@@ -26,7 +26,7 @@ import net.grandcentrix.api.ble.exception.BluetoothException
 import net.grandcentrix.api.ble.manager.ConnectionState
 import net.grandcentrix.api.ble.manager.GcxBleManager
 import net.grandcentrix.api.ble.provider.UUIDProvider
-import net.grandcentrix.api.logging.internal.UwbLogger
+import net.grandcentrix.api.logging.internal.GcxLogger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -66,7 +66,7 @@ class GcxBleManagerTest {
         every { rxUUID } returns UUID.randomUUID()
     }
 
-    private val uwbLogger: UwbLogger = mockk(relaxed = true)
+    private val gcxLogger: GcxLogger = mockk(relaxed = true)
 
     @Test
     fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() =
@@ -92,7 +92,7 @@ class GcxBleManagerTest {
             val gxcBleManager = GcxBleManager(
                 context = context,
                 uuidProvider = uuidProvider,
-                logger = uwbLogger
+                logger = gcxLogger
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -127,7 +127,7 @@ class GcxBleManagerTest {
             val gxcBleManager = GcxBleManager(
                 context = context,
                 uuidProvider = uuidProvider,
-                logger = uwbLogger
+                logger = gcxLogger
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -162,7 +162,7 @@ class GcxBleManagerTest {
             val gxcBleManager = GcxBleManager(
                 context = context,
                 uuidProvider = uuidProvider,
-                logger = uwbLogger
+                logger = gcxLogger
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -197,7 +197,7 @@ class GcxBleManagerTest {
             val gxcBleManager = GcxBleManager(
                 context = context,
                 uuidProvider = uuidProvider,
-                logger = uwbLogger
+                logger = gcxLogger
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -231,7 +231,7 @@ class GcxBleManagerTest {
             val gxcBleManager = GcxBleManager(
                 context = context,
                 uuidProvider = uuidProvider,
-                logger = uwbLogger
+                logger = gcxLogger
             )
 
             var thrownError: Throwable? = null
@@ -271,7 +271,7 @@ class GcxBleManagerTest {
             val gxcBleManager = GcxBleManager(
                 context = context,
                 uuidProvider = uuidProvider,
-                logger = uwbLogger
+                logger = gcxLogger
             )
 
             var thrownError: Throwable? = null

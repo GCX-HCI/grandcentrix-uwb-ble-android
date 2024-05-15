@@ -7,7 +7,7 @@ import net.grandcentrix.api.logging.Logger
 /**
  * Internal logger class. Filters log output by [level].
  */
-internal class UwbLogger(
+internal class GcxLogger(
     private val level: LogLevel,
     private val logger: Logger
 ) {
@@ -42,8 +42,8 @@ internal class UwbLogger(
     }
 
     companion object {
-        fun initialize(logConfig: LogConfig): UwbLogger {
-            return UwbLogger(logConfig.level, logConfig.logger)
+        fun initialize(logConfig: LogConfig): GcxLogger {
+            return GcxLogger(logConfig.level, logConfig.logger)
         }
     }
 }

@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import net.grandcentrix.api.ble.manager.BleMessagingClient
 import net.grandcentrix.api.ble.manager.GcxBleManager
 import net.grandcentrix.api.ble.protocol.OOBMessageProtocol
-import net.grandcentrix.api.logging.internal.UwbLogger
+import net.grandcentrix.api.logging.internal.GcxLogger
 import net.grandcentrix.api.uwb.exception.UwbException
 import net.grandcentrix.api.uwb.ext.toHexString
 import net.grandcentrix.api.uwb.model.DeviceConfig
@@ -89,7 +89,7 @@ internal class GcxUwbControlee(
     private val deviceConfigInterceptor: DeviceConfigInterceptor,
     private val phoneConfigInterceptor: PhoneConfigInterceptor,
     private val rangingConfig: RangingConfig,
-    private val logger: UwbLogger
+    private val logger: GcxLogger
 ) : UwbControlee {
 
     private lateinit var uwbControleeSession: UwbControleeSessionScope

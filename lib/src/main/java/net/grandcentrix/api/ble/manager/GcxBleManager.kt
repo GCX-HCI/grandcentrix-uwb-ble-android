@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.api.ble.exception.BluetoothException
 import net.grandcentrix.api.ble.model.BluetoothMessage
 import net.grandcentrix.api.ble.provider.UUIDProvider
-import net.grandcentrix.api.logging.internal.UwbLogger
+import net.grandcentrix.api.logging.internal.GcxLogger
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
 private const val TAG = "BleManager"
@@ -48,7 +48,7 @@ interface BleMessagingClient {
 internal class GcxBleManager(
     private val context: Context,
     private val uuidProvider: UUIDProvider,
-    private val logger: UwbLogger
+    private val logger: GcxLogger
 ) : BleManager {
 
     private var rxCharacteristic: BluetoothGattCharacteristic? = null

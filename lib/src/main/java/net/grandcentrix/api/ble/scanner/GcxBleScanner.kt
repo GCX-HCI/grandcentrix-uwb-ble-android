@@ -13,7 +13,7 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.api.ble.exception.BluetoothException
-import net.grandcentrix.api.logging.internal.UwbLogger
+import net.grandcentrix.api.logging.internal.GcxLogger
 
 private const val TAG = "BleScanner"
 
@@ -25,7 +25,7 @@ interface BleScanner {
 
 internal class GcxBleScanner(
     context: Context,
-    private val logger: UwbLogger
+    private val logger: GcxLogger
 ) : BleScanner {
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
