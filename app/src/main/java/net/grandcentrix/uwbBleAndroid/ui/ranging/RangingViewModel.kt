@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.grandcentrix.api.ble.model.GcxUwbDevice
-import net.grandcentrix.api.uwb.model.RangingConfig
+import net.grandcentrix.lib.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.uwb.model.RangingConfig
 import net.grandcentrix.uwbBleAndroid.App
 import net.grandcentrix.uwbBleAndroid.interceptor.MKDeviceConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.interceptor.MKPhoneConfigInterceptor

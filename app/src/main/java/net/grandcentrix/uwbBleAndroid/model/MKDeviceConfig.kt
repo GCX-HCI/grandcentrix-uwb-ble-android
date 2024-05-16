@@ -1,9 +1,9 @@
 package net.grandcentrix.uwbBleAndroid.model
 
-import net.grandcentrix.api.uwb.ext.toByte
-import net.grandcentrix.api.uwb.ext.toInt
-import net.grandcentrix.api.uwb.ext.toShort
-import net.grandcentrix.api.uwb.model.DeviceConfig
+import net.grandcentrix.lib.uwb.ext.toByte
+import net.grandcentrix.lib.uwb.ext.toInt
+import net.grandcentrix.lib.uwb.ext.toShort
+import net.grandcentrix.lib.uwb.model.DeviceConfig
 
 class MKDeviceConfig(
     val specVerMajor: Short,
