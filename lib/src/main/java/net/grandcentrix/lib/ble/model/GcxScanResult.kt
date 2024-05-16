@@ -8,8 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import net.grandcentrix.lib.ble.manager.BleManager
 import net.grandcentrix.lib.ble.manager.GcxBleManager
 import net.grandcentrix.lib.ble.provider.UUIDProvider
-import net.grandcentrix.lib.logging.DefaultLogConfig
-import net.grandcentrix.lib.logging.internal.GcxLogger
 
 data class GcxScanResult(
     val androidScanResult: ScanResult,
@@ -20,8 +18,7 @@ data class GcxScanResult(
     fun connect(uuidProvider: UUIDProvider): Flow<ConnectionState> {
         val bleManager: BleManager = GcxBleManager(
             context = context,
-            uuidProvider = uuidProvider,
-            logger = GcxLogger.initialize(DefaultLogConfig()) // TODO
+            uuidProvider = uuidProvider
         )
         return bleManager.connect(bleDevice = androidScanResult.device)
     }
