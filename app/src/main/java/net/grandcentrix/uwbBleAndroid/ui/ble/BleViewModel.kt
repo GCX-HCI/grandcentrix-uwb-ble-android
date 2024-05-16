@@ -36,7 +36,8 @@ private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 class BleViewModel(
     private val uwbBleLibrary: UwbBleLibrary,
     private val permissionChecker: PermissionChecker,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val uuidProvider: UUIDProvider = UUIDProvider()
 ) : ViewModel() {
     companion object {
         private val TAG = BleViewModel::class.simpleName
@@ -131,8 +132,7 @@ class BleViewModel(
         connectJob?.cancel()
         connectJob = viewModelScope.launch {
             bleScanResult.scanResult.connect(
-                bleScanResult.bluetoothDevice,
-                uuidProvider = UUIDProvider()
+                uuidProvider = uuidProvider
             )
                 .catch {
                     Log.e(TAG, "Connection to $bleScanResult failed", it)
