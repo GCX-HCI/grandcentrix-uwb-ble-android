@@ -99,7 +99,7 @@ fun BleView(
 
 @Composable
 private fun ScanResultsView(
-    bleScanResult: Set<BleScanResult>,
+    bleScanResult: List<BleScanResult>,
     isScanning: Boolean,
     onDeviceClicked: (BleScanResult) -> Unit,
     onToggleScanClicked: () -> Unit,
@@ -155,9 +155,7 @@ fun ScanResultItem(
         Row {
             Column {
                 Text(text = "Address: ${bleScanResult.bluetoothDevice.address}")
-                Text(text = "Name: ${bleScanResult.scanResult.deviceName}")
                 Text(text = "Connection state: ${bleScanResult.connectionState}")
-                Text(text = "RSSI ${bleScanResult.scanResult.rssi}")
             }
         }
     }

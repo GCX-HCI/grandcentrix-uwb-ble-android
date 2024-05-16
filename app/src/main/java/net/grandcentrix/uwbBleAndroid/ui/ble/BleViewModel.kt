@@ -26,7 +26,7 @@ data class BleViewState(
     val requestScanPermissions: Boolean = false,
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
-    val scanResults: Set<BleScanResult> = emptySet(),
+    val scanResults: List<BleScanResult> = emptyList(),
     val selectedScanResult: BleScanResult? = null,
     val connectingDevice: GcxUwbDevice? = null
 )
@@ -76,9 +76,11 @@ class BleViewModel(
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { scanResult ->
                         _viewState.update {
-                            val updatedScanResults = buildSet {
+                            val updatedScanResults = buildList {
                                 addAll(it.scanResults)
-                                add(scanResult.toBleDevice())
+                                it.scanResults.firstOrNull { filter ->
+                                    filter.bluetoothDevice.address == scanResult.androidScanResult.device.address
+                                } ?: add(scanResult.toBleDevice())
                             }
                             it.copy(scanResults = updatedScanResults)
                         }
@@ -111,7 +113,7 @@ class BleViewModel(
         _viewState.update {
             it.copy(
                 // Reset scan results to force re-scan
-                scanResults = emptySet(),
+                scanResults = emptyList(),
                 selectedScanResult = null
             )
         }
