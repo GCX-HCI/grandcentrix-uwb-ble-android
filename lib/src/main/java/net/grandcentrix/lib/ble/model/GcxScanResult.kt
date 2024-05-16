@@ -1,8 +1,6 @@
 package net.grandcentrix.api.ble.model
 
 import android.Manifest
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import androidx.annotation.RequiresPermission
@@ -14,11 +12,7 @@ import net.grandcentrix.api.logging.DefaultLogConfig
 import net.grandcentrix.api.logging.internal.GcxLogger
 
 data class GcxScanResult(
-    val bluetoothDevice: BluetoothDevice,
-    val macAddress: String,
-    val deviceName: String?,
-    val rssi: Int,
-    val scanRecord: ScanRecord?,
+    val androidScanResult: ScanResult,
     private val context: Context
 ) {
 
@@ -29,16 +23,12 @@ data class GcxScanResult(
             uuidProvider = uuidProvider,
             logger = GcxLogger.initialize(DefaultLogConfig()) // TODO
         )
-        return bleManager.connect(bleDevice = bluetoothDevice)
+        return bleManager.connect(bleDevice = androidScanResult.device)
     }
 }
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 internal fun ScanResult.toGcxScanResult(context: Context): GcxScanResult = GcxScanResult(
-    bluetoothDevice = device,
-    macAddress = device.address,
-    deviceName = device.name,
-    rssi = rssi,
-    scanRecord = scanRecord,
+    androidScanResult = this,
     context = context
 )

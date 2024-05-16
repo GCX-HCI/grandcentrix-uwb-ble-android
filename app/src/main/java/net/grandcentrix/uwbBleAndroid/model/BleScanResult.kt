@@ -9,15 +9,14 @@ data class BleScanResult(
     val bluetoothDevice: BluetoothDevice,
     val connectionState: ConnectionState
 )
-
 fun GcxScanResult.toBleDevice(): BleScanResult = BleScanResult(
     scanResult = this,
-    bluetoothDevice = bluetoothDevice,
+    bluetoothDevice = this.androidScanResult.device,
     connectionState = ConnectionState.Disconnected
 )
 
 fun ConnectionState.toBleDevice(scanResult: GcxScanResult): BleScanResult = BleScanResult(
     scanResult = scanResult,
-    bluetoothDevice = scanResult.bluetoothDevice,
+    bluetoothDevice = scanResult.androidScanResult.device,
     connectionState = this
 )
