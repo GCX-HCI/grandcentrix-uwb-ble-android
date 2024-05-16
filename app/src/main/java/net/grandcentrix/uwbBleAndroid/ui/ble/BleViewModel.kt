@@ -26,8 +26,8 @@ data class BleViewState(
     val requestScanPermissions: Boolean = false,
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
-    val scanResults: Set<GcxBleDevice> = emptySet(),
-    val connectingDevice: GcxBleDevice? = null,
+    val scanResults: Set<GcxScanResult> = emptySet(),
+    val connectingDevice: GcxScanResult? = null,
     val gcxUwbDevice: GcxUwbDevice? = null
 )
 
@@ -77,7 +77,7 @@ class BleViewModel(
                         _viewState.update {
                             val updatedScanResults = buildSet {
                                 addAll(it.scanResults)
-                                add(scanResult.toGcxBleDevice())
+                                add(scanResult)
                             }
                             it.copy(scanResults = updatedScanResults)
                         }
@@ -94,11 +94,11 @@ class BleViewModel(
         scanJob?.cancel("User stopped ble scan")
     }
 
-    fun onDeviceClicked(device: GcxBleDevice) {
+    fun onDeviceClicked(gcxScanResult: GcxScanResult) {
         stopScan()
-        _viewState.update { it.copy(connectingDevice = device) }
+        _viewState.update { it.copy(connectingDevice = gcxScanResult) }
         if (checkConnectPermission()) {
-            connectToDevice(device)
+            connectToDevice(gcxScanResult)
         } else {
             _viewState.update { it.copy(requestConnectPermissions = true) }
         }
@@ -127,21 +127,18 @@ class BleViewModel(
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    private fun connectToDevice(device: GcxBleDevice) {
+    private fun connectToDevice(gcxScanResult: GcxScanResult) {
         connectJob?.cancel()
         connectJob = viewModelScope.launch {
-            uwbBleLibrary.connect(device.bluetoothDevice)
+            gcxScanResult.connect(gcxScanResult.bluetoothDevice, uuidProvider = UUIDProvider())
                 .catch {
-                    Log.e(TAG, "Connection to $device failed", it)
+                    Log.e(TAG, "Connection to $gcxScanResult failed", it)
                     // TODO: React on failed connection.
                 }
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            connectingDevice = GcxBleDevice(
-                                device.bluetoothDevice,
-                                connectionState
-                            ),
+                            connectingDevice = gcxScanResult,
                             gcxUwbDevice = connectionState.rangingDeviceOrNull
                         )
                     }

@@ -25,8 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import net.grandcentrix.lib.ble.model.GcxUwbDevice
-import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
+import net.grandcentrix.lib.ble.model.GcxScanResult
+import net.grandcentrix.api.ble.model.GcxUwbDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
@@ -63,7 +63,7 @@ fun BleScreen(viewModel: BleViewModel = koinViewModel()) {
 fun BleView(
     viewState: BleViewState,
     onToggleScanClicked: () -> Unit,
-    onDeviceClicked: (GcxBleDevice) -> Unit,
+    onDeviceClicked: (GcxScanResult) -> Unit,
     onDisconnectClicked: () -> Unit,
     onStartRangingClicked: (GcxUwbDevice) -> Unit,
     modifier: Modifier = Modifier
@@ -98,9 +98,9 @@ fun BleView(
 
 @Composable
 private fun ScanResultsView(
-    scanResults: Set<GcxBleDevice>,
+    scanResults: Set<GcxScanResult>,
     isScanning: Boolean,
-    onDeviceClicked: (GcxBleDevice) -> Unit,
+    onDeviceClicked: (GcxScanResult) -> Unit,
     onToggleScanClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -121,9 +121,9 @@ private fun ScanResultsView(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
-                scanResults.forEach { device ->
+                scanResults.forEach { scanResult ->
                     ScanResultItem(
-                        device = device,
+                        gcxScanResult = scanResult,
                         onDeviceClicked = onDeviceClicked,
                         modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
                     )
@@ -143,18 +143,19 @@ private fun ScanResultsView(
 
 @Composable
 fun ScanResultItem(
-    device: GcxBleDevice,
-    onDeviceClicked: (GcxBleDevice) -> Unit,
+    gcxScanResult: GcxScanResult,
+    onDeviceClicked: (GcxScanResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
     OutlinedButton(
-        onClick = { onDeviceClicked(device) },
+        onClick = { onDeviceClicked(gcxScanResult) },
         modifier = modifier
     ) {
         Row {
             Column {
-                Text(text = "Address: ${device.bluetoothDevice.address}")
-                Text(text = "Connection state: ${device.connectionState}")
+                Text(text = "Address: ${gcxScanResult.bluetoothDevice.address}")
+                Text(text = "Name: ${gcxScanResult.deviceName}")
+                Text(text = "RSSI ${gcxScanResult.rssi}")
             }
         }
     }
@@ -162,7 +163,7 @@ fun ScanResultItem(
 
 @Composable
 private fun ConnectionView(
-    device: GcxBleDevice,
+    gcxScanResult: GcxScanResult,
     uwbDevice: GcxUwbDevice?,
     onDisconnectClicked: () -> Unit,
     onStartRangingClicked: (GcxUwbDevice) -> Unit,
@@ -172,7 +173,7 @@ private fun ConnectionView(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        ScanResultItem(device = device, onDeviceClicked = {})
+        ScanResultItem(gcxScanResult = gcxScanResult, onDeviceClicked = {})
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
