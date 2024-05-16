@@ -23,10 +23,7 @@ data class GcxScanResult(
 ) {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun connect(
-        bluetoothDevice: BluetoothDevice,
-        uuidProvider: UUIDProvider
-    ): Flow<ConnectionState> {
+    fun connect(uuidProvider: UUIDProvider): Flow<ConnectionState> {
         val bleManager: BleManager = GcxBleManager(
             context = context,
             uuidProvider = uuidProvider,
