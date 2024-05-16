@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.grandcentrix.lib.ble.model.GcxScanResult
 import net.grandcentrix.api.ble.model.GcxUwbDevice
+import net.grandcentrix.uwbBleAndroid.model.BleScanResult
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
@@ -63,7 +64,7 @@ fun BleScreen(viewModel: BleViewModel = koinViewModel()) {
 fun BleView(
     viewState: BleViewState,
     onToggleScanClicked: () -> Unit,
-    onDeviceClicked: (GcxScanResult) -> Unit,
+    onDeviceClicked: (BleScanResult) -> Unit,
     onDisconnectClicked: () -> Unit,
     onStartRangingClicked: (GcxUwbDevice) -> Unit,
     modifier: Modifier = Modifier
@@ -73,7 +74,7 @@ fun BleView(
         modifier = modifier
     ) { innerPadding ->
         Crossfade(
-            targetState = viewState.connectingDevice,
+            targetState = viewState.selectedScanResult,
             label = "Cross fade between scan and connect",
             modifier = Modifier.padding(innerPadding)
         ) { connectingDevice ->
@@ -87,7 +88,7 @@ fun BleView(
             } else {
                 ConnectionView(
                     connectingDevice,
-                    viewState.gcxUwbDevice,
+                    viewState.connectingDevice,
                     onDisconnectClicked,
                     onStartRangingClicked
                 )
@@ -98,9 +99,9 @@ fun BleView(
 
 @Composable
 private fun ScanResultsView(
-    scanResults: Set<GcxScanResult>,
+    bleScanResult: Set<BleScanResult>,
     isScanning: Boolean,
-    onDeviceClicked: (GcxScanResult) -> Unit,
+    onDeviceClicked: (BleScanResult) -> Unit,
     onToggleScanClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -108,7 +109,7 @@ private fun ScanResultsView(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        if (scanResults.isEmpty()) {
+        if (bleScanResult.isEmpty()) {
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.BottomCenter
@@ -121,9 +122,9 @@ private fun ScanResultsView(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
-                scanResults.forEach { scanResult ->
+                bleScanResult.forEach { scanResult ->
                     ScanResultItem(
-                        gcxScanResult = scanResult,
+                        bleScanResult = scanResult,
                         onDeviceClicked = onDeviceClicked,
                         modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
                     )
@@ -143,19 +144,20 @@ private fun ScanResultsView(
 
 @Composable
 fun ScanResultItem(
-    gcxScanResult: GcxScanResult,
-    onDeviceClicked: (GcxScanResult) -> Unit,
+    bleScanResult: BleScanResult,
+    onDeviceClicked: (BleScanResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
     OutlinedButton(
-        onClick = { onDeviceClicked(gcxScanResult) },
+        onClick = { onDeviceClicked(bleScanResult) },
         modifier = modifier
     ) {
         Row {
             Column {
-                Text(text = "Address: ${gcxScanResult.bluetoothDevice.address}")
-                Text(text = "Name: ${gcxScanResult.deviceName}")
-                Text(text = "RSSI ${gcxScanResult.rssi}")
+                Text(text = "Address: ${bleScanResult.bluetoothDevice.address}")
+                Text(text = "Name: ${bleScanResult.scanResult.deviceName}")
+                Text(text = "Connection state: ${bleScanResult.connectionState}")
+                Text(text = "RSSI ${bleScanResult.scanResult.rssi}")
             }
         }
     }
@@ -163,7 +165,7 @@ fun ScanResultItem(
 
 @Composable
 private fun ConnectionView(
-    gcxScanResult: GcxScanResult,
+    bleScanResult: BleScanResult,
     uwbDevice: GcxUwbDevice?,
     onDisconnectClicked: () -> Unit,
     onStartRangingClicked: (GcxUwbDevice) -> Unit,
@@ -173,7 +175,7 @@ private fun ConnectionView(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        ScanResultItem(gcxScanResult = gcxScanResult, onDeviceClicked = {})
+        ScanResultItem(bleScanResult = bleScanResult, onDeviceClicked = {})
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),

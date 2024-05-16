@@ -26,9 +26,9 @@ data class BleViewState(
     val requestScanPermissions: Boolean = false,
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
-    val scanResults: Set<GcxScanResult> = emptySet(),
-    val connectingDevice: GcxScanResult? = null,
-    val gcxUwbDevice: GcxUwbDevice? = null
+    val scanResults: Set<BleScanResult> = emptySet(),
+    val selectedScanResult: BleScanResult? = null,
+    val connectingDevice: GcxUwbDevice? = null
 )
 
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
@@ -77,7 +77,7 @@ class BleViewModel(
                         _viewState.update {
                             val updatedScanResults = buildSet {
                                 addAll(it.scanResults)
-                                add(scanResult)
+                                add(scanResult.toBleDevice())
                             }
                             it.copy(scanResults = updatedScanResults)
                         }
@@ -94,11 +94,11 @@ class BleViewModel(
         scanJob?.cancel("User stopped ble scan")
     }
 
-    fun onDeviceClicked(gcxScanResult: GcxScanResult) {
+    fun onDeviceClicked(bleScanResult: BleScanResult) {
         stopScan()
-        _viewState.update { it.copy(connectingDevice = gcxScanResult) }
+        _viewState.update { it.copy(selectedScanResult = bleScanResult) }
         if (checkConnectPermission()) {
-            connectToDevice(gcxScanResult)
+            connectToDevice(bleScanResult)
         } else {
             _viewState.update { it.copy(requestConnectPermissions = true) }
         }
@@ -111,7 +111,7 @@ class BleViewModel(
             it.copy(
                 // Reset scan results to force re-scan
                 scanResults = emptySet(),
-                connectingDevice = null
+                selectedScanResult = null
             )
         }
     }
@@ -123,23 +123,28 @@ class BleViewModel(
     fun onPermissionResult() {
         if (isScanPending) return startScan()
 
-        viewState.value.connectingDevice?.let { onDeviceClicked(it) }
+        viewState.value.selectedScanResult?.let { onDeviceClicked(it) }
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    private fun connectToDevice(gcxScanResult: GcxScanResult) {
+    private fun connectToDevice(bleScanResult: BleScanResult) {
         connectJob?.cancel()
         connectJob = viewModelScope.launch {
-            gcxScanResult.connect(gcxScanResult.bluetoothDevice, uuidProvider = UUIDProvider())
+            bleScanResult.scanResult.connect(
+                bleScanResult.bluetoothDevice,
+                uuidProvider = UUIDProvider()
+            )
                 .catch {
-                    Log.e(TAG, "Connection to $gcxScanResult failed", it)
+                    Log.e(TAG, "Connection to $bleScanResult failed", it)
                     // TODO: React on failed connection.
                 }
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            connectingDevice = gcxScanResult,
-                            gcxUwbDevice = connectionState.rangingDeviceOrNull
+                            selectedScanResult = connectionState.toBleDevice(
+                                scanResult = bleScanResult.scanResult
+                            ),
+                            connectingDevice = connectionState.rangingDeviceOrNull
                         )
                     }
                 }
