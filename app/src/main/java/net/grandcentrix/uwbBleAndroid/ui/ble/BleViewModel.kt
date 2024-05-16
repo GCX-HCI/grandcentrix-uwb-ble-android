@@ -14,9 +14,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.lib.ble.model.ConnectionState
 import net.grandcentrix.lib.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.ble.provider.UUIDProvider
 import net.grandcentrix.lib.data.manager.UwbBleLibrary
-import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
-import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
+import net.grandcentrix.uwbBleAndroid.model.BleScanResult
+import net.grandcentrix.uwbBleAndroid.model.toBleDevice
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
@@ -79,7 +80,8 @@ class BleViewModel(
                             val updatedScanResults = buildList {
                                 addAll(it.scanResults)
                                 it.scanResults.firstOrNull { filter ->
-                                    filter.bluetoothDevice.address == scanResult.androidScanResult.device.address
+                                    filter.bluetoothDevice.address ==
+                                        scanResult.androidScanResult.device.address
                                 } ?: add(scanResult.toBleDevice())
                             }
                             it.copy(scanResults = updatedScanResults)

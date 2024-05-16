@@ -1,15 +1,15 @@
-package net.grandcentrix.api.ble.model
+package net.grandcentrix.lib.ble.model
 
 import android.Manifest
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
-import net.grandcentrix.api.ble.manager.BleManager
-import net.grandcentrix.api.ble.manager.GcxBleManager
-import net.grandcentrix.api.ble.provider.UUIDProvider
-import net.grandcentrix.api.logging.DefaultLogConfig
-import net.grandcentrix.api.logging.internal.GcxLogger
+import net.grandcentrix.lib.ble.manager.BleManager
+import net.grandcentrix.lib.ble.manager.GcxBleManager
+import net.grandcentrix.lib.ble.provider.UUIDProvider
+import net.grandcentrix.lib.logging.DefaultLogConfig
+import net.grandcentrix.lib.logging.internal.GcxLogger
 
 data class GcxScanResult(
     val androidScanResult: ScanResult,
