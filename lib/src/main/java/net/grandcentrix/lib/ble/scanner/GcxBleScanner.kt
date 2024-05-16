@@ -23,10 +23,7 @@ interface BleScanner {
     fun startScan(): Flow<ScanResult>
 }
 
-internal class GcxBleScanner(
-    context: Context,
-    private val logger: GcxLogger
-) : BleScanner {
+internal class GcxBleScanner(context: Context) : BleScanner {
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -45,9 +42,9 @@ internal class GcxBleScanner(
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
-                logger.v(TAG, "Found ble device: ${result.device}")
+                GcxLogger.v(TAG, "Found ble device: ${result.device}")
                 trySend(result)
-                    .onFailure { logger.d(TAG, "Failed to send scan result", it) }
+                    .onFailure { GcxLogger.d(TAG, "Failed to send scan result", it) }
             }
 
             override fun onScanFailed(errorCode: Int) {
@@ -59,7 +56,7 @@ internal class GcxBleScanner(
         try {
             bluetoothLeScanner.startScan(scanCallback)
         } catch (exception: SecurityException) {
-            logger.e(TAG, "Failed to start scan", exception)
+            GcxLogger.e(TAG, "Failed to start scan", exception)
             close(exception)
         }
 
@@ -67,7 +64,7 @@ internal class GcxBleScanner(
             try {
                 bluetoothLeScanner.stopScan(scanCallback)
             } catch (exception: SecurityException) {
-                logger.e(TAG, "Failed to stop scan", exception)
+                GcxLogger.e(TAG, "Failed to stop scan", exception)
             }
         }
     }

@@ -1,6 +1,5 @@
 package net.grandcentrix.lib.uwb.controlee
 
-import android.util.Log
 import androidx.core.uwb.RangingPosition
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbAddress
@@ -12,7 +11,6 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
@@ -28,7 +26,6 @@ import net.grandcentrix.lib.uwb.exception.UwbException
 import net.grandcentrix.lib.uwb.model.DeviceConfig
 import net.grandcentrix.lib.uwb.model.RangingConfig
 import org.junit.jupiter.api.Assertions.assertInstanceOf
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -75,13 +72,6 @@ class GcxUwbControleeTest {
         preambleIndex = 0,
         updateRateType = 0
     )
-
-    @BeforeEach
-    fun setup() {
-        mockkStatic(Log::class)
-        every { Log.i(any(), any()) } returns 0
-        every { Log.d(any(), any()) } returns 0
-    }
 
     @Test
     fun `Given connected uwb device, when start ranging, then position result is received`() =
