@@ -1,4 +1,4 @@
-package net.grandcentrix.lib.ble.manager
+package net.grandcentrix.lib.ble.gatt
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
@@ -21,9 +21,9 @@ import net.grandcentrix.lib.ble.provider.UUIDProvider
 import net.grandcentrix.lib.logging.internal.GcxLogger
 
 private const val BLE_READ_WRITE_TIMEOUT: Long = 3
-private const val TAG = "BleManager"
+private const val TAG = "GcxGattClient"
 
-interface BleManager {
+interface GattClient {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
@@ -41,10 +41,10 @@ interface BleMessagingClient {
     fun enableReceiver(): Result<Boolean>
 }
 
-internal class GcxBleManager(
+internal class GcxGattClient(
     private val context: Context,
     private val uuidProvider: UUIDProvider
-) : BleManager {
+) : GattClient {
 
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
