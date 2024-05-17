@@ -17,7 +17,7 @@ import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import net.grandcentrix.lib.ble.provider.UUIDProvider
 import net.grandcentrix.lib.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.model.BleScanResult
-import net.grandcentrix.uwbBleAndroid.model.toBleDevice
+import net.grandcentrix.uwbBleAndroid.model.toBleScanResult
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
@@ -82,7 +82,7 @@ class BleViewModel(
                                 it.scanResults.firstOrNull { filter ->
                                     filter.bluetoothDevice.address ==
                                         scanResult.androidScanResult.device.address
-                                } ?: add(scanResult.toBleDevice())
+                                } ?: add(scanResult.toBleScanResult())
                             }
                             it.copy(scanResults = updatedScanResults)
                         }
@@ -145,7 +145,7 @@ class BleViewModel(
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            selectedScanResult = connectionState.toBleDevice(
+                            selectedScanResult = connectionState.toBleScanResult(
                                 scanResult = bleScanResult.scanResult
                             ),
                             connectingDevice = connectionState.rangingDeviceOrNull
