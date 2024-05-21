@@ -13,17 +13,24 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import net.grandcentrix.lib.ble.exception.BluetoothException
+import net.grandcentrix.lib.ble.model.GcxScanResult
+import net.grandcentrix.lib.ble.model.toGcxScanResult
 import net.grandcentrix.lib.logging.internal.GcxLogger
 
 private const val TAG = "BleScanner"
 
 interface BleScanner {
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun startScan(): Flow<ScanResult>
+    @RequiresPermission(
+        allOf = [
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.BLUETOOTH_SCAN
+        ]
+    )
+    fun startScan(): Flow<GcxScanResult>
 }
 
-internal class GcxBleScanner(context: Context) : BleScanner {
+internal class GcxBleScanner(private val context: Context) : BleScanner {
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -33,7 +40,7 @@ internal class GcxBleScanner(context: Context) : BleScanner {
         bluetoothAdapter.bluetoothLeScanner
     }
 
-    override fun startScan(): Flow<ScanResult> = callbackFlow {
+    override fun startScan(): Flow<GcxScanResult> = callbackFlow {
         if (!bluetoothAdapter.isEnabled) {
             close(BluetoothException.BluetoothDisabledException)
             return@callbackFlow
@@ -43,7 +50,7 @@ internal class GcxBleScanner(context: Context) : BleScanner {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
                 GcxLogger.v(TAG, "Found ble device: ${result.device}")
-                trySend(result)
+                trySend(result.toGcxScanResult(context = context))
                     .onFailure { GcxLogger.d(TAG, "Failed to send scan result", it) }
             }
 

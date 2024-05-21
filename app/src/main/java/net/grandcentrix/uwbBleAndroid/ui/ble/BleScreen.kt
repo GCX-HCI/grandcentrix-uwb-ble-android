@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.grandcentrix.lib.ble.model.GcxUwbDevice
-import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
+import net.grandcentrix.uwbBleAndroid.model.BleScanResult
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.ui.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
@@ -63,7 +63,7 @@ fun BleScreen(viewModel: BleViewModel = koinViewModel()) {
 fun BleView(
     viewState: BleViewState,
     onToggleScanClicked: () -> Unit,
-    onDeviceClicked: (GcxBleDevice) -> Unit,
+    onDeviceClicked: (BleScanResult) -> Unit,
     onDisconnectClicked: () -> Unit,
     onStartRangingClicked: (GcxUwbDevice) -> Unit,
     modifier: Modifier = Modifier
@@ -73,7 +73,7 @@ fun BleView(
         modifier = modifier
     ) { innerPadding ->
         Crossfade(
-            targetState = viewState.connectingDevice,
+            targetState = viewState.selectedScanResult,
             label = "Cross fade between scan and connect",
             modifier = Modifier.padding(innerPadding)
         ) { connectingDevice ->
@@ -87,7 +87,7 @@ fun BleView(
             } else {
                 ConnectionView(
                     connectingDevice,
-                    viewState.gcxUwbDevice,
+                    viewState.connectingDevice,
                     onDisconnectClicked,
                     onStartRangingClicked
                 )
@@ -98,9 +98,9 @@ fun BleView(
 
 @Composable
 private fun ScanResultsView(
-    scanResults: Set<GcxBleDevice>,
+    bleScanResult: List<BleScanResult>,
     isScanning: Boolean,
-    onDeviceClicked: (GcxBleDevice) -> Unit,
+    onDeviceClicked: (BleScanResult) -> Unit,
     onToggleScanClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -108,7 +108,7 @@ private fun ScanResultsView(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        if (scanResults.isEmpty()) {
+        if (bleScanResult.isEmpty()) {
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.BottomCenter
@@ -121,9 +121,9 @@ private fun ScanResultsView(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
-                scanResults.forEach { device ->
+                bleScanResult.forEach { scanResult ->
                     ScanResultItem(
-                        device = device,
+                        bleScanResult = scanResult,
                         onDeviceClicked = onDeviceClicked,
                         modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
                     )
@@ -143,18 +143,18 @@ private fun ScanResultsView(
 
 @Composable
 fun ScanResultItem(
-    device: GcxBleDevice,
-    onDeviceClicked: (GcxBleDevice) -> Unit,
+    bleScanResult: BleScanResult,
+    onDeviceClicked: (BleScanResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
     OutlinedButton(
-        onClick = { onDeviceClicked(device) },
+        onClick = { onDeviceClicked(bleScanResult) },
         modifier = modifier
     ) {
         Row {
             Column {
-                Text(text = "Address: ${device.bluetoothDevice.address}")
-                Text(text = "Connection state: ${device.connectionState}")
+                Text(text = "Address: ${bleScanResult.bluetoothDevice.address}")
+                Text(text = "Connection state: ${bleScanResult.connectionState}")
             }
         }
     }
@@ -162,7 +162,7 @@ fun ScanResultItem(
 
 @Composable
 private fun ConnectionView(
-    device: GcxBleDevice,
+    bleScanResult: BleScanResult,
     uwbDevice: GcxUwbDevice?,
     onDisconnectClicked: () -> Unit,
     onStartRangingClicked: (GcxUwbDevice) -> Unit,
@@ -172,7 +172,7 @@ private fun ConnectionView(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        ScanResultItem(device = device, onDeviceClicked = {})
+        ScanResultItem(bleScanResult = bleScanResult, onDeviceClicked = {})
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -14,9 +14,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.lib.ble.model.ConnectionState
 import net.grandcentrix.lib.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.ble.provider.UUIDProvider
 import net.grandcentrix.lib.data.manager.UwbBleLibrary
-import net.grandcentrix.uwbBleAndroid.model.GcxBleDevice
-import net.grandcentrix.uwbBleAndroid.model.toGcxBleDevice
+import net.grandcentrix.uwbBleAndroid.model.BleScanResult
+import net.grandcentrix.uwbBleAndroid.model.toBleScanResult
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
@@ -26,9 +27,9 @@ data class BleViewState(
     val requestScanPermissions: Boolean = false,
     val requestConnectPermissions: Boolean = false,
     val isScanning: Boolean = false,
-    val scanResults: Set<GcxBleDevice> = emptySet(),
-    val connectingDevice: GcxBleDevice? = null,
-    val gcxUwbDevice: GcxUwbDevice? = null
+    val scanResults: List<BleScanResult> = emptyList(),
+    val selectedScanResult: BleScanResult? = null,
+    val connectingDevice: GcxUwbDevice? = null
 )
 
 private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
@@ -36,7 +37,8 @@ private const val MOBILE_KNOWLEDGE_ADDRESS = "00:60:37:90:E7:11"
 class BleViewModel(
     private val uwbBleLibrary: UwbBleLibrary,
     private val permissionChecker: PermissionChecker,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val uuidProvider: UUIDProvider = UUIDProvider()
 ) : ViewModel() {
     companion object {
         private val TAG = BleViewModel::class.simpleName
@@ -75,9 +77,12 @@ class BleViewModel(
                     .catch { error -> Log.e(TAG, "Failed to scan for devices ", error) }
                     .collect { scanResult ->
                         _viewState.update {
-                            val updatedScanResults = buildSet {
+                            val updatedScanResults = buildList {
                                 addAll(it.scanResults)
-                                add(scanResult.toGcxBleDevice())
+                                it.scanResults.firstOrNull { filter ->
+                                    filter.bluetoothDevice.address ==
+                                        scanResult.androidScanResult.device.address
+                                } ?: add(scanResult.toBleScanResult())
                             }
                             it.copy(scanResults = updatedScanResults)
                         }
@@ -94,11 +99,11 @@ class BleViewModel(
         scanJob?.cancel("User stopped ble scan")
     }
 
-    fun onDeviceClicked(device: GcxBleDevice) {
+    fun onDeviceClicked(bleScanResult: BleScanResult) {
         stopScan()
-        _viewState.update { it.copy(connectingDevice = device) }
+        _viewState.update { it.copy(selectedScanResult = bleScanResult) }
         if (checkConnectPermission()) {
-            connectToDevice(device)
+            connectToDevice(bleScanResult)
         } else {
             _viewState.update { it.copy(requestConnectPermissions = true) }
         }
@@ -110,8 +115,8 @@ class BleViewModel(
         _viewState.update {
             it.copy(
                 // Reset scan results to force re-scan
-                scanResults = emptySet(),
-                connectingDevice = null
+                scanResults = emptyList(),
+                selectedScanResult = null
             )
         }
     }
@@ -123,26 +128,27 @@ class BleViewModel(
     fun onPermissionResult() {
         if (isScanPending) return startScan()
 
-        viewState.value.connectingDevice?.let { onDeviceClicked(it) }
+        viewState.value.selectedScanResult?.let { onDeviceClicked(it) }
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    private fun connectToDevice(device: GcxBleDevice) {
+    private fun connectToDevice(bleScanResult: BleScanResult) {
         connectJob?.cancel()
         connectJob = viewModelScope.launch {
-            uwbBleLibrary.connect(device.bluetoothDevice)
+            bleScanResult.gcxScanResult.connect(
+                uuidProvider = uuidProvider
+            )
                 .catch {
-                    Log.e(TAG, "Connection to $device failed", it)
+                    Log.e(TAG, "Connection to $bleScanResult failed", it)
                     // TODO: React on failed connection.
                 }
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            connectingDevice = GcxBleDevice(
-                                device.bluetoothDevice,
-                                connectionState
+                            selectedScanResult = bleScanResult.gcxScanResult.toBleScanResult(
+                                connectionState = connectionState
                             ),
-                            gcxUwbDevice = connectionState.rangingDeviceOrNull
+                            connectingDevice = connectionState.rangingDeviceOrNull
                         )
                     }
                 }
