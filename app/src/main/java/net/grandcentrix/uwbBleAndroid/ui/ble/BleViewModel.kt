@@ -135,7 +135,7 @@ class BleViewModel(
     private fun connectToDevice(bleScanResult: BleScanResult) {
         connectJob?.cancel()
         connectJob = viewModelScope.launch {
-            bleScanResult.scanResult.connect(
+            bleScanResult.gcxScanResult.connect(
                 uuidProvider = uuidProvider
             )
                 .catch {
@@ -145,8 +145,8 @@ class BleViewModel(
                 .collect { connectionState ->
                     _viewState.update {
                         it.copy(
-                            selectedScanResult = connectionState.toBleScanResult(
-                                scanResult = bleScanResult.scanResult
+                            selectedScanResult = bleScanResult.gcxScanResult.toBleScanResult(
+                                connectionState = connectionState
                             ),
                             connectingDevice = connectionState.rangingDeviceOrNull
                         )

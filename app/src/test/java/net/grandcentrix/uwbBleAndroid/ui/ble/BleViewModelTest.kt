@@ -34,19 +34,19 @@ class BleViewModelTest {
 
     private val uuidProvider: UUIDProvider = mockk()
 
-    private val gcxScanResult: GcxScanResult = mockk {
+    private val gcxScanResultMock: GcxScanResult = mockk {
         every { connect(uuidProvider) } returns emptyFlow()
         every { androidScanResult.device } returns bluetoothDeviceMock
     }
 
     private val bleScanResult: BleScanResult = mockk {
-        every { bluetoothDevice } returns gcxScanResult.androidScanResult.device
+        every { bluetoothDevice } returns gcxScanResultMock.androidScanResult.device
         every { connectionState } returns ConnectionState.Disconnected
-        every { scanResult } returns gcxScanResult
+        every { gcxScanResult } returns gcxScanResultMock
     }
 
     private val uwbBleLibrary: UwbBleLibrary = mockk {
-        every { startScan() } returns flowOf(gcxScanResult)
+        every { startScan() } returns flowOf(gcxScanResultMock)
     }
 
     private val permissionChecker: PermissionChecker = mockk {
@@ -106,7 +106,7 @@ class BleViewModelTest {
     @Test
     fun `Given an ble device, when connect to device, then ble device is connected`() = runTest {
         every {
-            gcxScanResult.connect(uuidProvider)
+            gcxScanResultMock.connect(uuidProvider)
         } returns flowOf(ConnectionState.Connected)
 
         val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator, uuidProvider)
@@ -121,14 +121,14 @@ class BleViewModelTest {
             viewState.selectedScanResult?.connectionState
         )
 
-        verify { gcxScanResult.connect(uuidProvider) }
+        verify { gcxScanResultMock.connect(uuidProvider) }
     }
 
     @Test
     fun `Given an ble device, when discover services, then connection state is Services_Discovered`() =
         runTest {
             every {
-                gcxScanResult.connect(uuidProvider)
+                gcxScanResultMock.connect(uuidProvider)
             } returns flowOf(ConnectionState.ServicesDiscovered(gcxUwbDevice = gcxUwbDevice))
 
             val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator, uuidProvider)
@@ -147,7 +147,7 @@ class BleViewModelTest {
     @Test
     fun `Given start scan, when found ble device, then ble device is disconnected`() = runTest {
         every {
-            gcxScanResult.connect(uuidProvider)
+            gcxScanResultMock.connect(uuidProvider)
         } returns flowOf(ConnectionState.Connected)
 
         val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator, uuidProvider)
@@ -205,7 +205,7 @@ class BleViewModelTest {
 
             advanceUntilIdle()
 
-            verify(exactly = 0) { gcxScanResult.connect(uuidProvider) }
+            verify(exactly = 0) { gcxScanResultMock.connect(uuidProvider) }
         }
 
     @Test
@@ -216,7 +216,7 @@ class BleViewModelTest {
 
             advanceUntilIdle()
 
-            verify(exactly = 1) { gcxScanResult.connect(uuidProvider) }
+            verify(exactly = 1) { gcxScanResultMock.connect(uuidProvider) }
         }
 
     @Test
@@ -258,7 +258,7 @@ class BleViewModelTest {
     fun `Given connection to device succeeded, when user starts ranging, then navigate to RANGNING`() =
         runTest {
             every {
-                gcxScanResult.connect(uuidProvider)
+                gcxScanResultMock.connect(uuidProvider)
             } returns flowOf(ConnectionState.ServicesDiscovered(gcxUwbDevice = gcxUwbDevice))
 
             val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator, uuidProvider)
