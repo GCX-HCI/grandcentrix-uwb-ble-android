@@ -100,15 +100,16 @@ internal class GcxBleManager(
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    trySend(
-                        ConnectionState.ServicesDiscovered(
-                            gcxUwbDevice = GcxUwbDevice(
-                                context = context,
-                                bleMessagingClient = bleMessagingClient
+                    if (isRequiredServiceSupported(gatt)) {
+                        trySend(
+                            ConnectionState.ServicesDiscovered(
+                                gcxUwbDevice = GcxUwbDevice(
+                                    context = context,
+                                    bleMessagingClient = bleMessagingClient
+                                )
                             )
                         )
-                    )
-                    if (!isRequiredServiceSupported(gatt)) {
+                    } else {
                         close(BluetoothException.ServiceNotSupportedException)
                         cleanUpGattStack(gatt)
                     }
