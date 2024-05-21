@@ -24,8 +24,7 @@ interface BleScanner {
     @RequiresPermission(
         allOf = [
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
+            Manifest.permission.BLUETOOTH_SCAN
         ]
     )
     fun startScan(): Flow<GcxScanResult>
@@ -48,7 +47,6 @@ internal class GcxBleScanner(private val context: Context) : BleScanner {
         }
 
         val scanCallback = object : ScanCallback() {
-            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 super.onScanResult(callbackType, result)
                 GcxLogger.v(TAG, "Found ble device: ${result.device}")

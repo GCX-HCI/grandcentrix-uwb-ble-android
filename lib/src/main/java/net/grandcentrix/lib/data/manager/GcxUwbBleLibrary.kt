@@ -16,8 +16,7 @@ interface UwbBleLibrary {
     @RequiresPermission(
         allOf = [
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
+            Manifest.permission.BLUETOOTH_SCAN
         ]
     )
     fun startScan(): Flow<GcxScanResult>
@@ -37,8 +36,7 @@ class GcxUwbBleLibrary(
     @RequiresPermission(
         allOf = [
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
+            Manifest.permission.BLUETOOTH_SCAN
         ]
     )
     override fun startScan(): Flow<GcxScanResult> = bleScanner.startScan()
