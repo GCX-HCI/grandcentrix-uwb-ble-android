@@ -6,7 +6,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbManager
 import kotlinx.coroutines.flow.Flow
-import net.grandcentrix.lib.ble.manager.BleMessagingClient
+import net.grandcentrix.lib.ble.gatt.BleMessagingClient
 import net.grandcentrix.lib.uwb.controlee.DeviceConfigInterceptor
 import net.grandcentrix.lib.uwb.controlee.GcxUwbControlee
 import net.grandcentrix.lib.uwb.controlee.PhoneConfigInterceptor

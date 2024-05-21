@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import net.grandcentrix.lib.ble.manager.BleMessagingClient
-import net.grandcentrix.lib.ble.manager.GcxBleManager
+import net.grandcentrix.lib.ble.gatt.BleMessagingClient
+import net.grandcentrix.lib.ble.gatt.GcxGattClient
 import net.grandcentrix.lib.ble.model.BluetoothMessage
 import net.grandcentrix.lib.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.lib.uwb.exception.UwbException
@@ -48,7 +48,7 @@ class GcxUwbControleeTest {
         every { enableReceiver() } returns Result.success(true)
         every { messages } returns flowOf(
             BluetoothMessage(
-                uuid = UUID.fromString(GcxBleManager.UART_TX_CHARACTERISTIC),
+                uuid = UUID.fromString(GcxGattClient.UART_TX_CHARACTERISTIC),
                 data = byteArrayOf(OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command),
                 status = 0
             )

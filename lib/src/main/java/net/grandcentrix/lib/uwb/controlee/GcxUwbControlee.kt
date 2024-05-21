@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import net.grandcentrix.lib.ble.manager.BleMessagingClient
-import net.grandcentrix.lib.ble.manager.GcxBleManager
+import net.grandcentrix.lib.ble.gatt.BleMessagingClient
+import net.grandcentrix.lib.ble.gatt.GcxGattClient
 import net.grandcentrix.lib.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.lib.logging.internal.GcxLogger
 import net.grandcentrix.lib.uwb.exception.UwbException
@@ -179,7 +179,7 @@ internal class GcxUwbControlee(
         deviceConfigInterceptor: DeviceConfigInterceptor
     ): DeviceConfig {
         return bleMessagingClient.messages
-            .filter { it.uuid.toString() == GcxBleManager.UART_TX_CHARACTERISTIC }
+            .filter { it.uuid.toString() == GcxGattClient.UART_TX_CHARACTERISTIC }
             .filter { it.data?.first() == OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command }
             .map { it.data?.let { bytes -> deviceConfigInterceptor.intercept(bytes) } }
             .firstOrNull() ?: throw UwbException.DeciveConfigNullException

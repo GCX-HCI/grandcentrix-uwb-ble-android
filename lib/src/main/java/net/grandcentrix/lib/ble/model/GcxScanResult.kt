@@ -5,8 +5,8 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
-import net.grandcentrix.lib.ble.manager.BleManager
-import net.grandcentrix.lib.ble.manager.GcxBleManager
+import net.grandcentrix.lib.ble.gatt.GattClient
+import net.grandcentrix.lib.ble.gatt.GcxGattClient
 import net.grandcentrix.lib.ble.provider.UUIDProvider
 
 data class GcxScanResult(
@@ -16,11 +16,11 @@ data class GcxScanResult(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connect(uuidProvider: UUIDProvider): Flow<ConnectionState> {
-        val bleManager: BleManager = GcxBleManager(
+        val gattClient: GattClient = GcxGattClient(
             context = context,
             uuidProvider = uuidProvider
         )
-        return bleManager.connect(bleDevice = androidScanResult.device)
+        return gattClient.connect(bleDevice = androidScanResult.device)
     }
 }
 internal fun ScanResult.toGcxScanResult(context: Context): GcxScanResult = GcxScanResult(
