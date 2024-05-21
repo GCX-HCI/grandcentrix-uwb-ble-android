@@ -23,8 +23,6 @@ data class GcxScanResult(
         return bleManager.connect(bleDevice = androidScanResult.device)
     }
 }
-
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 internal fun ScanResult.toGcxScanResult(context: Context): GcxScanResult = GcxScanResult(
     androidScanResult = this,
     context = context
