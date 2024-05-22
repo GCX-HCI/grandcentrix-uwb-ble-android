@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.grandcentrix.lib.UwbBleLibrary
 import net.grandcentrix.lib.ble.model.ConnectionState
 import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import net.grandcentrix.lib.ble.provider.UUIDProvider
-import net.grandcentrix.lib.data.manager.UwbBleLibrary
 import net.grandcentrix.uwbBleAndroid.model.BleScanResult
 import net.grandcentrix.uwbBleAndroid.model.toBleScanResult
 import net.grandcentrix.uwbBleAndroid.permission.AppPermissions

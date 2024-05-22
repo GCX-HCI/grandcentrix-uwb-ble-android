@@ -1,4 +1,4 @@
-package net.grandcentrix.lib.data.manager
+package net.grandcentrix.lib
 
 import android.Manifest
 import android.content.Context
