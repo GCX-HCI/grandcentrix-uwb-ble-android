@@ -20,9 +20,10 @@ sealed interface UwbResult {
     data object UnknownResult : UwbResult
 }
 
-fun RangingResult.RangingResultPosition.toPositionResult(): UwbResult = UwbResult.PositionResult(
-    distance = position.distance,
-    azimuth = position.azimuth,
-    elevation = position.elevation,
-    elapsedRealtimeNanos = position.elapsedRealtimeNanos
-)
+internal fun RangingResult.RangingResultPosition.toPositionResult(): UwbResult =
+    UwbResult.PositionResult(
+        distance = position.distance,
+        azimuth = position.azimuth,
+        elevation = position.elevation,
+        elapsedRealtimeNanos = position.elapsedRealtimeNanos
+    )
