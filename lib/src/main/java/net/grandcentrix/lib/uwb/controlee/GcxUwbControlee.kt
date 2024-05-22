@@ -128,8 +128,8 @@ internal class GcxUwbControlee(
 
         emitAll(
             startSession(deviceConfig = deviceConfig, rangingConfig = rangingConfig).map {
-                when (val result = it) {
-                    is RangingResult.RangingResultPosition -> result.toPositionResult()
+                when (it) {
+                    is RangingResult.RangingResultPosition -> it.toPositionResult()
                     is RangingResult.RangingResultPeerDisconnected -> UwbResult.Disconnected
                     else -> UwbResult.UnknownResult
                 }
