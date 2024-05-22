@@ -14,9 +14,9 @@ import io.mockk.mockk
 import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.lib.ble.gatt.BleMessagingClient
@@ -92,9 +92,12 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig
-            ).first()
+            ).take(3)
+                .toList()
 
-            assertInstanceOf(UwbResult.RangingStarted::class.java, result)
+            assertInstanceOf(UwbResult.RangingStarted::class.java, result[0])
+            assertInstanceOf(UwbResult.PositionResult::class.java, result[1])
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result[2])
 
             coVerifyOrder {
                 bleMessagingClient.enableReceiver()
@@ -120,9 +123,12 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig
-            ).filter { it is UwbResult.PositionResult }
-                .first()
-            assertInstanceOf(UwbResult.PositionResult::class.java, result)
+            ).take(3)
+                .toList()
+
+            assertInstanceOf(UwbResult.RangingStarted::class.java, result[0])
+            assertInstanceOf(UwbResult.PositionResult::class.java, result[1])
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result[2])
 
             coVerifyOrder {
                 bleMessagingClient.enableReceiver()
@@ -308,9 +314,12 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig
-            ).filter { it is UwbResult.RangingStopped }
-                .first()
-            assertInstanceOf(UwbResult.RangingStopped::class.java, result)
+            ).take(3)
+                .toList()
+
+            assertInstanceOf(UwbResult.RangingStarted::class.java, result[0])
+            assertInstanceOf(UwbResult.PositionResult::class.java, result[1])
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result[2])
 
             coVerify {
                 bleMessagingClient.send(
