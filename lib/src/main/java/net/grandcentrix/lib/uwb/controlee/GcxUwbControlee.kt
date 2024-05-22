@@ -121,10 +121,10 @@ internal class GcxUwbControlee(
         ).getOrThrow()
 
         coroutineScope {
-            async { awaitStartMessage() }.await()
-        }?.run {
-            emit(UwbResult.RangingStarted)
-        } ?: throw NullPointerException("Starting command was not received!")
+            awaitStartMessage().await()
+        }
+
+        emit(UwbResult.RangingStarted)
 
         emitAll(
             startSession(deviceConfig = deviceConfig, rangingConfig = rangingConfig).map {
@@ -193,11 +193,11 @@ internal class GcxUwbControlee(
         return uwbControleeSession.prepareSession(partnerParameters)
     }
 
-    private suspend fun awaitStartMessage(): BluetoothMessage? {
-        return bleMessagingClient.messages
+    private fun CoroutineScope.awaitStartMessage(): Deferred<BluetoothMessage> = async {
+        bleMessagingClient.messages
             .filter { it.uuid.toString() == GcxGattClient.UART_TX_CHARACTERISTIC }
             .filter { it.data?.first() == OOBMessageProtocol.UWB_DID_START.command }
-            .firstOrNull()
+            .firstOrNull() ?: throw NullPointerException("Starting command was not received!")
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
