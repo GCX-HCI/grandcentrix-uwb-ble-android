@@ -195,6 +195,41 @@ class GcxUwbControleeTest {
         }
 
     @Test
+    fun `Given connected uwb device, when start command is not send, then throws null pointer exception`() =
+        runTest {
+            every { bleMessagingClient.messages } returns flowOf(
+                BluetoothMessage(
+                    uuid = UUID.fromString(GcxGattClient.UART_TX_CHARACTERISTIC),
+                    data = byteArrayOf(OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command),
+                    status = 0
+                )
+            )
+
+            val controlee = GcxUwbControlee(
+                uwbManager,
+                bleMessagingClient
+            )
+
+            var error: Throwable? = null
+            controlee.startRanging(
+                deviceConfigInterceptor,
+                phoneConfigInterceptor,
+                rangingConfig
+            )
+                .catch { error = it }
+                .collect {}
+
+            advanceUntilIdle()
+            assertInstanceOf(NullPointerException::class.java, error)
+
+            coVerifyOrder {
+                bleMessagingClient.enableReceiver()
+                bleMessagingClient.messages
+                deviceConfigInterceptor.intercept(any())
+            }
+        }
+
+    @Test
     fun `Given connected uwb device, when sending initialization message fails, then thrown is received`() =
         runTest {
             coEvery {
