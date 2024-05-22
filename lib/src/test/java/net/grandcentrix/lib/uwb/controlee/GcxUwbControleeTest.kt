@@ -308,7 +308,9 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig
-            ).first()
+            ).filter { it is UwbResult.RangingStopped }
+                .first()
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result)
 
             coVerify {
                 bleMessagingClient.send(
