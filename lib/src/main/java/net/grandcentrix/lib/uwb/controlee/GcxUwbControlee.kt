@@ -197,7 +197,7 @@ internal class GcxUwbControlee(
         bleMessagingClient.messages
             .filter { it.uuid.toString() == GcxGattClient.UART_TX_CHARACTERISTIC }
             .filter { it.data?.first() == OOBMessageProtocol.UWB_DID_START.command }
-            .firstOrNull() ?: throw NullPointerException("Starting command was not received!")
+            .firstOrNull() ?: throw UwbException.StartCommandNullException
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

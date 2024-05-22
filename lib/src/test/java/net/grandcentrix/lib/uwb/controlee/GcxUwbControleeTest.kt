@@ -220,7 +220,7 @@ class GcxUwbControleeTest {
                 .collect {}
 
             advanceUntilIdle()
-            assertInstanceOf(NullPointerException::class.java, error)
+            assertInstanceOf(UwbException.StartCommandNullException::class.java, error)
 
             coVerifyOrder {
                 bleMessagingClient.enableReceiver()
