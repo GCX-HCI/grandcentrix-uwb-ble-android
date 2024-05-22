@@ -21,9 +21,8 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import net.grandcentrix.lib.ble.gatt.BleMessagingClient
 import net.grandcentrix.lib.ble.gatt.GcxGattClient
-import net.grandcentrix.lib.ble.model.BluetoothMessage
-import net.grandcentrix.lib.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.lib.logging.internal.GcxLogger
+import net.grandcentrix.lib.protocol.OOBMessageProtocol
 import net.grandcentrix.lib.uwb.exception.UwbException
 import net.grandcentrix.lib.uwb.ext.toHexString
 import net.grandcentrix.lib.uwb.model.DeviceConfig

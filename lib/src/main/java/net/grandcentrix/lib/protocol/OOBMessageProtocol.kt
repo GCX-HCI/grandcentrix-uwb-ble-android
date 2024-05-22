@@ -1,6 +1,6 @@
-package net.grandcentrix.lib.ble.protocol
+package net.grandcentrix.lib.protocol
 
-enum class OOBMessageProtocol(val command: Byte) {
+internal enum class OOBMessageProtocol(val command: Byte) {
     // Messages from the UWB controller
     UWB_DEVICE_CONFIG_DATA(0x01),
 
