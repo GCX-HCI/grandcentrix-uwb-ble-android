@@ -14,8 +14,9 @@ import io.mockk.mockk
 import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.lib.ble.gatt.BleMessagingClient
@@ -25,6 +26,7 @@ import net.grandcentrix.lib.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.lib.uwb.exception.UwbException
 import net.grandcentrix.lib.uwb.model.DeviceConfig
 import net.grandcentrix.lib.uwb.model.RangingConfig
+import net.grandcentrix.lib.uwb.model.UwbResult
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
 
@@ -47,6 +49,11 @@ class GcxUwbControleeTest {
     private val bleMessagingClient: BleMessagingClient = mockk {
         every { enableReceiver() } returns Result.success(true)
         every { messages } returns flowOf(
+            BluetoothMessage(
+                uuid = UUID.fromString(GcxGattClient.UART_TX_CHARACTERISTIC),
+                data = byteArrayOf(OOBMessageProtocol.UWB_DID_START.command),
+                status = 0
+            ),
             BluetoothMessage(
                 uuid = UUID.fromString(GcxGattClient.UART_TX_CHARACTERISTIC),
                 data = byteArrayOf(OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command),
@@ -74,7 +81,7 @@ class GcxUwbControleeTest {
     )
 
     @Test
-    fun `Given connected uwb device, when start ranging, then position result is received`() =
+    fun `Given connected uwb device, when start ranging, then ranging started is received`() =
         runTest {
             val controlee = GcxUwbControlee(
                 uwbManager,
@@ -85,8 +92,43 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig
-            ).first()
-            assertInstanceOf(RangingResult.RangingResultPosition::class.java, result)
+            ).take(3)
+                .toList()
+
+            assertInstanceOf(UwbResult.RangingStarted::class.java, result[0])
+            assertInstanceOf(UwbResult.PositionResult::class.java, result[1])
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result[2])
+
+            coVerifyOrder {
+                bleMessagingClient.enableReceiver()
+                bleMessagingClient.messages
+                deviceConfigInterceptor.intercept(any())
+                bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.INITIALIZE.command))
+                uwbManager.controleeSessionScope()
+                controleeSessionScope.localAddress
+                phoneConfigInterceptor.intercept(any(), any(), any())
+                bleMessagingClient.send(any())
+            }
+        }
+
+    @Test
+    fun `Given connected uwb device, when start ranging, then ranging positions are collected`() =
+        runTest {
+            val controlee = GcxUwbControlee(
+                uwbManager,
+                bleMessagingClient
+            )
+
+            val result = controlee.startRanging(
+                deviceConfigInterceptor,
+                phoneConfigInterceptor,
+                rangingConfig
+            ).take(3)
+                .toList()
+
+            assertInstanceOf(UwbResult.RangingStarted::class.java, result[0])
+            assertInstanceOf(UwbResult.PositionResult::class.java, result[1])
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result[2])
 
             coVerifyOrder {
                 bleMessagingClient.enableReceiver()
@@ -150,6 +192,41 @@ class GcxUwbControleeTest {
 
             advanceUntilIdle()
             assertInstanceOf(Exception::class.java, error)
+
+            coVerifyOrder {
+                bleMessagingClient.enableReceiver()
+                bleMessagingClient.messages
+                deviceConfigInterceptor.intercept(any())
+            }
+        }
+
+    @Test
+    fun `Given connected uwb device, when start command is not send, then throws null pointer exception`() =
+        runTest {
+            every { bleMessagingClient.messages } returns flowOf(
+                BluetoothMessage(
+                    uuid = UUID.fromString(GcxGattClient.UART_TX_CHARACTERISTIC),
+                    data = byteArrayOf(OOBMessageProtocol.UWB_DEVICE_CONFIG_DATA.command),
+                    status = 0
+                )
+            )
+
+            val controlee = GcxUwbControlee(
+                uwbManager,
+                bleMessagingClient
+            )
+
+            var error: Throwable? = null
+            controlee.startRanging(
+                deviceConfigInterceptor,
+                phoneConfigInterceptor,
+                rangingConfig
+            )
+                .catch { error = it }
+                .collect {}
+
+            advanceUntilIdle()
+            assertInstanceOf(UwbException.StartCommandNullException::class.java, error)
 
             coVerifyOrder {
                 bleMessagingClient.enableReceiver()
@@ -237,8 +314,12 @@ class GcxUwbControleeTest {
                 deviceConfigInterceptor,
                 phoneConfigInterceptor,
                 rangingConfig
-            ).first()
-            assertInstanceOf(RangingResult.RangingResultPosition::class.java, result)
+            ).take(3)
+                .toList()
+
+            assertInstanceOf(UwbResult.RangingStarted::class.java, result[0])
+            assertInstanceOf(UwbResult.PositionResult::class.java, result[1])
+            assertInstanceOf(UwbResult.RangingStopped::class.java, result[2])
 
             coVerify {
                 bleMessagingClient.send(

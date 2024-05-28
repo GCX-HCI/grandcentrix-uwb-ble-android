@@ -1,8 +1,6 @@
 package net.grandcentrix.uwbBleAndroid.ui.ranging
 
 import android.util.Log
-import androidx.core.uwb.RangingResult
-import androidx.core.uwb.RangingResult.RangingResultPosition
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -14,6 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import net.grandcentrix.lib.uwb.model.RangingConfig
+import net.grandcentrix.lib.uwb.model.UwbResult
 import net.grandcentrix.uwbBleAndroid.App
 import net.grandcentrix.uwbBleAndroid.interceptor.MKDeviceConfigInterceptor
 import net.grandcentrix.uwbBleAndroid.interceptor.MKPhoneConfigInterceptor
@@ -89,8 +88,17 @@ internal class RangingViewModel(
                     .catch { Log.e(TAG, "Failed to run uwb ranging", it) }
                     .collect { rangingResult ->
                         when (rangingResult) {
-                            is RangingResultPosition -> updatePositionData(rangingResult)
-                            is RangingResult.RangingResultPeerDisconnected -> onDisconnected()
+                            is UwbResult.PositionResult -> updatePositionData(rangingResult)
+                            UwbResult.RangingStarted -> Log.d(
+                                TAG,
+                                "collectUwbPositingResults: Ranging started"
+                            )
+                            UwbResult.Disconnected,
+                            UwbResult.UnknownResult -> onDisconnected()
+                            UwbResult.RangingStopped -> Log.d(
+                                TAG,
+                                "collectUwbPositingResults: Ranging stopped"
+                            )
                         }
                     }
             }
@@ -100,12 +108,12 @@ internal class RangingViewModel(
         }
     }
 
-    private fun updatePositionData(positionResult: RangingResultPosition) {
+    private fun updatePositionData(positionResult: UwbResult.PositionResult) {
         _uiState.update {
             it.copy(
-                distance = positionResult.position.distance?.value ?: it.distance,
-                azimuth = positionResult.position.azimuth?.value ?: it.azimuth,
-                elevation = positionResult.position.elevation?.value ?: it.elevation,
+                distance = positionResult.distance?.value ?: it.distance,
+                azimuth = positionResult.azimuth?.value ?: it.azimuth,
+                elevation = positionResult.elevation?.value ?: it.elevation,
                 isRangingPeerConnected = true
             )
         }

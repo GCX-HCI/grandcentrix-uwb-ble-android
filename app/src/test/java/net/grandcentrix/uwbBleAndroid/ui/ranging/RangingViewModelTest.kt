@@ -3,7 +3,6 @@ package net.grandcentrix.uwbBleAndroid.ui.ranging
 import android.Manifest
 import androidx.core.uwb.RangingMeasurement
 import androidx.core.uwb.RangingPosition
-import androidx.core.uwb.RangingResult
 import androidx.core.uwb.UwbDevice
 import io.mockk.Ordering
 import io.mockk.every
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import net.grandcentrix.lib.ble.model.GcxUwbDevice
+import net.grandcentrix.lib.uwb.model.UwbResult
 import net.grandcentrix.uwbBleAndroid.permission.PermissionChecker
 import net.grandcentrix.uwbBleAndroid.testx.CoroutineTestExtension
 import net.grandcentrix.uwbBleAndroid.ui.Navigator
@@ -79,9 +79,11 @@ class RangingViewModelTest {
             every {
                 gcxUwbDevice.startRanging(any(), any(), any())
             } returns flowOf(
-                RangingResult.RangingResultPosition(
-                    mockk(),
-                    position
+                UwbResult.PositionResult(
+                    distance = position.distance,
+                    azimuth = position.azimuth,
+                    elevation = position.elevation,
+                    elapsedRealtimeNanos = position.elapsedRealtimeNanos
                 )
             )
 
@@ -116,7 +118,12 @@ class RangingViewModelTest {
 
             val uwbDevice: UwbDevice = mockk()
             val rangingFlow = MutableStateFlow(
-                RangingResult.RangingResultPosition(uwbDevice, position)
+                UwbResult.PositionResult(
+                    distance = position.distance,
+                    azimuth = position.azimuth,
+                    elevation = position.elevation,
+                    elapsedRealtimeNanos = position.elapsedRealtimeNanos
+                )
             )
             every {
                 gcxUwbDevice.startRanging(any(), any(), any())
@@ -137,14 +144,11 @@ class RangingViewModelTest {
             )
 
             rangingFlow.update {
-                RangingResult.RangingResultPosition(
-                    uwbDevice,
-                    RangingPosition(
-                        distance = null,
-                        azimuth = null,
-                        elevation = null,
-                        elapsedRealtimeNanos = 1L
-                    )
+                UwbResult.PositionResult(
+                    distance = null,
+                    azimuth = null,
+                    elevation = null,
+                    elapsedRealtimeNanos = 0L
                 )
             }
 

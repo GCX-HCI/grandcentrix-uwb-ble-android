@@ -21,12 +21,15 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import net.grandcentrix.lib.ble.gatt.BleMessagingClient
 import net.grandcentrix.lib.ble.gatt.GcxGattClient
+import net.grandcentrix.lib.ble.model.BluetoothMessage
 import net.grandcentrix.lib.ble.protocol.OOBMessageProtocol
 import net.grandcentrix.lib.logging.internal.GcxLogger
 import net.grandcentrix.lib.uwb.exception.UwbException
 import net.grandcentrix.lib.uwb.ext.toHexString
 import net.grandcentrix.lib.uwb.model.DeviceConfig
 import net.grandcentrix.lib.uwb.model.RangingConfig
+import net.grandcentrix.lib.uwb.model.UwbResult
+import net.grandcentrix.lib.uwb.model.toPositionResult
 import net.grandcentrix.lib.uwb.model.toRangingParameters
 
 private const val TAG = "GcxUwbControlee"
@@ -86,7 +89,7 @@ interface UwbControlee {
         deviceConfigInterceptor: DeviceConfigInterceptor,
         phoneConfigInterceptor: PhoneConfigInterceptor,
         rangingConfig: RangingConfig
-    ): Flow<RangingResult>
+    ): Flow<UwbResult>
 }
 
 internal class GcxUwbControlee(
@@ -103,7 +106,7 @@ internal class GcxUwbControlee(
         deviceConfigInterceptor: DeviceConfigInterceptor,
         phoneConfigInterceptor: PhoneConfigInterceptor,
         rangingConfig: RangingConfig
-    ): Flow<RangingResult> = flow {
+    ): Flow<UwbResult> = flow {
         GcxLogger.i(TAG, "Start UWB ranging")
         bleMessagingClient.enableReceiver()
         val deviceConfig =
@@ -116,10 +119,26 @@ internal class GcxUwbControlee(
             phoneConfigInterceptor = phoneConfigInterceptor,
             rangingConfig = rangingConfig
         ).getOrThrow()
-        emitAll(startSession(deviceConfig = deviceConfig, rangingConfig = rangingConfig))
+
+        coroutineScope {
+            awaitStartMessage().await()
+        }
+
+        emit(UwbResult.RangingStarted)
+
+        emitAll(
+            startSession(deviceConfig = deviceConfig, rangingConfig = rangingConfig).map {
+                when (it) {
+                    is RangingResult.RangingResultPosition -> it.toPositionResult()
+                    is RangingResult.RangingResultPeerDisconnected -> UwbResult.Disconnected
+                    else -> UwbResult.UnknownResult
+                }
+            }
+        )
     }.onCompletion {
         GcxLogger.i(TAG, "Close UWB ranging")
         bleMessagingClient.send(byteArrayOf(OOBMessageProtocol.STOP_UWB_RANGING.command))
+        emit(UwbResult.RangingStopped)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -172,6 +191,13 @@ internal class GcxUwbControlee(
 
         val partnerParameters = rangingConfig.toRangingParameters(uwbDevices = listOf(uwbDevice))
         return uwbControleeSession.prepareSession(partnerParameters)
+    }
+
+    private fun CoroutineScope.awaitStartMessage(): Deferred<BluetoothMessage> = async {
+        bleMessagingClient.messages
+            .filter { it.uuid.toString() == GcxGattClient.UART_TX_CHARACTERISTIC }
+            .filter { it.data?.first() == OOBMessageProtocol.UWB_DID_START.command }
+            .firstOrNull() ?: throw UwbException.StartCommandNullException
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
