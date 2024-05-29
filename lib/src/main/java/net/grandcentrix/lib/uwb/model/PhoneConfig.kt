@@ -1,7 +1,8 @@
 package net.grandcentrix.lib.uwb.model
 
 /**
- * This open class serves as a base configuration for a phone that function as a controlee.
+ * This open class serves as a base configuration for a phone that function
+ * as a controlee and can help to setup the PhoneConfigInterceptor.
  *
  * @property sessionId The session identifier for the ranging operation (integer).
  * @property preambleIndex The preamble index used for transmission (byte).

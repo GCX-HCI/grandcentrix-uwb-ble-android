@@ -24,8 +24,8 @@ data class GcxScanResult(
     /**
      * Initiates a connection to the bluetooth device discovered during the scan.
      *
-     * This function requires the `BLUETOOTH_CONNECT` permission to operate. It creates a bluetooth GATT client
-     * to manage the connection and returns a [Flow] that emits [ConnectionState] objects representing
+     * This function creates a bluetooth GATT client to manage the connection and returns
+     * a [Flow] that emits [ConnectionState] objects representing
      * the state of the connection.
 
      * @param uuidProvider An instance of [UUIDProvider] that supplies the UUIDs required for the GATT connection.

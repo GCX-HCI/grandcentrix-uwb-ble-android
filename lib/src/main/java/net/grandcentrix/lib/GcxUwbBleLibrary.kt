@@ -16,8 +16,7 @@ interface UwbBleLibrary {
     /**
      * Starts a scanning process for bluetooth devices.
      *
-     * This function requires both `ACCESS_FINE_LOCATION` and `BLUETOOTH_SCAN` permissions to operate.
-     * It initiates a scan for nearby bluetooth devices and returns a [Flow] that emits [GcxScanResult] objects
+     * This function initiates a scan for nearby bluetooth devices and returns a [Flow] that emits [GcxScanResult] objects
      * as devices are discovered.
 
      * @return A [Flow] emitting [GcxScanResult] objects representing the devices discovered during the scan.
