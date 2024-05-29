@@ -13,10 +13,24 @@ import net.grandcentrix.lib.uwb.controlee.UwbControlee
 import net.grandcentrix.lib.uwb.model.RangingConfig
 import net.grandcentrix.lib.uwb.model.UwbResult
 
+/**
+ * This class provides functionalities for initiating UWB ranging with a bluetooth device.
+ */
 class GcxUwbDevice(
     private val bleMessagingClient: BleMessagingClient,
     private val context: Context
 ) {
+
+    /**
+     * Starts UWB ranging with the provided configurations.
+     *
+     * This function creates a controlee instance and returns a [Flow] that emits [UwbResult] objects.
+     *
+     * @param deviceConfigInterceptor interceptor to modify device configuration package, see [DeviceConfigInterceptor]
+     * @param phoneConfigInterceptor interceptor to modify phone configuration package, see [PhoneConfigInterceptor]
+     * @param rangingConfig config object to set the parameters for a session, see [RangingConfig]
+     * @return A Flow of [UwbResult] objects containing ranging data or errors.
+     */
     @RequiresPermission(
         allOf = [Manifest.permission.UWB_RANGING, Manifest.permission.BLUETOOTH_CONNECT]
     )
