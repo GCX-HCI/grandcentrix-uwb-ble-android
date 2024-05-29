@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     alias(libs.plugins.android.kotlin)
+    id("maven-publish")
 }
 
 android {
@@ -43,4 +44,32 @@ dependencies {
     testImplementation(libs.jupiter)
     testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
+}
+
+group = "net.grandcentrix.lib"
+version = "0.0.1"
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            afterEvaluate {
+                from(components["release"])
+            }
+
+            artifactId = "uwb"
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/GCX-HCI/grandcentrix-uwb-ble-android")
+            credentials {
+                username = (project.findProperty("github.user")
+                    ?: System.getenv("GITHUB_ACTOR")).toString()
+                password = (project.findProperty("github.token")
+                    ?: System.getenv("GITHUB_TOKEN")).toString()
+            }
+        }
+    }
 }
