@@ -5,6 +5,13 @@ acting as a controlee. We're using Bluetooth Low Energy (BLE) as an out-of-band 
 > [!IMPORTANT]
 > Our Android UWB Library requires at least **Android 14**, so make sure your project's minimum SDK is set up to be at least API 34 ("UpsideDownCake", Android 14.0)
 
+Add below UWB library reference to the dependencies section of your build.gradle.kts file, to use the library in your project.
+
+```kotlin
+dependencies {
+    implementation("net.grandcentrix.lib:uwb:0.0.1")
+}
+```
 
 ## Getting Started 
 
