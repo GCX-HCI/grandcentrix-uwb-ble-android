@@ -90,4 +90,45 @@ After all data between controller and controlee is successfully transferd, ```Uw
 
 ### Interceptor
 
-We currently provide two interceptor interfaces for interpreting custom configurations between the device (controller) and the phone (controlee). For sample implementations, check out the interceptor directory in our sample project.
+We currently provide two interceptor interfaces for interpreting custom configurations between the device (*controller*) and the phone (*controlee*). The sample shown below is did with the **Mobile Knowledge UWB Kit**.
+
+#### DeviceConfigInterceptor 
+
+For the controller, we expect a byte array that can be interpreted with our ```DeviceConfigInterceptor``` and returns a ```DeviceConfig``` model. In our sample, we created an additional model for Mobile Knowledge, the ```MKDeviceConfig```, which inherits from our ```DeviceConfig``` object.
+We then implemented our ```DeviceConfigInterceptor``` interface in the ```MKDeviceConfigInterceptor``` class and overrode the ```intercept(byteArray)``` method.
+
+```kotlin
+object MKDeviceConfigInterceptor : DeviceConfigInterceptor {
+    override fun intercept(byteArray: ByteArray): DeviceConfig =
+        MKDeviceConfig.fromByteArray(byteArray)
+}
+```
+
+#### PhoneConfigInterceptor
+
+For the controlee, we provide our ```PhoneConfig``` model with the following fields: 
+- **sessionId** - session identifier for the ranging operation (integer)
+- **preambleIndex** - index used for transmission (byte)
+- **channel** - channel to be used for communication (byte)
+- **phoneAddress** - phone's address in byte array format
+
+In our sample, we extended our model with the ```MKPhoneConfig``` model to meet the requirements of the **Mobile Knowledge controller**. We then used our ```PhoneConfigInterceptor``` interface and implemented it in the ```MKPhoneConfigInterceptor``` class, *overriding* the ```intercept(sessionId, complexChannel, phoneAddress)``` method. This method returns a byte array that will be sent to the controller to set up everything needed for the ranging session.
+
+```kotlin
+object MKPhoneConfigInterceptor : PhoneConfigInterceptor {
+    override fun intercept(
+        sessionId: Int,
+        complexChannel: UwbComplexChannel,
+        phoneAddress: ByteArray
+    ): ByteArray = MKPhoneConfig(
+        specVerMajor = 0x0100.toShort(),
+        specVerMinor = 0x0000.toShort(),
+        sessionId = sessionId,
+        preambleIndex = complexChannel.preambleIndex.toByte(),
+        channel = complexChannel.channel.toByte(),
+        profileId = RangingParameters.CONFIG_UNICAST_DS_TWR.toByte(),
+        deviceRangingRole = 0x01.toByte(),
+        phoneAddress = phoneAddress
+    ).toByteArray()
+}
+```
