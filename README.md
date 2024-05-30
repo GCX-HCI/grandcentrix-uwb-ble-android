@@ -51,7 +51,7 @@ The ```gcxScanResult.connect(uuidProvider).collect``` lamba receives ```Connecti
 - **Connectionstate.ServicesDiscovered** - represents the state when the services of the bluetooth device have been discovered, contains a object of `GcxUwbDevice`
   
 When the ```ConnectionState.ServicesDiscovered``` state is reached, it contains a object of **GcxUwbDevice** on this object 
-its possible to perform a ```gcxUwbDevice.startRanging(deviceConfigInterceptor, phoneConfigInterceptor, rangingConfig``` call with
+its possible to perform a ```gcxUwbDevice.startRanging(deviceConfigInterceptor, phoneConfigInterceptor, rangingConfig)``` call with
 ```DeviceConfigInterceptor```, ```PhoneConfigInterceptor``` and ```RangingConfig```
 to start the UWB ranging session. 
 After all data between controller and controlee is successfully transferd, ```UwbResult.PositionResult``` will return fields like:
