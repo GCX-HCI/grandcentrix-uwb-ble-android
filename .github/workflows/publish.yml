@@ -1,0 +1,67 @@
+name: Publish lib
+
+on:
+  push:
+    tags:
+      - 'release/v*'
+
+# Cancel previous runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-lib:
+    name: Build & Publish lib
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Check version input
+        id: version-check
+        run: |
+          # Search for "version =" in lib/build.gradle.kts and extract the value on the right-hand side of the variable
+          libVersion=$(sed -n 's/version *= *"\([^"]*\)"/\1/p' lib/build.gradle.kts)
+          echo "lib_version=$libVersion" >> $GITHUB_OUTPUT
+          
+          # Get release tag name without "release/v" prefix
+          releaseTag=${GITHUB_REF_NAME#"release/v"}
+          echo "release_tag=$releaseTag" >> $GITHUB_OUTPUT
+          
+          if [ "$libVersion" != "$releaseTag" ]; then 
+              echo "libVersion ($libVersion) and releaseTag ($releaseTag) are not equal! Using $releaseTag to build lib."
+              sed -i 's/version *= *"\([^"]*\)"/version = "$releaseTag"/' lib/build.gradle.kts
+          fi
+
+      - name: Build lib
+        run: ./gradlew lib:assembleRelease --stacktrace
+        timeout-minutes: 30
+
+      - name: Publish lib
+        run: ./gradlew lib:publish --stacktrace
+
+      - name: Collect release information
+        id: release-info
+        run: |
+          aarPath=$(find lib/build/outputs/aar -name "*.aar")
+          echo "aar_path=$aarPath" >> $GITHUB_OUTPUT
+
+      - name: Create github release
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        with:
+          tag_name: ${{ steps.version-check.outputs.release_tag }}
+          name: UWB ${{ steps.version-check.outputs.release_tag }}
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: ${{ steps.release-info.outputs.aar_path }}
+          generate_release_notes: true
