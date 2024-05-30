@@ -1,6 +1,6 @@
-## Introduction to Grandcentrix UWB Android Library
+## Grandcentrix UWB Android Library
 This project is all about making it super easy to create an Ultra-Wideband (UWB) session to a controller, 
-acting as a controlee. We're using Bluetooth Low Energy (BLE) as an out-of-band (OOB) method to kick things off.
+acting as a controlee. We're using Bluetooth Low Energy (BLE) as an out-of-band (OOB) method to connect and communicate to nearby devices.
 
 > [!IMPORTANT]
 > Our Android UWB Library requires at least **Android 14**, so make sure your project's minimum SDK is set up to be at least API 34 ("UpsideDownCake", Android 14.0)
