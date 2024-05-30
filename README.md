@@ -31,7 +31,7 @@ The scanning process ues the Bluetooth API to search for available BLE devices.
 ### Establish a connection to nerby device via BLE 
 
 Upon successful discovery, the ```gcxUwbBleLibrary.startScan().collect``` lambda receives ```GcxScanResult``` objects. 
-On this object its possible to perform a ```gcxScanResult.connect(uuidProvider``` call with a ```UUIDProvider``` as an argument to establish a Bluetooth connection.
+On this object its possible to perform a ```gcxScanResult.connect(uuidProvider)``` call with a ```UUIDProvider``` as an argument to establish a Bluetooth connection.
 The ```UUIDProvider``` class supplies the UUIDs for the service and characteristics required to communicate, by default we are using the **Nordic UART Service**
 with the RX and TX characteristic.
 
