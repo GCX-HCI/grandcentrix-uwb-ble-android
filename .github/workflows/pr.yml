@@ -38,7 +38,7 @@ jobs:
       # Annotate PR run with info about how many tests were run successfully, failed, and were skipped
       - name: Annotate PR with JUnit Report
         if: always() # always run even if the previous step fails
-        uses: mikepenz/action-junit-report@v4.2.1
+        uses: mikepenz/action-junit-report@v4.2.2
         with:
           report_paths: '**/build/test-results/**/TEST-*.xml'
           token: ${{ secrets.GITHUB_TOKEN }}
