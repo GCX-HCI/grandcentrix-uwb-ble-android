@@ -28,7 +28,7 @@ uwb = "1.0.0-alpha08"
 # test dependencies
 jupiter = "5.10.2"
 androidx_junit = "1.1.5"
-mockk = "1.13.10"
+mockk = "1.13.11"
 
 [libraries]
 
