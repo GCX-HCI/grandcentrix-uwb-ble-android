@@ -17,7 +17,6 @@ androidx_appcompat = "1.6.1"
 androidx_lifecycle = "2.7.0"
 androidx_activity_compose = "1.9.0"
 compose_bom = "2024.05.00"
-compose_compiler = "1.5.11"
 
 coroutines = "1.8.1"
 
@@ -36,7 +35,6 @@ androidx_appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx_lifecycle_compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx_lifecycle" }
 androidx_activity_compose = { module = "androidx.activity:activity-compose", version.ref = "androidx_activity_compose" }
 
-compose_compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose_compiler" }
 compose_bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose_bom" }
 compose_runtime = { module = "androidx.compose.runtime:runtime" }
 compose_foundation = { module = "androidx.compose.foundation:foundation" }
@@ -63,8 +61,9 @@ uwb = { module = "androidx.core.uwb:uwb", version.ref = "uwb"}
 android_application = { id = "com.android.application", version.ref = "android_gradle_plugin" }
 android_kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+compose_compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
 koin = ["koin", "koin_compose"]
-compose = ["compose_compiler", "compose_runtime", "compose_foundation", "compose_ui_tooling", "compose_ui", "compose_material", "compose_animation"]
+compose = ["compose_runtime", "compose_foundation", "compose_ui_tooling", "compose_ui", "compose_material", "compose_animation"]
 coroutines = ["coroutines_core", "coroutines_android"]
