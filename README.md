@@ -132,3 +132,18 @@ object MKPhoneConfigInterceptor : PhoneConfigInterceptor {
     ).toByteArray()
 }
 ```
+
+## Publishing
+
+The library is published as an AAR
+to [Github Packages](https://github.com/orgs/GCX-HCI/packages?repo_name=grandcentrix-uwb-ble-android)
+via the [publish action](.github/workflows/publish.yml). To publish a new version of the library
+bump the [version](https://github.com/GCX-HCI/grandcentrix-uwb-ble-android/blob/main/lib/build.gradle.kts#L50)
+inside of `lib/build.gradle.kts` and create a new tag with this
+pattern: `release/v<major>.<minor>.<patch>`.
+
+> [!CAUTION]
+> The action prefers to use the tag instead of the version string in the gradle file. Make sure to
+> use the same version in the gradle file and for the tag.
+
+Additionally, a github release for documentation is created automatically by the same workflow.
