@@ -3,7 +3,7 @@
 # buildscript
 kotlin = "1.9.23"
 android_gradle_plugin = "8.4.0"
-ktlint = "12.1.0"
+ktlint = "12.1.1"
 
 # app config
 compileSdk = "34"
