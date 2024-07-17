@@ -80,8 +80,8 @@ class BleViewModel(
                             val updatedScanResults = buildList {
                                 addAll(it.scanResults)
                                 it.scanResults.firstOrNull { filter ->
-                                    filter.bluetoothDevice.address ==
-                                        scanResult.androidScanResult.device.address
+                                    filter.address ==
+                                        scanResult.address
                                 } ?: add(scanResult.toBleScanResult())
                             }
                             it.copy(scanResults = updatedScanResults)

@@ -1,10 +1,12 @@
 package net.grandcentrix.lib.ble.gatt
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
@@ -26,7 +28,7 @@ private const val TAG = "GcxGattClient"
 interface GattClient {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState>
+    fun connect(address: String): Flow<ConnectionState>
 
     val bleMessagingClient: BleMessagingClient
 }
@@ -45,6 +47,11 @@ internal class GcxGattClient(
     private val context: Context,
     private val uuidProvider: UUIDProvider
 ) : GattClient {
+
+    private val bluetoothAdapter: BluetoothAdapter by lazy {
+        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        manager.adapter
+    }
 
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
@@ -79,7 +86,7 @@ internal class GcxGattClient(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun connect(bleDevice: BluetoothDevice): Flow<ConnectionState> = callbackFlow {
+    override fun connect(address: String): Flow<ConnectionState> = callbackFlow {
         val gattCallback = object : BluetoothGattCallback() {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -175,7 +182,9 @@ internal class GcxGattClient(
             }
         }
         try {
-            gatt = bleDevice.connectGatt(context, false, gattCallback)
+            getBluetoothDeviceByAddress(address = address)
+                .onFailure { close(it) }
+                .onSuccess { gatt = it.connectGatt(context, false, gattCallback) }
         } catch (exception: SecurityException) {
             close(exception)
         }
@@ -184,6 +193,11 @@ internal class GcxGattClient(
             gatt?.let { cleanUpGattStack(it) }
         }
     }
+
+    private fun getBluetoothDeviceByAddress(address: String): Result<BluetoothDevice> =
+        runCatching {
+            bluetoothAdapter.getRemoteDevice(address)
+        }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun cleanUpGattStack(gatt: BluetoothGatt) {

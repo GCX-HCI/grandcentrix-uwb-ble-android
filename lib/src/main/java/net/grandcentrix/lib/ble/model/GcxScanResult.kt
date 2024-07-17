@@ -17,7 +17,8 @@ import net.grandcentrix.lib.ble.provider.UUIDProvider
  * @property androidScanResult The raw BLE scan result obtained from the scanning process.
  */
 data class GcxScanResult(
-    val androidScanResult: ScanResult,
+    val address: String,
+    val name: String?,
     private val context: Context
 ) {
 
@@ -37,10 +38,13 @@ data class GcxScanResult(
             context = context,
             uuidProvider = uuidProvider
         )
-        return gattClient.connect(bleDevice = androidScanResult.device)
+        return gattClient.connect(address = address)
     }
 }
+
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 internal fun ScanResult.toGcxScanResult(context: Context): GcxScanResult = GcxScanResult(
-    androidScanResult = this,
+    address = device.address,
+    name = device.name,
     context = context
 )
