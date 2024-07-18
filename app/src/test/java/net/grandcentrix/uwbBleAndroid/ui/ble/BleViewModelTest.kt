@@ -31,7 +31,6 @@ class BleViewModelTest {
 
     private val gcxScanResultMock: GcxScanResult = mockk {
         every { connect(uuidProvider) } returns emptyFlow()
-        every { name } returns "name"
         every { address } returns "address"
     }
 

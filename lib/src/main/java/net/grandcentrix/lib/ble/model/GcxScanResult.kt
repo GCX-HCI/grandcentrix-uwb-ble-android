@@ -18,7 +18,6 @@ import net.grandcentrix.lib.ble.provider.UUIDProvider
  */
 data class GcxScanResult(
     val address: String,
-    val name: String?,
     private val context: Context
 ) {
 
@@ -42,9 +41,7 @@ data class GcxScanResult(
     }
 }
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 internal fun ScanResult.toGcxScanResult(context: Context): GcxScanResult = GcxScanResult(
     address = device.address,
-    name = device.name,
     context = context
 )
