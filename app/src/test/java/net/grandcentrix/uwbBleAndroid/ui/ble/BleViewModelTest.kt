@@ -1,7 +1,6 @@
 package net.grandcentrix.uwbBleAndroid.ui.ble
 
 import android.Manifest
-import android.bluetooth.BluetoothDevice
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -28,19 +27,15 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(CoroutineTestExtension::class)
 class BleViewModelTest {
 
-    private val bluetoothDeviceMock: BluetoothDevice = mockk {
-        every { address } returns "00:60:37:90:E7:11" // hardcoded mac address for mobile knowledge dev kit
-    }
-
     private val uuidProvider: UUIDProvider = mockk()
 
     private val gcxScanResultMock: GcxScanResult = mockk {
         every { connect(uuidProvider) } returns emptyFlow()
-        every { androidScanResult.device } returns bluetoothDeviceMock
+        every { address } returns "address"
     }
 
     private val bleScanResult: BleScanResult = mockk {
-        every { bluetoothDevice } returns gcxScanResultMock.androidScanResult.device
+        every { address } returns gcxScanResultMock.address
         every { connectionState } returns ConnectionState.Disconnected
         every { gcxScanResult } returns gcxScanResultMock
     }

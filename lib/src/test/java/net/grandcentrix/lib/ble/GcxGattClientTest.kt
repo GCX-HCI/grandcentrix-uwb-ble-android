@@ -25,10 +25,11 @@ import kotlinx.coroutines.test.runTest
 import net.grandcentrix.lib.ble.exception.BluetoothException
 import net.grandcentrix.lib.ble.gatt.GcxGattClient
 import net.grandcentrix.lib.ble.model.ConnectionState
-import net.grandcentrix.lib.ble.model.GcxUwbDevice
 import net.grandcentrix.lib.ble.provider.UUIDProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+
+private const val VALID_MAC_ADRESS = "VALID_MAC_ADDRESS"
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GcxGattClientTest {
@@ -51,7 +52,15 @@ class GcxGattClientTest {
         justRun { close() }
         every { discoverServices() } returns true
     }
-    private val bluetoothAdapter: BluetoothAdapter = mockk()
+
+    private val bluetoothDevice: BluetoothDevice = mockk {
+        every { address } returns VALID_MAC_ADRESS
+    }
+
+    private val bluetoothAdapter: BluetoothAdapter = mockk {
+        every { getRemoteDevice(VALID_MAC_ADRESS) } returns bluetoothDevice
+    }
+
     private val bluetoothManager: BluetoothManager = mockk()
     private val context: Context = mockk {
         every {
@@ -66,12 +75,44 @@ class GcxGattClientTest {
         every { rxUUID } returns UUID.randomUUID()
     }
 
-    private val gcxUwbDevice: GcxUwbDevice = mockk()
+    @Test
+    fun `Given bluetooth adapter, when get remote device with invalid mac, then throw exception`() =
+        runTest {
+            justRun {
+                bluetoothDevice.connectGatt(
+                    any(),
+                    any(),
+                    any()
+                )
+            }
+
+            every {
+                bluetoothAdapter.getRemoteDevice(
+                    "INVALID_MAC_ADDRESS"
+                )
+            } throws IllegalArgumentException()
+
+            every {
+                (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+            } returns bluetoothAdapter
+            val gcxGattClient = GcxGattClient(
+                context = context,
+                uuidProvider = uuidProvider
+            )
+
+            var thrownError: Throwable? = null
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                gcxGattClient.connect("INVALID_MAC_ADDRESS")
+                    .catch { thrownError = it }
+                    .collect()
+            }
+            advanceUntilIdle()
+            assertEquals(BluetoothException.BluetoothMacAddressInvalidException, thrownError)
+        }
 
     @Test
-    fun `Given bluetooth device, when connect to gatt success, then return connection state CONNECTED`() =
+    fun `Given bluetooth device address, when connect to gatt success, then return connection state CONNECTED`() =
         runTest {
-            val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
 
             every {
@@ -95,7 +136,7 @@ class GcxGattClientTest {
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(bluetoothDevice).collect { connectionState ->
+                gcxGattClient.connect(VALID_MAC_ADRESS).collect { connectionState ->
                     assertEquals(ConnectionState.Connected, connectionState)
                 }
             }
@@ -103,9 +144,8 @@ class GcxGattClientTest {
         }
 
     @Test
-    fun `Given bluetooth device, when connection attempt fails, then return connection state DISCONNECTED`() =
+    fun `Given bluetooth device address, when connection attempt fails, then return connection state DISCONNECTED`() =
         runTest {
-            val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
 
             every {
@@ -129,7 +169,7 @@ class GcxGattClientTest {
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(bluetoothDevice).collect { connectionState ->
+                gcxGattClient.connect(VALID_MAC_ADRESS).collect { connectionState ->
                     assertEquals(ConnectionState.Disconnected, connectionState)
                 }
             }
@@ -137,9 +177,8 @@ class GcxGattClientTest {
         }
 
     @Test
-    fun `Given bluetooth device, when connect to gatt success, then discover services is called`() =
+    fun `Given bluetooth device address, when connect to gatt success, then discover services is called`() =
         runTest {
-            val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
 
             every {
@@ -163,7 +202,7 @@ class GcxGattClientTest {
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(bluetoothDevice).collect()
+                gcxGattClient.connect(VALID_MAC_ADRESS).collect()
             }
             advanceUntilIdle()
             verify {
@@ -172,9 +211,8 @@ class GcxGattClientTest {
         }
 
     @Test
-    fun `Given bluetooth device, when service discovered success, then return connection state SERVICES_DISCOVERED`() =
+    fun `Given bluetooth device address, when service discovered success, then return connection state SERVICES_DISCOVERED`() =
         runTest {
-            val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
 
             every {
@@ -197,7 +235,7 @@ class GcxGattClientTest {
             )
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(bluetoothDevice).collect { connectionState ->
+                gcxGattClient.connect(VALID_MAC_ADRESS).collect { connectionState ->
                     assert(connectionState is ConnectionState.ServicesDiscovered)
                 }
             }
@@ -205,9 +243,8 @@ class GcxGattClientTest {
         }
 
     @Test
-    fun `Given bluetooth device, when service discovered failed, then throw ServiceDiscoveryFailedException`() =
+    fun `Given bluetooth device address, when service discovered failed, then throw ServiceDiscoveryFailedException`() =
         runTest {
-            val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
 
             every {
@@ -231,7 +268,7 @@ class GcxGattClientTest {
 
             var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(bluetoothDevice)
+                gcxGattClient.connect(VALID_MAC_ADRESS)
                     .catch { thrownError = it }
                     .collect()
             }
@@ -240,9 +277,8 @@ class GcxGattClientTest {
         }
 
     @Test
-    fun `Given bluetooth device, when services not supported, then throw ServiceNotSupportedException`() =
+    fun `Given bluetooth device address, when services not supported, then throw ServiceNotSupportedException`() =
         runTest {
-            val bluetoothDevice: BluetoothDevice = mockk()
             val gattCallbackCapture = slot<BluetoothGattCallback>()
 
             every {
@@ -270,7 +306,7 @@ class GcxGattClientTest {
 
             var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(bluetoothDevice)
+                gcxGattClient.connect(VALID_MAC_ADRESS)
                     .catch { thrownError = it }
                     .collect()
             }

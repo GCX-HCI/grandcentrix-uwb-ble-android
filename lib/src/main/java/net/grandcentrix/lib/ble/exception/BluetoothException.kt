@@ -1,6 +1,10 @@
 package net.grandcentrix.lib.ble.exception
 
 sealed class BluetoothException(override val message: String?) : Exception() {
+
+    data object BluetoothMacAddressInvalidException : BluetoothException(
+        "Device mac address was invalid!"
+    )
     data object BluetoothDisabledException : BluetoothException("BLE Adapter is not enabled")
 
     data class ScanFailure(

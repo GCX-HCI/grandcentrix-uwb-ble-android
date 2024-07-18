@@ -14,10 +14,10 @@ import net.grandcentrix.lib.ble.provider.UUIDProvider
  *
  * This class encapsulates a BLE scan result and provides functionality to connect to the discovered device.
  *
- * @property androidScanResult The raw BLE scan result obtained from the scanning process.
+ * @property address The hardware address of a bluetooth deice.
  */
 data class GcxScanResult(
-    val androidScanResult: ScanResult,
+    val address: String,
     private val context: Context
 ) {
 
@@ -37,10 +37,11 @@ data class GcxScanResult(
             context = context,
             uuidProvider = uuidProvider
         )
-        return gattClient.connect(bleDevice = androidScanResult.device)
+        return gattClient.connect(address = address)
     }
 }
+
 internal fun ScanResult.toGcxScanResult(context: Context): GcxScanResult = GcxScanResult(
-    androidScanResult = this,
+    address = device.address,
     context = context
 )

@@ -153,7 +153,7 @@ fun ScanResultItem(
     ) {
         Row {
             Column {
-                Text(text = "Address: ${bleScanResult.bluetoothDevice.address}")
+                Text(text = "Address: ${bleScanResult.address}")
                 Text(text = "Connection state: ${bleScanResult.connectionState}")
             }
         }
