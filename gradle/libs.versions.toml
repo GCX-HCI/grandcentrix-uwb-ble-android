@@ -16,7 +16,7 @@ buildTools = "34.0.0"
 androidx_appcompat = "1.7.0"
 androidx_lifecycle = "2.8.3"
 androidx_activity_compose = "1.9.0"
-compose_bom = "2024.05.00"
+compose_bom = "2024.06.00"
 
 coroutines = "1.8.1"
 
