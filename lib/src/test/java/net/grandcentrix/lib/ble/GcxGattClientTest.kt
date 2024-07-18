@@ -53,7 +53,8 @@ class GcxGattClientTest {
         every { discoverServices() } returns true
     }
 
-    val bluetoothDevice: BluetoothDevice = mockk { every { address } returns VALID_MAC_ADRESS }
+    private val bluetoothDevice: BluetoothDevice =
+        mockk { every { address } returns VALID_MAC_ADRESS }
 
     private val bluetoothAdapter: BluetoothAdapter = mockk {
         every { getRemoteDevice(VALID_MAC_ADRESS) } returns bluetoothDevice
