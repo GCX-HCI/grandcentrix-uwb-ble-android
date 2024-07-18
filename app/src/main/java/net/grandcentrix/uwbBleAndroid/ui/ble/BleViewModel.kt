@@ -80,8 +80,7 @@ class BleViewModel(
                             val updatedScanResults = buildList {
                                 addAll(it.scanResults)
                                 it.scanResults.firstOrNull { filter ->
-                                    filter.address ==
-                                        scanResult.address
+                                    filter.address == scanResult.address
                                 } ?: add(scanResult.toBleScanResult())
                             }
                             it.copy(scanResults = updatedScanResults)
