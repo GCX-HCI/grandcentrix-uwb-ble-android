@@ -36,11 +36,12 @@ class BleViewModelTest {
 
     private val gcxScanResultMock: GcxScanResult = mockk {
         every { connect(uuidProvider) } returns emptyFlow()
-        every { androidScanResult.device } returns bluetoothDeviceMock
+        every { name } returns "name"
+        every { address } returns "address"
     }
 
     private val bleScanResult: BleScanResult = mockk {
-        every { bluetoothDevice } returns gcxScanResultMock.androidScanResult.device
+        every { address } returns gcxScanResultMock.address
         every { connectionState } returns ConnectionState.Disconnected
         every { gcxScanResult } returns gcxScanResultMock
     }

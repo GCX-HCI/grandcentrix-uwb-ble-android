@@ -183,7 +183,7 @@ internal class GcxGattClient(
         }
         try {
             getBluetoothDeviceByAddress(address = address)
-                .onFailure { close(it) }
+                .onFailure { close(BluetoothException.BluetoothMacAddressInvalidException) }
                 .onSuccess { gatt = it.connectGatt(context, false, gattCallback) }
         } catch (exception: SecurityException) {
             close(exception)
