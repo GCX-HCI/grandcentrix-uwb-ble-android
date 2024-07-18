@@ -14,7 +14,7 @@ import net.grandcentrix.lib.ble.provider.UUIDProvider
  *
  * This class encapsulates a BLE scan result and provides functionality to connect to the discovered device.
  *
- * @property androidScanResult The raw BLE scan result obtained from the scanning process.
+ * @property address The hardware address of a bluetooth deice.
  */
 data class GcxScanResult(
     val address: String,
