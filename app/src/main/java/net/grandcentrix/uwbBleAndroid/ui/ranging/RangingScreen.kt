@@ -43,7 +43,7 @@ internal fun RangingScreen(
         onResult = { viewModel.onPermissionResult() }
     )
 
-    LifecycleResumeEffect {
+    LifecycleResumeEffect(key1 = Unit) {
         viewModel.onResume()
 
         onPauseOrDispose {
