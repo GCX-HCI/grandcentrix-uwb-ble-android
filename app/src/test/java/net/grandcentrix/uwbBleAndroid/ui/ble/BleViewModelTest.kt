@@ -166,12 +166,7 @@ class BleViewModelTest {
     fun `Given scan permission not granted, when starting ble scan, then bleScanner startScan is not called`() =
         runTest {
             every {
-                permissionChecker.hasPermissions(
-                    listOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.BLUETOOTH_SCAN
-                    )
-                )
+                permissionChecker.hasPermissions(listOf(Manifest.permission.BLUETOOTH_SCAN))
             } returns false
 
             val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator, uuidProvider)
@@ -223,12 +218,7 @@ class BleViewModelTest {
     fun `Given scan permission is not granted when starting to scan, when granting the permission, then scan should start right after`() =
         runTest {
             every {
-                permissionChecker.hasPermissions(
-                    listOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.BLUETOOTH_SCAN
-                    )
-                )
+                permissionChecker.hasPermissions(listOf(Manifest.permission.BLUETOOTH_SCAN))
             } returns false
 
             val viewModel = BleViewModel(uwbBleLibrary, permissionChecker, navigator, uuidProvider)
@@ -239,12 +229,7 @@ class BleViewModelTest {
             verify(exactly = 0) { uwbBleLibrary.startScan() }
 
             every {
-                permissionChecker.hasPermissions(
-                    listOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.BLUETOOTH_SCAN
-                    )
-                )
+                permissionChecker.hasPermissions(listOf(Manifest.permission.BLUETOOTH_SCAN))
             } returns true
 
             viewModel.onPermissionResult()
