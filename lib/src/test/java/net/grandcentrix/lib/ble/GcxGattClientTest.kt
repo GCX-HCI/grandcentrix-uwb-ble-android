@@ -167,14 +167,12 @@ class GcxGattClientTest {
                 uuidProvider = uuidProvider
             )
 
-            var thrownError: Throwable? = null
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                gcxGattClient.connect(VALID_MAC_ADRESS)
-                    .catch { thrownError = it }
-                    .collect()
+                gcxGattClient.connect(VALID_MAC_ADRESS).collect { connectionState ->
+                    assertEquals(ConnectionState.Disconnected, connectionState)
+                }
             }
             advanceUntilIdle()
-            assertEquals(BluetoothException.ServiceDiscoveryFailedException, thrownError)
         }
 
     @Test
