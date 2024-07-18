@@ -9,7 +9,7 @@ Add below UWB library reference to the dependencies section of your build.gradle
 
 ```kotlin
 dependencies {
-    implementation("net.grandcentrix.lib:uwb:0.0.1")
+    implementation("net.grandcentrix.lib:uwb:0.0.2")
 }
 ```
 
